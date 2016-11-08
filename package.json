@@ -2,7 +2,7 @@
   "name": "super-orm",
   "version": "0.0.0",
   "description": "基于Node.js的MySQL ORM模块，支持缓存",
-  "main": "ilib/ndex.js",
+  "main": "lib/index.js",
   "files": [
     "lib"
   ],
