@@ -30,7 +30,7 @@ describe('Connection', function () {
       connections: [ getConnectionConfig() ],
     });
     {
-      const ret = yield conn.query('SHOW TABLES');
+      const ret = yield conn.query('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`');
       console.log(ret);
     }
     {
