@@ -39,6 +39,12 @@ describe('Connection', function () {
       console.log(ret);
     }
     {
+      const sql = conn.format('SELECT * FROM ?? WHERE id=?', [ 'blog_contents', 2 ]);
+      console.log(sql);
+      const ret = yield conn.smartQuery(sql);
+      console.log(ret);
+    }
+    {
       const c = yield conn.getConnection();
       console.log(c.escape(new Date()));
       yield c.beginTransaction();
