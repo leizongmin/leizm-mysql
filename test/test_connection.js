@@ -9,18 +9,8 @@
 const assert = require('assert');
 const coroutine = require('lei-coroutine');
 const { createConnection } = require('../');
+const { getConnectionConfig } = require('./utils');
 
-function getConnectionConfig(config) {
-  return Object.assign({
-    host: '127.0.0.1',
-    port: 3306,
-    user: 'root',
-    password: '',
-    database: 'test',
-    connectionLimit: 2,
-    charset: 'utf8mb4',
-  }, config || {});
-}
 
 describe('Connection', function () {
 
@@ -48,32 +38,32 @@ describe('Connection', function () {
       const ret = yield conn.query(sql);
       console.log(ret);
     }
-    // {
-    //   const c = yield conn.getConnection();
-    //   console.log(c.escape(new Date()));
-    //   yield c.beginTransaction();
-    //   try {
-    //     const ret = yield c.query('INSERT INTO `blog_contents`(`id`,`content`) VALUES (1234, "456")');
-    //     console.log(ret);
-    //   } catch (err) {
-    //     console.log(err);
-    //     yield c.rollback();
-    //   }
-    //   try {
-    //     const ret = yield c.query('INSERT INTO `blog_contents`(`id`,`content`) VALUES (1234, "9999")');
-    //     console.log(ret);
-    //   } catch (err) {
-    //     console.log(err);
-    //     yield c.rollback();
-    //   }
-    //   try {
-    //     yield c.commit();
-    //   } catch (err) {
-    //     console.log(err);
-    //     yield c.rollback();
-    //   }
-    //   c.release();
-    // }
+    {
+      const c = yield conn.getConnection();
+      console.log(c.escape(new Date()));
+      yield c.beginTransaction();
+      try {
+        const ret = yield c.query('INSERT INTO `blog_contents`(`id`,`content`) VALUES (1234, "456")');
+        console.log(ret);
+      } catch (err) {
+        console.log(err);
+        yield c.rollback();
+      }
+      try {
+        const ret = yield c.query('INSERT INTO `blog_contents`(`id`,`content`) VALUES (1234, "9999")');
+        console.log(ret);
+      } catch (err) {
+        console.log(err);
+        yield c.rollback();
+      }
+      try {
+        yield c.commit();
+      } catch (err) {
+        console.log(err);
+        yield c.rollback();
+      }
+      c.release();
+    }
     yield conn.close();
 
   }));
