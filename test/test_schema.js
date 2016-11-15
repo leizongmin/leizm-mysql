@@ -95,4 +95,53 @@ describe('Schema', function () {
     }]);
   });
 
+  it('formatOutput & formatOutputList', function () {
+    assert.deepEqual(query.formatOutput({
+      name: 'hello',
+      data: 'aGFoYWhh',
+    }), {
+      name: 'hello',
+      data: 'hahaha',
+    });
+    assert.deepEqual(query.formatOutput({
+      name: 'hello',
+      data: 'aGFoYWhh',
+      message: 'yes',
+    }), {
+      name: 'hello',
+      data: 'hahaha',
+      message: 'yes',
+    });
+    assert.deepEqual(query.formatOutput({
+      name: 'hello',
+      data: 'aGFoYWhh',
+      message: 'yes',
+      info: '"aaa"',
+    }), {
+      name: 'hello',
+      data: 'hahaha',
+      message: 'yes',
+      info: 'aaa',
+    });
+    assert.deepEqual(query.formatOutputList([{
+      name: 'hello',
+      data: 'aGFoYWhh',
+      message: 'yes',
+    }, {
+      name: 'hello',
+      data: 'aGFoYWhh',
+      message: 'yes',
+      info: '"aaa"',
+    }]), [{
+      name: 'hello',
+      data: 'hahaha',
+      message: 'yes',
+    }, {
+      name: 'hello',
+      data: 'hahaha',
+      message: 'yes',
+      info: 'aaa',
+    }]);
+  });
+
 });
