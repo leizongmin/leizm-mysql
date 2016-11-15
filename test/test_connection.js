@@ -45,7 +45,7 @@ describe('Connection', function () {
       console.log(ret);
     }
     {
-      const c = yield conn.getConnection();
+      const c = yield conn.getMasterConnection();
       console.log(c.escape(new Date()));
       yield c.beginTransaction();
       try {
