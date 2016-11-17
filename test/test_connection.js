@@ -6,7 +6,7 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-const assert = require('assert');
+const expect = require('chai').expect;
 const coroutine = require('lei-coroutine');
 const { createConnection } = require('../');
 const { getConnectionConfig } = require('./utils');

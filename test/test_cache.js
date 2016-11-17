@@ -6,7 +6,7 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-const assert = require('assert');
+const expect = require('chai').expect;
 const coroutine = require('lei-coroutine');
 const { createCache } = require('../');
 const { getCacheConfig } = require('./utils');
@@ -35,8 +35,8 @@ describe('Cache', function () {
       const ret2 = yield p.exec();
       console.log(ret2);
       for (const item of ret2) {
-        assert.equal(item[0], null);
-        assert.ok(item[1] > 0);
+        expect(item[0]).to.be.null;
+        expect(item[1]).to.be.above(0);
       }
     }
 
@@ -60,7 +60,7 @@ describe('Cache', function () {
     {
       const ret = yield cache.getList([ 'test0', 'test1', 'test2', 'test3' ]);
       console.log(ret);
-      assert.deepEqual(ret, [ null, 'data1', 'data2', null ]);
+      expect(ret).to.deep.equal([ null, 'data1', 'data2', null ]);
     }
     {
       const ret = yield cache.removeList([ 'test0', 'test1' ]);
@@ -69,7 +69,7 @@ describe('Cache', function () {
     {
       const ret = yield cache.getList([ 'test0', 'test1', 'test2', 'test3' ]);
       console.log(ret);
-      assert.deepEqual(ret, [ null, null, 'data2', null ]);
+      expect(ret).to.deep.equal([ null, null, 'data2', null ]);
     }
     yield cache.close();
 

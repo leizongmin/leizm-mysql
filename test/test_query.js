@@ -6,8 +6,7 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-const assert = require('assert');
-const coroutine = require('lei-coroutine');
+const expect = require('chai').expect;
 const { createQueryBuilder } = require('../');
 
 
@@ -18,7 +17,7 @@ describe('QueryBuilder', function () {
       const query = createQueryBuilder({ table: 'test1' });
       const sql = query.select('name', 'age').build();
       console.log(sql);
-      assert.equal(sql, 'SELECT `name`, `age` FROM `test1`');
+      expect(sql).to.equal('SELECT `name`, `age` FROM `test1`');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
@@ -27,7 +26,7 @@ describe('QueryBuilder', function () {
         b: 456,
       }).build();
       console.log(sql);
-      assert.equal(sql, 'SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456');
+      expect(sql).to.equal('SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
@@ -36,13 +35,13 @@ describe('QueryBuilder', function () {
         b: 456,
       }).build();
       console.log(sql);
-      assert.equal(sql, 'SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456');
+      expect(sql).to.equal('SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
       const sql = query.select('name', 'age').where('`a`=? AND `b`=?', [ 123, 456 ]).build();
       console.log(sql);
-      assert.equal(sql, 'SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456');
+      expect(sql).to.equal('SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
@@ -51,7 +50,7 @@ describe('QueryBuilder', function () {
         b: 456,
       }).limit(10).build();
       console.log(sql);
-      assert.equal(sql, 'SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456  LIMIT 10');
+      expect(sql).to.equal('SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456  LIMIT 10');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
@@ -60,7 +59,7 @@ describe('QueryBuilder', function () {
         b: 456,
       }).skip(10).build();
       console.log(sql);
-      assert.equal(sql, 'SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456  LIMIT 10,18446744073709551615');
+      expect(sql).to.equal('SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456  LIMIT 10,18446744073709551615');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
@@ -69,7 +68,7 @@ describe('QueryBuilder', function () {
         b: 456,
       }).skip(10).limit(20).build();
       console.log(sql);
-      assert.equal(sql, 'SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456  LIMIT 10,20');
+      expect(sql).to.equal('SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456  LIMIT 10,20');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
@@ -78,7 +77,7 @@ describe('QueryBuilder', function () {
         b: 456,
       }).skip(10).limit(20).order('`a` DESC, `b` ASC').build();
       console.log(sql);
-      assert.equal(sql, 'SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20');
+      expect(sql).to.equal('SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
@@ -87,7 +86,7 @@ describe('QueryBuilder', function () {
         b: 456,
       }).skip(10).limit(20).order('`a` ?, `b` ?', [ 'DESC', 'ASC' ]).build();
       console.log(sql);
-      assert.equal(sql, 'SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20');
+      expect(sql).to.equal('SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20');
     }
   });
   it('insert', function () {
@@ -98,7 +97,7 @@ describe('QueryBuilder', function () {
         b: 456,
       }).build();
       console.log(sql);
-      assert.equal(sql, 'INSERT INTO `test1` (`a`, `b`) VALUES (123, 456)');
+      expect(sql).to.equal('INSERT INTO `test1` (`a`, `b`) VALUES (123, 456)');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
@@ -110,7 +109,7 @@ describe('QueryBuilder', function () {
         b: 110,
       }]).build();
       console.log(sql);
-      assert.equal(sql, 'INSERT INTO `test1` (`a`, `b`) VALUES (123, 456),\n(789, 110)');
+      expect(sql).to.equal('INSERT INTO `test1` (`a`, `b`) VALUES (123, 456),\n(789, 110)');
     }
   });
   it('update', function () {
@@ -121,7 +120,7 @@ describe('QueryBuilder', function () {
         b: 456,
       }).build();
       console.log(sql);
-      assert.equal(sql, 'UPDATE `test1` SET `a`=123, `b`=456');
+      expect(sql).to.equal('UPDATE `test1` SET `a`=123, `b`=456');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
@@ -130,7 +129,7 @@ describe('QueryBuilder', function () {
         b: 456,
       }).limit(12).build();
       console.log(sql);
-      assert.equal(sql, 'UPDATE `test1` SET `a`=123, `b`=456  LIMIT 12');
+      expect(sql).to.equal('UPDATE `test1` SET `a`=123, `b`=456  LIMIT 12');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
@@ -141,7 +140,7 @@ describe('QueryBuilder', function () {
         b: 777,
       }).limit(12).build();
       console.log(sql);
-      assert.equal(sql, 'UPDATE `test1` SET `a`=123, `b`=456 WHERE `b`=777 LIMIT 12');
+      expect(sql).to.equal('UPDATE `test1` SET `a`=123, `b`=456 WHERE `b`=777 LIMIT 12');
     }
   });
   it('delete', function () {
@@ -149,19 +148,19 @@ describe('QueryBuilder', function () {
       const query = createQueryBuilder({ table: 'test1' });
       const sql = query.delete().build();
       console.log(sql);
-      assert.equal(sql, 'DELETE FROM `test1`');
+      expect(sql).to.equal('DELETE FROM `test1`');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
       const sql = query.delete().where('`a`=2').build();
       console.log(sql);
-      assert.equal(sql, 'DELETE FROM `test1` WHERE `a`=2');
+      expect(sql).to.equal('DELETE FROM `test1` WHERE `a`=2');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
       const sql = query.delete().where('`a`=2').limit(1).build();
       console.log(sql);
-      assert.equal(sql, 'DELETE FROM `test1` WHERE `a`=2 LIMIT 1');
+      expect(sql).to.equal('DELETE FROM `test1` WHERE `a`=2 LIMIT 1');
     }
   });
   it('sql', function () {
@@ -169,33 +168,33 @@ describe('QueryBuilder', function () {
       const query = createQueryBuilder({ table: 'test1' });
       const sql = query.sql('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`').build();
       console.log(sql);
-      assert.equal(sql, 'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`');
+      expect(sql).to.equal('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
       const sql = query.sql('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` :$limit').limit(10).build();
       console.log(sql);
-      assert.equal(sql, 'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` LIMIT 10');
+      expect(sql).to.equal('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` LIMIT 10');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
       const sql = query.sql('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` :$limit').limit(10).skip(5).build();
       console.log(sql);
-      assert.equal(sql, 'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` LIMIT 5,10');
+      expect(sql).to.equal('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` LIMIT 5,10');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
       const sql = query.sql('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` :$orderBy :$limit')
                   .limit(10).skip(5).order('`id` ASC').build();
       console.log(sql);
-      assert.equal(sql, 'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` ORDER BY `id` ASC LIMIT 5,10');
+      expect(sql).to.equal('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` ORDER BY `id` ASC LIMIT 5,10');
     }
     {
       const query = createQueryBuilder({ table: 'test1' });
       const sql = query.sql('SELECT :$fields FROM `test1`')
                   .fields('a', 'b', 'c').limit(10).skip(5).order('`id` ASC').build();
       console.log(sql);
-      assert.equal(sql, 'SELECT `a`, `b`, `c` FROM `test1`');
+      expect(sql).to.equal('SELECT `a`, `b`, `c` FROM `test1`');
     }
   });
 

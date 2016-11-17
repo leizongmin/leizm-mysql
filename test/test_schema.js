@@ -6,8 +6,7 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-const assert = require('assert');
-const coroutine = require('lei-coroutine');
+const expect = require('chai').expect;
 const { createSchema } = require('../');
 
 
@@ -38,11 +37,11 @@ describe('Schema', function () {
       data: 'Hello, world',
     });
     console.log(data);
-    assert.equal(data, '{"name":"ABC","info":{"url":"http://baidu.com/","email":"me@ucdok.com"},"data":"Hello, world"}');
+    expect(data).to.equal('{"name":"ABC","info":{"url":"http://baidu.com/","email":"me@ucdok.com"},"data":"Hello, world"}');
 
     const ret = query.unserialize(data);
     console.log(ret);
-    assert.deepEqual(ret, {
+    expect(ret).to.deep.equal({
       name: 'ABC',
       info: {
         url: 'http://baidu.com/',
@@ -53,30 +52,30 @@ describe('Schema', function () {
   });
 
   it('formatInput & formatInputList', function () {
-    assert.deepEqual(query.formatInput({
+    expect(query.formatInput({
       name: 'ABC',
       OK: true,
-    }), {
+    })).to.deep.equal({
       name: 'ABC',
     });
-    assert.deepEqual(query.formatInput({
+    expect(query.formatInput({
       name: 'ABC',
       OK: true,
       info: 'aaa',
-    }), {
+    })).to.deep.equal({
       name: 'ABC',
       info: '"aaa"',
     });
-    assert.deepEqual(query.formatInput({
+    expect(query.formatInput({
       name: 'ABC',
       info: 'aaa',
       data: 'hahaha',
-    }), {
+    })).to.deep.equal({
       name: 'ABC',
       info: '"aaa"',
       data: 'aGFoYWhh',
     });
-    assert.deepEqual(query.formatInputList([{
+    expect(query.formatInputList([{
       name: 'ABC',
       info: 'aaa',
       data: 'hahaha',
@@ -84,7 +83,7 @@ describe('Schema', function () {
       name: 'DDD',
       info: 'aaa',
       data: 'hahaha',
-    }]), [{
+    }])).to.deep.equal([{
       name: 'ABC',
       info: '"aaa"',
       data: 'aGFoYWhh',
@@ -96,34 +95,34 @@ describe('Schema', function () {
   });
 
   it('formatOutput & formatOutputList', function () {
-    assert.deepEqual(query.formatOutput({
+    expect(query.formatOutput({
       name: 'hello',
       data: 'aGFoYWhh',
-    }), {
+    })).to.deep.equal({
       name: 'hello',
       data: 'hahaha',
     });
-    assert.deepEqual(query.formatOutput({
+    expect(query.formatOutput({
       name: 'hello',
       data: 'aGFoYWhh',
       message: 'yes',
-    }), {
+    })).to.deep.equal({
       name: 'hello',
       data: 'hahaha',
       message: 'yes',
     });
-    assert.deepEqual(query.formatOutput({
+    expect(query.formatOutput({
       name: 'hello',
       data: 'aGFoYWhh',
       message: 'yes',
       info: '"aaa"',
-    }), {
+    })).to.deep.equal({
       name: 'hello',
       data: 'hahaha',
       message: 'yes',
       info: 'aaa',
     });
-    assert.deepEqual(query.formatOutputList([{
+    expect(query.formatOutputList([{
       name: 'hello',
       data: 'aGFoYWhh',
       message: 'yes',
@@ -132,7 +131,7 @@ describe('Schema', function () {
       data: 'aGFoYWhh',
       message: 'yes',
       info: '"aaa"',
-    }]), [{
+    }])).to.deep.equal([{
       name: 'hello',
       data: 'hahaha',
       message: 'yes',
