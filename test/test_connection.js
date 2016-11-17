@@ -24,6 +24,16 @@ describe('Connection', function () {
       console.log(ret);
     }
     {
+      const ret = yield conn.query(`
+CREATE TABLE IF NOT EXISTS \`blog_contents\` (
+  \`id\` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  \`content\` text,
+  PRIMARY KEY (\`id\`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+      `);
+      console.log(ret);
+    }
+    {
       const sql = conn.format('SELECT * FROM ::table WHERE id=:id', {
         table: 'blog_contents',
         id: 2,

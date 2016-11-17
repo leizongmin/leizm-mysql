@@ -164,5 +164,39 @@ describe('QueryBuilder', function () {
       assert.equal(sql, 'DELETE FROM `test1` WHERE `a`=2 LIMIT 1');
     }
   });
+  it('sql', function () {
+    {
+      const query = createQueryBuilder({ table: 'test1' });
+      const sql = query.sql('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`').build();
+      console.log(sql);
+      assert.equal(sql, 'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`');
+    }
+    {
+      const query = createQueryBuilder({ table: 'test1' });
+      const sql = query.sql('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` :$limit').limit(10).build();
+      console.log(sql);
+      assert.equal(sql, 'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` LIMIT 10');
+    }
+    {
+      const query = createQueryBuilder({ table: 'test1' });
+      const sql = query.sql('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` :$limit').limit(10).skip(5).build();
+      console.log(sql);
+      assert.equal(sql, 'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` LIMIT 5,10');
+    }
+    {
+      const query = createQueryBuilder({ table: 'test1' });
+      const sql = query.sql('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` :$orderBy :$limit')
+                  .limit(10).skip(5).order('`id` ASC').build();
+      console.log(sql);
+      assert.equal(sql, 'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` ORDER BY `id` ASC LIMIT 5,10');
+    }
+    {
+      const query = createQueryBuilder({ table: 'test1' });
+      const sql = query.sql('SELECT :$fields FROM `test1`')
+                  .fields('a', 'b', 'c').limit(10).skip(5).order('`id` ASC').build();
+      console.log(sql);
+      assert.equal(sql, 'SELECT `a`, `b`, `c` FROM `test1`');
+    }
+  });
 
 });
