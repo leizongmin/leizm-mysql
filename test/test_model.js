@@ -13,7 +13,7 @@ const { getConnectionConfig, getCacheConfig, readTestFile } = require('./utils')
 const { randomString } = require('lei-utils');
 
 
-describe('Model', function () {
+describe('Model - normal', function () {
 
   const prefix = randomString(10) + ':';
   const cache = createCache(getCacheConfig({ prefix }));
@@ -52,7 +52,7 @@ describe('Model', function () {
       expect(ret.affectedRows).to.equal(1);
     }
     {
-      const ret = yield model.findOne(model.keepPrimaryFields(data)).exec();
+      const ret = yield model.findOne().where(model.keepPrimaryFields(data)).exec();
       console.log(ret);
       expect(ret).to.deep.equal(data);
     }
@@ -76,6 +76,31 @@ describe('Model', function () {
     }
   }));
 
+  it('find', coroutine.wrap(function* () {
+    {
+      const list = yield model.find().where({ user_id: 1001 }).exec();
+      console.log(list);
+      expect(list).to.have.lengthOf(2);
+    }
+    {
+      const list = yield model.find().order('`blog_id` DESC').exec();
+      console.log(list);
+      expect(list).to.have.lengthOf(3);
+      const list2 = list.slice();
+      console.log(list2);
+      list.sort((a, b) => b.blog_id - a.blog_id);
+      expect(list).to.deep.equal(list2);
+    }
+  }));
+
+  it('findOne', coroutine.wrap(function* () {
+    {
+      const ret = yield model.findOne().where({ user_id: 1001 }).exec();
+      console.log(ret);
+      expect(ret.user_id).to.equal(1001);
+    }
+  }));
+
   it('count', coroutine.wrap(function* () {
     {
       const count = yield model.count().exec();
@@ -91,6 +116,18 @@ describe('Model', function () {
       const count = yield model.count().where('`user_id`!=1001').exec();
       console.log(count);
       expect(count).to.equal(1);
+    }
+  }));
+
+  it('sql', coroutine.wrap(function* () {
+    {
+      const ret = yield model.sql('SELECT COUNT(*) AS `count` FROM :$table').exec();
+      console.log(ret);
+      expect(ret).to.deep.equal([{ count: 3 }]);
+    }
+    {
+      const ret = yield model.sql('SHOW TABLES').exec();
+      console.log(ret);
     }
   }));
 
@@ -174,6 +211,30 @@ describe('Model', function () {
           expect(item.info).to.not.deep.equal(info);
         }
       }
+    }
+  }));
+
+  it('deleteOne', coroutine.wrap(function* () {
+    {
+      const ret = yield model.deleteOne().where({ user_id: 1001 }).exec();
+      console.log(ret);
+      expect(ret.affectedRows).to.equal(1);
+    }
+    {
+      const count = yield model.count().exec();
+      expect(count).to.equal(2);
+    }
+  }));
+
+  it('delete', coroutine.wrap(function* () {
+    {
+      const ret = yield model.delete().exec();
+      console.log(ret);
+      expect(ret.affectedRows).to.equal(2);
+    }
+    {
+      const count = yield model.count().exec();
+      expect(count).to.equal(0);
     }
   }));
 
