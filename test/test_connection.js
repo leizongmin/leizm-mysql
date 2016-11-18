@@ -9,7 +9,7 @@
 const expect = require('chai').expect;
 const coroutine = require('lei-coroutine');
 const { createConnection } = require('../');
-const { getConnectionConfig } = require('./utils');
+const { getConnectionConfig, readTestFile } = require('./utils');
 
 
 describe('Connection', function () {
@@ -24,13 +24,12 @@ describe('Connection', function () {
       console.log(ret);
     }
     {
-      const ret = yield conn.query(`
-CREATE TABLE IF NOT EXISTS \`blog_contents\` (
-  \`id\` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  \`content\` text,
-  PRIMARY KEY (\`id\`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-      `);
+      const ret = yield conn.query('DROP TABLE IF EXISTS `blog_contents`');
+      console.log(ret);
+    }
+    {
+      const sql = yield readTestFile('blog_contents.sql');
+      const ret = yield conn.query(sql);
       console.log(ret);
     }
     {

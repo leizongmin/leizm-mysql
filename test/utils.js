@@ -6,6 +6,9 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
+const fs = require('fs');
+const path = require('path');
+const coroutine = require('lei-coroutine');
 
 function getConnectionConfig(config) {
   return Object.assign({
@@ -32,3 +35,22 @@ function getCacheConfig(config) {
   }, config || {});
 }
 exports.getCacheConfig = getCacheConfig;
+
+function readFile(file) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(file, (err, ret) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(ret);
+      }
+    });
+  });
+}
+exports.readFile = readFile;
+
+function* readTestFile(file) {
+  const data = yield readFile(path.resolve(__dirname, file));
+  return data.toString();
+}
+exports.readTestFile = coroutine.wrap(readTestFile);
