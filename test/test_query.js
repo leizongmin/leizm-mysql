@@ -89,6 +89,26 @@ describe('QueryBuilder', function () {
       expect(sql).to.equal('SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20');
     }
   });
+  it('count', function () {
+    {
+      const query = createQueryBuilder({ table: 'test1' });
+      const sql = query.count('c').where({
+        a: 456,
+        b: 789,
+      }).build();
+      console.log(sql);
+      expect(sql).to.equal('SELECT COUNT(*) AS `c` FROM `test1` WHERE `a`=456 AND `b`=789');
+    }
+    {
+      const query = createQueryBuilder({ table: 'test1' });
+      const sql = query.count('c').where({
+        a: 456,
+        b: 789,
+      }).limit(1).build();
+      console.log(sql);
+      expect(sql).to.equal('SELECT COUNT(*) AS `c` FROM `test1` WHERE `a`=456 AND `b`=789  LIMIT 1');
+    }
+  });
   it('insert', function () {
     {
       const query = createQueryBuilder({ table: 'test1' });
