@@ -21,7 +21,7 @@ describe('Model - * by primary and cache', function () {
   const User = createModel({
     cache, connection,
     table: 'users',
-    primary: [ 'id' ],
+    primary: 'id',
     autoIncrement: true,
     fields: {
       id: true,
@@ -55,6 +55,11 @@ describe('Model - * by primary and cache', function () {
       yield connection.query('DROP TABLE IF EXISTS `friends`');
       yield connection.query(sql);
     }
+  }));
+
+  after(coroutine.wrap(function* () {
+    yield connection.close();
+    yield cache.close();
   }));
 
   it('insert data', coroutine.wrap(function* () {
@@ -123,6 +128,86 @@ describe('Model - * by primary and cache', function () {
         friend_id: 2,
         remark: '阿四',
       });
+    }
+  }));
+
+  it('updateByPrimary', coroutine.wrap(function* () {
+    {
+      const ret = yield User.updateByPrimary({ id: 1 }, { name: '张三丰' });
+      console.log(ret);
+      expect(ret.affectedRows).to.equal(1);
+    }
+    {
+      const ret = yield User.getByPrimary({ id: 1 });
+      console.log(ret);
+      expect(ret).to.include({
+        name: '张三丰',
+        email: 'zhangsan@ucdok.com',
+      });
+    }
+    {
+      const ret = yield Friend.updateByPrimary({
+        user_id: 1,
+        friend_id: 2,
+      }, {
+        remark: '小四',
+      });
+      console.log(ret);
+      expect(ret.affectedRows).to.equal(1);
+    }
+    {
+      const ret = yield Friend.getByPrimary({
+        user_id: 1,
+        friend_id: 2,
+      });
+      console.log(ret);
+      expect(ret).to.include({
+        user_id: 1,
+        friend_id: 2,
+        remark: '小四',
+      });
+    }
+  }));
+
+  it('deleteByPrimary', coroutine.wrap(function* () {
+    {
+      const ret = yield User.deleteByPrimary({ id: 1 });
+      console.log(ret);
+      expect(ret.affectedRows).to.equal(1);
+    }
+    {
+      const ret = yield User.getByPrimary({ id: 1 });
+      console.log(ret);
+      expect(ret).to.be.undefined;
+    }
+    {
+      const ret = yield Friend.deleteByPrimary({
+        user_id: 1,
+        friend_id: 2,
+      });
+      console.log(ret);
+      expect(ret.affectedRows).to.equal(1);
+    }
+    {
+      const ret = yield Friend.getByPrimary({
+        user_id: 1,
+        friend_id: 2,
+      });
+      console.log(ret);
+      expect(ret).to.be.undefined;
+    }
+  }));
+
+  it('finish', coroutine.wrap(function* () {
+    {
+      const list = yield User.find().exec();
+      console.log(list);
+      expect(list).to.have.lengthOf(2);
+    }
+    {
+      const list = yield Friend.find().exec();
+      console.log(list);
+      expect(list).to.have.lengthOf(3);
     }
   }));
 

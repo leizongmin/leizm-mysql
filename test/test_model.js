@@ -36,6 +36,11 @@ describe('Model - normal', function () {
     yield connection.query(sql);
   }));
 
+  after(coroutine.wrap(function* () {
+    yield connection.close();
+    yield cache.close();
+  }));
+
   it('insert', coroutine.wrap(function* () {
     const data = {
       blog_id: 1,
