@@ -141,6 +141,42 @@ describe('Schema', function () {
       message: 'yes',
       info: 'aaa',
     }]);
+    // 畸形json字段
+    expect(query.formatOutput({
+      info: undefined,
+    })).to.deep.equal({
+      info: undefined,
+    });
+    expect(query.formatOutput({
+      info: null,
+    })).to.deep.equal({
+      info: {},
+    });
+    expect(query.formatOutput({
+      info: '',
+    })).to.deep.equal({
+      info: {},
+    });
+    expect(function () {
+      query.formatOutput({
+        info: 123,
+      });
+    }).to.throw('jsonDecoder: invalid input type: 123');
+    expect(function () {
+      query.formatOutput({
+        info: '{"a":',
+      });
+    }).to.throw('jsonDecoder: fail to parse JSON');
+  });
+
+  it('not support type', function () {
+    expect(function () {
+      createSchema({
+        fields: {
+          info: { type: 'xxxx' },
+        },
+      });
+    }).to.throw('not support type "xxxx"');
   });
 
 });
