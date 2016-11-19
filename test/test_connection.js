@@ -14,7 +14,7 @@ const { getConnectionConfig, readTestFile } = require('./utils');
 
 describe('Connection', function () {
 
-  it('connection ok', coroutine.wrap(function* () {
+  it('getConnection() support promise', coroutine.wrap(function* () {
 
     const conn = createConnection({
       connections: [ getConnectionConfig() ],
