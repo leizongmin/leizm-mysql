@@ -1,24 +1,12 @@
-# super-orm
-基于 Node.js 的 MySQL ORM 模块，支持缓存、多 MySQL 连接
+/**
+ * super-orm typings tests
+ *
+ * @author Zongmin Lei <leizongmin@gmail.com>
+ */
 
+import orm = require('../');
 
-## 安装
-
-```bash
-$ npm install super-orm --save
-```
-
-**仅支持 Node.js v6.0 及更高版本**
-
-
-## 使用
-
-```javascript
-'use strict';
-
-const { Manager } = require('super-orm');
-
-const manager = new Manager({
+const manager = new orm.Manager({
   // Redis 连接，用于缓存
   // 参考 https://github.com/luin/ioredis/blob/master/API.md#new_Redis
   redis: {
@@ -82,6 +70,15 @@ manager.model('User').getByPrimary({ id: 123 }, (err, ret) => {
   console.log(ret);
 });
 
+console.log(manager.hasModel('User'));
+
+manager.model('User').insert({
+  name: '老雷',
+  email: 'me@ucdok.com',
+}).exec()
+  .then(ret => console.log(ret))
+  .catch(err => console.error(err));
+
 // 使用原始连接执行查询，SELECT 语句会在任意连接执行，其它语句只在 Master 连接执行
 manager.connection.query('CREATE TABLE `hello`')
   .then(ret => console.log(ret))
@@ -105,31 +102,3 @@ manager.connection.query('CREATE TABLE `hello`')
   // 释放连接
   await conn.release();
 })();
-```
-
-
-## License
-
-```
-MIT License
-
-Copyright (c) 2016 SuperID | 免费极速身份验证服务
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
