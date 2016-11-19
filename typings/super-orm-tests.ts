@@ -102,3 +102,10 @@ manager.connection.query('CREATE TABLE `hello`')
   // 释放连接
   await conn.release();
 })();
+
+manager.registerModel('Test', {
+  table: 'test',
+  fields: {
+    id: true,
+  },
+});

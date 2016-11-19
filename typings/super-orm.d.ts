@@ -102,8 +102,8 @@ declare function createSchema(options: ISchemaOptions): Schema;
 
 interface IModelBaseOptions extends ISchemaOptions {
   table: string;
-  primary: string | string[],
-  autoIncrement: boolean;
+  primary?: string | string[],
+  autoIncrement?: boolean;
 }
 
 interface IModelOptions extends IModelBaseOptions {
