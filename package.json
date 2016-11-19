@@ -1,14 +1,15 @@
 {
   "name": "super-orm",
-  "version": "0.0.0",
-  "description": "基于Node.js的MySQL ORM模块，支持缓存",
+  "version": "0.0.1",
+  "description": "基于 Node.js 的 MySQL ORM 模块，支持缓存、多 MySQL 连接",
   "main": "lib/index.js",
   "files": [
     "lib"
   ],
   "scripts": {
     "test": "export DEBUG='super-orm:*' && mocha -t 10000",
-    "test-cov": "istanbul cover _mocha -- -t 10000"
+    "test-cov": "istanbul cover _mocha -- -t 10000",
+    "prepublish": "npm run test"
   },
   "repository": {
     "type": "git",
