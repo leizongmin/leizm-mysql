@@ -54,7 +54,7 @@ declare class Connection extends NodeJS.EventEmitter {
   querySlave(sql: string, callback?: (err: Error, ret: any) => void): Promise<any>;
   escape(value: string): string;
   escapeId(value: string): string;
-  format(sql: string, values: any[] | any): string;
+  format(sql: string, values?: any[] | any): string;
 }
 
 declare function createConnection(options: IConnectionOptions): Connection;
@@ -66,16 +66,18 @@ interface IQueryBuilderOptions {
 
 declare class QueryBuilder {
   constructor(options: IQueryBuilderOptions);
-  format(tpl: string, values: any[] | any): string;
-  where(condition: string | any, values: any[] | any): QueryBuilder;
+  format(tpl: string, values?: any[] | any): string;
+  where(condition: string | any, values?: any[] | any): QueryBuilder;
+  and(condition: string | any, values?: any[] | any): QueryBuilder;
   select(...fields: string[]): QueryBuilder;
   fields(...fields: string[]): QueryBuilder;
   count(name: string): QueryBuilder;
-  update(update: string | any, values: any[] | any): QueryBuilder;
+  update(update?: string | any, values?: any[] | any): QueryBuilder;
+  set(update: string | any, values?: any[] | any): QueryBuilder;
   insert(data: any[] | any): QueryBuilder;
   delete(): QueryBuilder;
-  sql(sql: string, values: any[] | any): QueryBuilder;
-  order(tpl: string, values: any[] | any): QueryBuilder;
+  sql(sql: string, values?: any[] | any): QueryBuilder;
+  order(tpl: string, values?: any[] | any): QueryBuilder;
   skip(rows: number): QueryBuilder;
   limit(rows: number): QueryBuilder;
   build(): string;
@@ -132,7 +134,7 @@ declare class Model {
   delete(): QueryBuilder;
   deleteOne(): QueryBuilder;
   insert(data: any[] | any): QueryBuilder;
-  sql(sql: string, values: any[] | any): QueryBuilder;
+  sql(sql: string, values?: any[] | any): QueryBuilder;
   getByPrimary(query: any, callback?: (err: Error, ret: any) => void): Promise<any>;
   updateByPrimary(query: any, update: any, callback?: (err: Error, ret: any) => void): Promise<any>;
   deleteByPrimary(query: any, callback?: (err: Error, ret: any) => void): Promise<any>;

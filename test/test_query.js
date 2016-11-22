@@ -88,6 +88,16 @@ describe('QueryBuilder', function () {
       console.log(sql);
       expect(sql).to.equal('SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20');
     }
+    {
+      const query = createQueryBuilder({ table: 'test1' });
+      const sql = query.select('name', 'age').where({
+        a: 123,
+      }).and({
+        b: 456,
+      }).skip(10).limit(20).order('`a` ?, `b` ?', [ 'DESC', 'ASC' ]).build();
+      console.log(sql);
+      expect(sql).to.equal('SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20');
+    }
   });
   it('count', function () {
     {
@@ -161,6 +171,41 @@ describe('QueryBuilder', function () {
       }).limit(12).build();
       console.log(sql);
       expect(sql).to.equal('UPDATE `test1` SET `a`=123, `b`=456 WHERE `b`=777 LIMIT 12');
+    }
+    {
+      const query = createQueryBuilder({ table: 'test1' });
+      const sql = query.update({
+        a: 123,
+      }).set({
+        b: 456,
+      }).where({
+        b: 777,
+      }).limit(12).build();
+      console.log(sql);
+      expect(sql).to.equal('UPDATE `test1` SET `a`=123, `b`=456 WHERE `b`=777 LIMIT 12');
+    }
+    {
+      const query = createQueryBuilder({ table: 'test1' });
+      const sql = query.update().set({
+        a: 123,
+        b: 456,
+      }).where({
+        b: 777,
+      }).limit(12).build();
+      console.log(sql);
+      expect(sql).to.equal('UPDATE `test1` SET `a`=123, `b`=456 WHERE `b`=777 LIMIT 12');
+    }
+    {
+      const query = createQueryBuilder({ table: 'test1' });
+      expect(() => {
+        query.set({ a: 1 }).build();
+      }).throw('query type must be UPDATE, please call .update() before');
+    }
+    {
+      const query = createQueryBuilder({ table: 'test1' });
+      expect(() => {
+        query.update().build();
+      }).throw('update data connot be empty');
     }
   });
   it('delete', function () {
