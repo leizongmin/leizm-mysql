@@ -1,6 +1,6 @@
 {
   "name": "super-orm",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "基于 Node.js 的 MySQL ORM 模块，支持缓存、多 MySQL 连接",
   "main": "lib/index.js",
   "typings": "typings/super-orm.d.ts",
@@ -28,9 +28,6 @@
   },
   "homepage": "https://github.com/SuperID/super-orm#readme",
   "dependencies": {
-    "@types/ioredis": "0.0.21",
-    "@types/mysql": "0.0.30",
-    "@types/node": "^6.0.48",
     "debug": "^2.3.2",
     "ioredis": "^2.4.0",
     "lei-coroutine": "^1.4.0",
@@ -38,6 +35,9 @@
     "mysql": "^2.12.0"
   },
   "devDependencies": {
+    "@types/ioredis": "0.0.21",
+    "@types/mysql": "0.0.30",
+    "@types/node": "^6.0.48",
     "chai": "^3.5.0",
     "eslint": "^3.9.1",
     "eslint-config-lei": "^0.0.15",
