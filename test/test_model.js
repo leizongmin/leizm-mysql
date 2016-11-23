@@ -25,8 +25,8 @@ describe('Model - normal', function () {
     fields: {
       blog_id: true,
       user_id: true,
-      info: { type: 'json' },
-      created_at: true,
+      info: 'json',
+      created_at: 'date',
     },
   });
 

@@ -15,7 +15,7 @@ describe('Schema', function () {
   const schema = createSchema({
     fields: {
       name: true,
-      info: { type: 'json' },
+      info: 'json',
       data: {
         input(v) {
           return Buffer.from(v).toString('base64');
@@ -24,8 +24,8 @@ describe('Schema', function () {
           return Buffer.from(v, 'base64').toString();
         },
       },
-      is_disabled: { type: 'bool' },
-      created_at: { type: 'date' },
+      is_disabled: 'bool',
+      created_at: 'date',
     },
   });
 
@@ -210,7 +210,7 @@ describe('Schema', function () {
     expect(function () {
       createSchema({
         fields: {
-          info: { type: 'xxxx' },
+          info: 'xxxx',
         },
       });
     }).to.throw('not support type "xxxx"');

@@ -41,8 +41,8 @@ describe('Manager', function () {
         id: true,
         name: true,
         email: true,
-        info: { type: 'json' },
-        created_at: true,
+        info: 'json',
+        created_at: 'date',
       },
     });
   }));

@@ -27,8 +27,8 @@ describe('Model - * by primary and cache', function () {
       id: true,
       name: true,
       email: true,
-      info: { type: 'json' },
-      created_at: true,
+      info: 'json',
+      created_at: 'date',
       score: true,
     },
   });
@@ -39,7 +39,7 @@ describe('Model - * by primary and cache', function () {
     fields: {
       user_id: true,
       friend_id: true,
-      created_at: true,
+      created_at: 'date',
       remark: true,
     },
   });
