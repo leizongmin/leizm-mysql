@@ -25,10 +25,12 @@ describe('Schema', function () {
         },
       },
       is_disabled: { type: 'bool' },
+      created_at: { type: 'date' },
     },
   });
 
   it('serialize && unserialize', function () {
+    const date = new Date();
     const data = schema.serialize({
       name: 'ABC',
       info: {
@@ -36,9 +38,10 @@ describe('Schema', function () {
         email: 'me@ucdok.com',
       },
       data: 'Hello, world',
+      created_at: date,
     });
     console.log(data);
-    expect(data).to.equal('{"name":"ABC","info":{"url":"http://baidu.com/","email":"me@ucdok.com"},"data":"Hello, world"}');
+    expect(data).to.equal('{"name":"ABC","info":{"url":"http://baidu.com/","email":"me@ucdok.com"},"data":"Hello, world","created_at":"' + date.toISOString() + '"}');
 
     const ret = schema.unserialize(data);
     console.log(ret);
@@ -49,6 +52,7 @@ describe('Schema', function () {
         email: 'me@ucdok.com',
       },
       data: 'Hello, world',
+      created_at: date,
     });
   });
 
@@ -93,6 +97,7 @@ describe('Schema', function () {
       info: '"aaa"',
       data: 'aGFoYWhh',
     }]);
+    // type bool
     expect(schema.formatInput({
       is_disabled: false,
     })).to.deep.equal({
@@ -157,6 +162,7 @@ describe('Schema', function () {
       message: 'yes',
       info: 'aaa',
     }]);
+    // type bool
     expect(schema.formatOutput({
       is_disabled: 1,
     })).to.deep.equal({
