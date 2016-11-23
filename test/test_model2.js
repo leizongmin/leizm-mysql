@@ -70,18 +70,21 @@ describe('Model - * by primary and cache', function () {
         info: { age: 20 },
         created_at: new Date(),
         score: 0,
+        otherField: 'test',
       }, {
         name: '李四',
         email: 'lisi@ucdok.com',
         info: { },
         created_at: new Date(),
         score: 0,
+        otherField: 'test',
       }, {
         name: '王五',
         email: 'wangwu@ucdok.com',
         info: { age: 18, gender: 'male' },
         created_at: new Date(),
         score: 0,
+        otherField: 'test',
       }]).exec();
       console.log(ret);
     }
@@ -91,21 +94,25 @@ describe('Model - * by primary and cache', function () {
         friend_id: 2,
         created_at: new Date(),
         remark: '阿四',
+        otherField: 'test',
       }, {
         user_id: 1,
         friend_id: 3,
         created_at: new Date(),
         remark: '阿五',
+        otherField: 'test',
       }, {
         user_id: 2,
         friend_id: 1,
         created_at: new Date(),
         remark: '小三',
+        otherField: 'test',
       }, {
         user_id: 3,
         friend_id: 1,
         created_at: new Date(),
         remark: '阿三',
+        otherField: 'test',
       }]).exec();
       console.log(ret);
     }
@@ -113,7 +120,7 @@ describe('Model - * by primary and cache', function () {
 
   it('getByPrimary', coroutine.wrap(function* () {
     {
-      const ret = yield User.getByPrimary({ id: 1 });
+      const ret = yield User.getByPrimary({ id: 1, otherField: 'test' });
       console.log(ret);
       expect(ret).to.include({
         name: '张三',
@@ -121,7 +128,7 @@ describe('Model - * by primary and cache', function () {
       });
     }
     {
-      const ret = yield Friend.getByPrimary({ user_id: 1, friend_id: 2 });
+      const ret = yield Friend.getByPrimary({ user_id: 1, friend_id: 2, otherField: 'test' });
       console.log(ret);
       expect(ret).to.include({
         user_id: 1,
@@ -133,7 +140,7 @@ describe('Model - * by primary and cache', function () {
 
   it('updateByPrimary', coroutine.wrap(function* () {
     {
-      const ret = yield User.updateByPrimary({ id: 1 }, { name: '张三丰' });
+      const ret = yield User.updateByPrimary({ id: 1 }, { name: '张三丰', otherField: 'test' });
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
     }
@@ -149,8 +156,10 @@ describe('Model - * by primary and cache', function () {
       const ret = yield Friend.updateByPrimary({
         user_id: 1,
         friend_id: 2,
+        otherField: 'test',
       }, {
         remark: '小四',
+        otherField: 'test',
       });
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
@@ -159,6 +168,7 @@ describe('Model - * by primary and cache', function () {
       const ret = yield Friend.getByPrimary({
         user_id: 1,
         friend_id: 2,
+        otherField: 'test',
       });
       console.log(ret);
       expect(ret).to.include({
@@ -171,12 +181,12 @@ describe('Model - * by primary and cache', function () {
 
   it('deleteByPrimary', coroutine.wrap(function* () {
     {
-      const ret = yield User.deleteByPrimary({ id: 1 });
+      const ret = yield User.deleteByPrimary({ id: 1, otherField: 'test' });
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
     }
     {
-      const ret = yield User.getByPrimary({ id: 1 });
+      const ret = yield User.getByPrimary({ id: 1, otherField: 'test' });
       console.log(ret);
       expect(ret).to.be.undefined;
     }
@@ -184,6 +194,7 @@ describe('Model - * by primary and cache', function () {
       const ret = yield Friend.deleteByPrimary({
         user_id: 1,
         friend_id: 2,
+        otherField: 'test',
       });
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
@@ -192,6 +203,7 @@ describe('Model - * by primary and cache', function () {
       const ret = yield Friend.getByPrimary({
         user_id: 1,
         friend_id: 2,
+        otherField: 'test',
       });
       console.log(ret);
       expect(ret).to.be.undefined;
