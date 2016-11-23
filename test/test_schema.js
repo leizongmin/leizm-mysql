@@ -17,10 +17,10 @@ describe('Schema', function () {
       name: true,
       info: { type: 'json' },
       data: {
-        encode(v) {
+        input(v) {
           return Buffer.from(v).toString('base64');
         },
-        decode(v) {
+        output(v) {
           return Buffer.from(v, 'base64').toString();
         },
       },
@@ -192,12 +192,12 @@ describe('Schema', function () {
       schema.formatOutput({
         info: 123,
       });
-    }).to.throw('jsonDecoder: invalid input type: 123');
+    }).to.throw('jsonOutputFormatter: invalid input type: 123');
     expect(function () {
       schema.formatOutput({
         info: '{"a":',
       });
-    }).to.throw('jsonDecoder: fail to parse JSON');
+    }).to.throw('jsonOutputFormatter: fail to parse JSON');
   });
 
   it('not support type', function () {
