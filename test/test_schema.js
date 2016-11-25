@@ -99,7 +99,7 @@ describe('Schema', function () {
     }]);
     // type bool
     expect(schema.formatInput({
-      is_disabled: false,
+      is_disabled: 'off',
     })).to.deep.equal({
       is_disabled: 0,
     });
