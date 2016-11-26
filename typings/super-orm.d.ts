@@ -131,6 +131,7 @@ declare class Model {
   count(): QueryBuilder;
   update(update: string | any, values?: any[] | any): QueryBuilder;
   updateOne(update: string | any, values?: any[] | any): QueryBuilder;
+  incr(update: any): QueryBuilder;
   delete(): QueryBuilder;
   deleteOne(): QueryBuilder;
   insert(data: any[] | any): QueryBuilder;
