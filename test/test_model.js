@@ -27,6 +27,7 @@ describe('Model - normal', function () {
       user_id: true,
       info: 'json',
       created_at: 'date',
+      score: true,
     },
   });
 
@@ -50,6 +51,7 @@ describe('Model - normal', function () {
         uptime: process.uptime(),
       },
       created_at: new Date(),
+      score: 0,
     };
     {
       const ret = yield model.insert(data).exec();
@@ -216,6 +218,20 @@ describe('Model - normal', function () {
           expect(item.info).to.not.deep.equal(info);
         }
       }
+    }
+  }));
+
+  it('incr', coroutine.wrap(function* () {
+    {
+      const ret = yield model.incr({ score: 5 }).where({ blog_id: 3 }).exec();
+      console.log(ret);
+      expect(ret.affectedRows).to.equal(1);
+      expect(ret.changedRows).to.equal(1);
+    }
+    {
+      const ret = yield model.findOne().where({ blog_id: 3 }).exec();
+      console.log(ret);
+      expect(ret.score).to.equal(5);
     }
   }));
 
