@@ -263,4 +263,18 @@ describe('QueryBuilder', function () {
     }
   });
 
+  it('options', function () {
+    {
+      const query = createQueryBuilder({ table: 'test1' });
+      const sql = query.select().options({
+        skip: 1,
+        limit: 2,
+        order: '`id` DESC',
+        fields: [ 'id', 'name' ],
+      }).build();
+      console.log(sql);
+      expect(sql).to.equal('SELECT `id`, `name` FROM `test1`  ORDER BY `id` DESC LIMIT 1,2');
+    }
+  });
+
 });
