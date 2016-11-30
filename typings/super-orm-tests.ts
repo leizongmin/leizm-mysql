@@ -55,7 +55,7 @@ manager.registerModel('User', {
     email: true,
     // 可指定字段为 json 类型，在存储是会自动对数据执行 JSON.stringify()，读取时执行 JSON.parse()
     // 或自定义 encode 和 decode 方法
-    info: { type: 'json' },
+    info: 'json',
     // 其它未定义的字段在存储时会被自动过滤
   },
 });
@@ -109,3 +109,5 @@ manager.registerModel('Test', {
     id: true,
   },
 });
+
+manager.model('Test').find().where({ a: 123 }).skip(10).limit(5).exec();
