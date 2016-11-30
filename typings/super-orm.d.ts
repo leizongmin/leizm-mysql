@@ -64,6 +64,13 @@ interface IQueryBuilderOptions {
   exec(sql: string, callback?: (err: Error, ret: any) => void);
 }
 
+interface IQueryOptionsParams {
+  skip: number;
+  limit: number;
+  order: string;
+  fields: string[];
+}
+
 declare class QueryBuilder {
   constructor(options: IQueryBuilderOptions);
   format(tpl: string, values?: any[] | any): string;
@@ -80,6 +87,7 @@ declare class QueryBuilder {
   order(tpl: string, values?: any[] | any): QueryBuilder;
   skip(rows: number): QueryBuilder;
   limit(rows: number): QueryBuilder;
+  options(options: IQueryOptionsParams): QueryBuilder;
   build(): string;
   exec(callback?: (err: Error, ret: any) => void): Promise<any>;
 }
