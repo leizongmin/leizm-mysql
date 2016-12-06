@@ -1,0 +1,19 @@
+{
+  "extends": [
+    "tslint:recommended"
+  ],
+  "rules": {
+    "no-var-requires": false,
+    "interface-name": [
+      false
+    ],
+    "variable-name": [
+      false
+    ],
+    "max-line-length": [
+      false
+    ],
+    "object-literal-sort-keys": false,
+    "forin": false
+  }
+}
