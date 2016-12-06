@@ -37,7 +37,7 @@ export class Manager extends events.EventEmitter {
    * @param name Model 名称
    * @param options 选项
    */
-  public registerModel(name: string, options: model.ModelOptions) {
+  public registerModel(name: string, options: model.ModelBaseOptions) {
     assert.equal(typeof name, "string", `model name must be a string`);
     assert.ok(name, `model name cannot be empty`);
     assert.ok(options, `please provide options`);

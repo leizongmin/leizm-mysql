@@ -6,13 +6,14 @@
     "rootDir": "src",
     "outDir": "dist",
     "sourceMap": true,
-    "types": [
-      "node"
-    ],
     "declaration": true,
     "noImplicitAny": true,
     "strictNullChecks": false,
     "noImplicitReturns": true,
     "suppressImplicitAnyIndexErrors": true
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "test"
+  ]
 }

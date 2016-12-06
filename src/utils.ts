@@ -10,7 +10,6 @@ import utils = require("lei-utils");
 
 declare module "mysql" {
   function escapeId(value: string): string;
-  function escapeId(values: Array<string>): string;
 }
 
 export * from "lei-utils";

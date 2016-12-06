@@ -1,39 +1,37 @@
-'use strict';
-
 /**
  * super-orm tests
  *
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-const expect = require('chai').expect;
-const coroutine = require('lei-coroutine');
-const { createModel, createCache, createConnection } = require('../');
-const { getConnectionConfig, getCacheConfig, readTestFile } = require('./utils');
-const { randomString } = require('lei-utils');
+import chai = require("chai");
+import coroutine = require("lei-coroutine");
+import orm = require("../");
+import utils = require("./utils");
 
+const expect = chai.expect;
 
-describe('Model - normal', function () {
+describe("Model - normal", function () {
 
-  const prefix = randomString(10) + ':';
-  const cache = createCache(getCacheConfig({ prefix }));
-  const connection = createConnection({ connections: [ getConnectionConfig() ]});
-  const model = createModel({
+  const prefix = utils.randomString(10) + ":";
+  const cache = orm.createCache(utils.getCacheConfig({ prefix }));
+  const connection = orm.createConnection({ connections: [ utils.getConnectionConfig() ]});
+  const model = orm.createModel({
     cache, connection,
-    table: 'user_blogs',
-    primary: [ 'blog_id', 'user_id' ],
+    table: "user_blogs",
+    primary: [ "blog_id", "user_id" ],
     fields: {
       blog_id: true,
       user_id: true,
-      info: 'json',
-      created_at: 'date',
+      info: "json",
+      created_at: "date",
       score: true,
     },
   });
 
   before(coroutine.wrap(function* () {
-    const sql = yield readTestFile('user_blogs.sql');
-    yield connection.query('DROP TABLE IF EXISTS `user_blogs`');
+    const sql = yield utils.readTestFile("user_blogs.sql");
+    yield connection.query("DROP TABLE IF EXISTS `user_blogs`");
     yield connection.query(sql);
   }));
 
@@ -42,7 +40,7 @@ describe('Model - normal', function () {
     yield cache.close();
   }));
 
-  it('insert', coroutine.wrap(function* () {
+  it("insert", coroutine.wrap(function* () {
     const data = {
       blog_id: 1,
       user_id: 1001,
@@ -70,7 +68,7 @@ describe('Model - normal', function () {
         user_id: 1001,
         created_at: new Date(),
         info: {
-          message: 'hello, world',
+          message: "hello, world",
         },
       }, {
         blog_id: 3,
@@ -83,14 +81,14 @@ describe('Model - normal', function () {
     }
   }));
 
-  it('find', coroutine.wrap(function* () {
+  it("find", coroutine.wrap(function* () {
     {
       const list = yield model.find().where({ user_id: 1001 }).exec();
       console.log(list);
       expect(list).to.have.lengthOf(2);
     }
     {
-      const list = yield model.find().order('`blog_id` DESC').exec();
+      const list = yield model.find().order("`blog_id` DESC").exec();
       console.log(list);
       expect(list).to.have.lengthOf(3);
       const list2 = list.slice();
@@ -100,7 +98,7 @@ describe('Model - normal', function () {
     }
   }));
 
-  it('findOne', coroutine.wrap(function* () {
+  it("findOne", coroutine.wrap(function* () {
     {
       const ret = yield model.findOne().where({ user_id: 1001 }).exec();
       console.log(ret);
@@ -108,7 +106,7 @@ describe('Model - normal', function () {
     }
   }));
 
-  it('count', coroutine.wrap(function* () {
+  it("count", coroutine.wrap(function* () {
     {
       const count = yield model.count().exec();
       console.log(count);
@@ -120,25 +118,25 @@ describe('Model - normal', function () {
       expect(count).to.equal(2);
     }
     {
-      const count = yield model.count().where('`user_id`!=1001').exec();
+      const count = yield model.count().where("`user_id`!=1001").exec();
       console.log(count);
       expect(count).to.equal(1);
     }
   }));
 
-  it('sql', coroutine.wrap(function* () {
+  it("sql", coroutine.wrap(function* () {
     {
-      const ret = yield model.sql('SELECT COUNT(*) AS `count` FROM :$table').exec();
+      const ret = yield model.sql("SELECT COUNT(*) AS `count` FROM :$table").exec();
       console.log(ret);
       expect(ret).to.deep.equal([{ count: 3 }]);
     }
     {
-      const ret = yield model.sql('SHOW TABLES').exec();
+      const ret = yield model.sql("SHOW TABLES").exec();
       console.log(ret);
     }
   }));
 
-  it('update #1', coroutine.wrap(function* () {
+  it("update #1", coroutine.wrap(function* () {
     const data = {
       info: {
         mem: process.memoryUsage(),
@@ -165,7 +163,7 @@ describe('Model - normal', function () {
     }
   }));
 
-  it('update #2', coroutine.wrap(function* () {
+  it("update #2", coroutine.wrap(function* () {
     const info = {
       pid: process.pid,
       uptime: process.uptime(),
@@ -175,7 +173,7 @@ describe('Model - normal', function () {
       user_id: 1001,
     };
     {
-      const ret = yield model.update('`info`=?, `created_at`=?', [ JSON.stringify(info), created_at ])
+      const ret = yield model.update("`info`=?, `created_at`=?", [ JSON.stringify(info), created_at ])
                           .where(query).exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(2);
@@ -193,17 +191,17 @@ describe('Model - normal', function () {
     }
   }));
 
-  it('updateOne', coroutine.wrap(function* () {
+  it("updateOne", coroutine.wrap(function* () {
     const info = {
-      message: 'from updateOne',
+      message: "from updateOne",
     };
     const created_at = new Date();
     const user_id = 1001;
     {
-      const ret = yield model.updateOne('`info`=:info, `created_at`=:created_at', {
+      const ret = yield model.updateOne("`info`=:info, `created_at`=:created_at", {
         info: JSON.stringify(info),
         created_at,
-      }).where({ user_id }).order('`id` ASC').exec();
+      }).where({ user_id }).order("`id` ASC").exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
       expect(ret.changedRows).to.equal(1);
@@ -221,7 +219,7 @@ describe('Model - normal', function () {
     }
   }));
 
-  it('incr', coroutine.wrap(function* () {
+  it("incr", coroutine.wrap(function* () {
     {
       const ret = yield model.incr({ score: 5 }).where({ blog_id: 3 }).exec();
       console.log(ret);
@@ -235,7 +233,7 @@ describe('Model - normal', function () {
     }
   }));
 
-  it('deleteOne', coroutine.wrap(function* () {
+  it("deleteOne", coroutine.wrap(function* () {
     {
       const ret = yield model.deleteOne().where({ user_id: 1001 }).exec();
       console.log(ret);
@@ -247,7 +245,7 @@ describe('Model - normal', function () {
     }
   }));
 
-  it('delete', coroutine.wrap(function* () {
+  it("delete", coroutine.wrap(function* () {
     {
       const ret = yield model.delete().exec();
       console.log(ret);

@@ -67,11 +67,10 @@ export class Cache extends events.EventEmitter {
   }
 
   /**
-   * 返回实际的 Key
-   * @param key 原来的 key
+   * 获取 redis 实例
    */
-  public _getKey(key: string): string {
-    return this._prefix + key;
+  get redis(): Redis.Redis {
+    return this._redis;
   }
 
   /**
@@ -158,6 +157,14 @@ export class Cache extends events.EventEmitter {
     callback = utils.tryCreatePromiseCallback<void>(callback);
     this._redis.quit(callback);
     return callback.promise;
+  }
+
+  /**
+   * 返回实际的 Key
+   * @param key 原来的 key
+   */
+  private _getKey(key: string): string {
+    return this._prefix + key;
   }
 
 }
