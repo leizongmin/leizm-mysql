@@ -93,7 +93,7 @@ describe("Model - normal", function () {
       expect(list).to.have.lengthOf(3);
       const list2 = list.slice();
       console.log(list2);
-      list.sort((a, b) => b.blog_id - a.blog_id);
+      list.sort((a: any, b: any) => b.blog_id - a.blog_id);
       expect(list).to.deep.equal(list2);
     }
   }));

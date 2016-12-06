@@ -16,10 +16,10 @@ describe("Schema", function () {
       name: true,
       info: "json",
       data: {
-        input(v) {
+        input(v: any) {
           return Buffer.from(v).toString("base64");
         },
-        output(v) {
+        output(v: any) {
           return Buffer.from(v, "base64").toString();
         },
       },

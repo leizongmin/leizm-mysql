@@ -31,6 +31,7 @@ describe("Manager", function () {
   }));
 
   it("registerModel", coroutine.wrap(function* () {
+    yield 0;
     manager.registerModel("Admin", {
       table: "admins",
       primary: "id",
@@ -46,6 +47,7 @@ describe("Manager", function () {
   }));
 
   it("hasModel", coroutine.wrap(function* () {
+    yield 0;
     expect(manager.hasModel("Admin")).to.be.true;
     expect(manager.hasModel("admin")).to.be.false;
     expect(manager.hasModel("friend")).to.be.false;

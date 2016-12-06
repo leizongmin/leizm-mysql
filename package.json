@@ -8,8 +8,8 @@
     "dist"
   ],
   "scripts": {
-    "test": "export DEBUG='super-orm:*' && mocha -t 10000 --require ts-node/register",
-    "test-cov": "istanbul cover _mocha -- -t 10000 --require ts-node/register",
+    "test": "export DEBUG='super-orm:*' && cd test && mocha -t 10000 --require ts-node/register **.ts",
+    "test-cov": "cd test && istanbul cover _mocha -- -t 10000 --require ts-node/register **.ts",
     "prepublish": "npm run test"
   },
   "repository": {
