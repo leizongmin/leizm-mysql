@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "compile": "tsc -p src",
-    "test": "npm run compile && export DEBUG='super-orm:*' && export TS_NODE_PROJECT=test && mocha -t 10000 --require ts-node/register test/**.ts",
+    "test": "npm run compile && export DEBUG='super-orm:*' && export TS_NODE_PROJECT=test && mocha -t 10000 --require ts-node/register --require source-map-support/register test/**.ts",
     "test-cov": "npm run compile && export TS_NODE_PROJECT=test && istanbul cover _mocha -- -t 10000 --require ts-node/register test/**.ts && npm run test-cov-remap",
     "test-cov-remap": "remap-istanbul -i coverage/coverage.json  -t html -o coverage/html-report",
     "prepublish": "npm run test"
@@ -46,6 +46,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.1.2",
     "remap-istanbul": "^0.7.0",
+    "source-map-support": "^0.4.6",
     "ts-node": "^1.7.0",
     "tslint": "^4.0.2",
     "typescript": "^2.0.10"
