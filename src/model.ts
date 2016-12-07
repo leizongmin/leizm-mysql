@@ -45,7 +45,7 @@ export interface ModelQueryOptions {
   /**
    * 回调函数
    */
-  callback?: (err: Error, ret: any, callback?: utils.CallbackFunction<any>) => void;
+  callback?: (err: Error, ret: any, callback?: utils.Callback<any>) => void;
 }
 
 export class Model {
@@ -136,14 +136,14 @@ export class Model {
    * 将结果保存到缓存
    * @param data 键值对数据
    */
-  public saveCache(data: cache.CacheDataItem, callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void;
+  public saveCache(data: cache.CacheDataItem, callback?: utils.Callback<string[]>): Promise<string[]> | void;
   /**
    * 将结果保存到缓存
    * @param data 键值对数据数组
    */
-  public saveCache(data: cache.CacheDataItem[], callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void;
+  public saveCache(data: cache.CacheDataItem[], callback?: utils.Callback<string[]>): Promise<string[]> | void;
 
-  public saveCache(data: cache.CacheDataItem | cache.CacheDataItem[], callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void {
+  public saveCache(data: cache.CacheDataItem | cache.CacheDataItem[], callback?: utils.Callback<string[]>): Promise<string[]> | void {
     if (!Array.isArray(data)) {
       data = [ data ];
     }
@@ -163,14 +163,14 @@ export class Model {
    * 删除缓存中的结果
    * @param data 键值对数据
    */
-  public removeCache(data: utils.KVObject, callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void;
+  public removeCache(data: utils.KVObject, callback?: utils.Callback<string[]>): Promise<string[]> | void;
   /**
    * 删除缓存中的结果
    * @param data 键值对数据数组
    */
-  public removeCache(data: utils.KVObject[], callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void;
+  public removeCache(data: utils.KVObject[], callback?: utils.Callback<string[]>): Promise<string[]> | void;
 
-  public removeCache(data: utils.KVObject | utils.KVObject[], callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void {
+  public removeCache(data: utils.KVObject | utils.KVObject[], callback?: utils.Callback<string[]>): Promise<string[]> | void {
     if (!Array.isArray(data)) {
       data = [ data ];
     }
@@ -184,14 +184,14 @@ export class Model {
    * 从缓存中查询结果
    * @param data 键值对数据
    */
-  public getCache(data: utils.KVObject, callback?: utils.CallbackFunction<utils.KVObject[]>): Promise<utils.KVObject[]> | void;
+  public getCache(data: utils.KVObject, callback?: utils.Callback<utils.KVObject[]>): Promise<utils.KVObject[]> | void;
   /**
    * 从缓存中查询结果
    * @param data 键值对数据数组
    */
-  public getCache(data: utils.KVObject[], callback?: utils.CallbackFunction<utils.KVObject[]>): Promise<utils.KVObject[]> | void;
+  public getCache(data: utils.KVObject[], callback?: utils.Callback<utils.KVObject[]>): Promise<utils.KVObject[]> | void;
 
-  public getCache(data: utils.KVObject | utils.KVObject[], callback?: utils.CallbackFunction<utils.KVObject[]>): Promise<utils.KVObject[]> | void {
+  public getCache(data: utils.KVObject | utils.KVObject[], callback?: utils.Callback<utils.KVObject[]>): Promise<utils.KVObject[]> | void {
     if (!Array.isArray(data)) {
       data = [ data ];
     }
@@ -437,9 +437,9 @@ export class Model {
    * @param query 查询条件
    * @param callback 回调函数
    */
-  public getByPrimary(query: utils.KVObject, callback: utils.CallbackFunction<utils.KVObject>): void;
+  public getByPrimary(query: utils.KVObject, callback: utils.Callback<utils.KVObject>): void;
 
-  public getByPrimary(query: utils.KVObject, callback?: utils.CallbackFunction<utils.KVObject>): Promise<utils.KVObject> | void {
+  public getByPrimary(query: utils.KVObject, callback?: utils.Callback<utils.KVObject>): Promise<utils.KVObject> | void {
     callback = utils.tryCreatePromiseCallback(callback);
     query = this.keepPrimaryFields(query);
     // 先尝试从缓存中获取
@@ -475,9 +475,9 @@ export class Model {
    * @param update 更新数据
    * @param callback 回调函数
    */
-  public updateByPrimary(query: utils.KVObject, update: utils.KVObject, callback: utils.CallbackFunction<utils.KVObject>): Promise<utils.KVObject> | void;
+  public updateByPrimary(query: utils.KVObject, update: utils.KVObject, callback: utils.Callback<utils.KVObject>): Promise<utils.KVObject> | void;
 
-  public updateByPrimary(query: utils.KVObject, update: utils.KVObject, callback?: utils.CallbackFunction<utils.KVObject>): Promise<utils.KVObject> | void {
+  public updateByPrimary(query: utils.KVObject, update: utils.KVObject, callback?: utils.Callback<utils.KVObject>): Promise<utils.KVObject> | void {
     callback = utils.tryCreatePromiseCallback(callback);
     this.updateOne(update)
       .where(this.keepPrimaryFields(query))
@@ -500,9 +500,9 @@ export class Model {
    * @param query 查询条件
    * @param callback 回调函数
    */
-  public deleteByPrimary(query: utils.KVObject, callback: utils.CallbackFunction<utils.KVObject>): Promise<utils.KVObject> | void;
+  public deleteByPrimary(query: utils.KVObject, callback: utils.Callback<utils.KVObject>): Promise<utils.KVObject> | void;
 
-  public deleteByPrimary(query: utils.KVObject, callback?: utils.CallbackFunction<utils.KVObject>): Promise<utils.KVObject> | void {
+  public deleteByPrimary(query: utils.KVObject, callback?: utils.Callback<utils.KVObject>): Promise<utils.KVObject> | void {
     callback = utils.tryCreatePromiseCallback(callback);
     this.deleteOne()
       .where(this.keepPrimaryFields(query))

@@ -71,7 +71,7 @@ export class Manager extends events.EventEmitter {
    * 关闭
    * @param callback 回调函数
    */
-  public close(callback?: utils.CallbackFunction<void>): Promise<void> | void {
+  public close(callback?: utils.Callback<void>): Promise<void> | void {
     callback = utils.tryCreatePromiseCallback(callback);
     const self = this;
     coroutine(function* () {

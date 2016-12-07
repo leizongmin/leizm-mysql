@@ -84,9 +84,9 @@ export class Cache extends events.EventEmitter {
    * @param list 每个元素为 { key, data }
    * @param callback 回调函数
    */
-  public saveList(list: CacheDataItem[], callback: utils.CallbackFunction<string[]>): void;
+  public saveList(list: CacheDataItem[], callback: utils.Callback<string[]>): void;
 
-  public saveList(list: CacheDataItem[], callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void {
+  public saveList(list: CacheDataItem[], callback?: utils.Callback<string[]>): Promise<string[]> | void {
     callback = utils.tryCreatePromiseCallback<string[]>(callback);
     const p = this._redis.multi();
     const keys: string[] = [];
@@ -109,9 +109,9 @@ export class Cache extends events.EventEmitter {
    * @param keys key 数组
    * @param callback 回调函数
    */
-  public getList(keys: string[], callback: utils.CallbackFunction<string[]>): void;
+  public getList(keys: string[], callback: utils.Callback<string[]>): void;
 
-  public getList(keys: string[], callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void {
+  public getList(keys: string[], callback?: utils.Callback<string[]>): Promise<string[]> | void {
     callback = utils.tryCreatePromiseCallback<string[]>(callback);
     keys = keys.map(key => this._getKey(key));
     this._redis.mget(keys, callback);
@@ -128,9 +128,9 @@ export class Cache extends events.EventEmitter {
    * @param keys 每个元素为 { key, data }
    * @param callback 回调函数
    */
-  public removeList(list: string[], callback: utils.CallbackFunction<string[]>): void;
+  public removeList(list: string[], callback: utils.Callback<string[]>): void;
 
-  public removeList(list: string[], callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void {
+  public removeList(list: string[], callback?: utils.Callback<string[]>): Promise<string[]> | void {
     callback = utils.tryCreatePromiseCallback<string[]>(callback);
     const p = this._redis.multi();
     const keys: string[] = [];
@@ -151,9 +151,9 @@ export class Cache extends events.EventEmitter {
    * 关闭连接
    * @param callback 回调函数
    */
-  public close(callback: utils.CallbackFunction<void>): void;
+  public close(callback: utils.Callback<void>): void;
 
-  public close(callback?: utils.CallbackFunction<void>): Promise<void> | void {
+  public close(callback?: utils.Callback<void>): Promise<void> | void {
     callback = utils.tryCreatePromiseCallback<void>(callback);
     this._redis.quit(callback);
     return callback.promise;

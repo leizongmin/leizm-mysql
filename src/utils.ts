@@ -44,7 +44,7 @@ export interface KVObject {
 /**
  * 回调函数
  */
-export interface CallbackFunction<T> {
+export interface Callback<T> {
   (err: Error | null, ret?: T): void;
   promise?: Promise<T>;
 }
@@ -53,7 +53,7 @@ export interface CallbackFunction<T> {
  * 如果传入的 callback 参数不存在，尝试创建支持 Promise 的回调函数
  * @param callback 回调函数
  */
-export function tryCreatePromiseCallback<T>(callback?: CallbackFunction<T>): CallbackFunction<T> {
+export function tryCreatePromiseCallback<T>(callback?: Callback<T>): Callback<T> {
   if (callback) {
     return callback;
   }
