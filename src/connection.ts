@@ -251,9 +251,9 @@ export class Connection extends events.EventEmitter {
   /**
    * 以键值对参数形式格式化查询
    */
-  public format(sql: string, values: utils.KeyValueObject): string;
+  public format(sql: string, values: utils.KVObject): string;
 
-  public format(sql: string, values: any[] | utils.KeyValueObject): string {
+  public format(sql: string, values: any[] | utils.KVObject): string {
     if (Array.isArray(values)) {
       return utils.sqlFormat(sql, values);
     }

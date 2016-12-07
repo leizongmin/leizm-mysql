@@ -103,7 +103,7 @@ export class Model {
    * @param data 键值对数据
    * @param strict 是否严格检查每个键的数据都存在，如果为 true 且键不存在时抛出异常，否则返回 undefined
    */
-  public getPrimaryCacheKey(data: utils.KeyValueObject, strict?: boolean): string | void {
+  public getPrimaryCacheKey(data: utils.KVObject, strict?: boolean): string | void {
     assert.ok(this.primaryKey, `table "${ this.tableName }" does not have primary key`);
     let everyKeyExists = true;
     const key = this.primaryKey.map(name => {
@@ -122,7 +122,7 @@ export class Model {
    * 从一行数据中保留主键的数据
    * @param data 键值对数据
    */
-  public keepPrimaryFields(data: utils.KeyValueObject): utils.KeyValueObject {
+  public keepPrimaryFields(data: utils.KVObject): utils.KVObject {
     assert.ok(this.primaryKey, `table "${ this.tableName }" does not have primary key`);
     const ret = {};
     for (const name of this.primaryKey) {
@@ -163,18 +163,18 @@ export class Model {
    * 删除缓存中的结果
    * @param data 键值对数据
    */
-  public removeCache(data: utils.KeyValueObject, callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void;
+  public removeCache(data: utils.KVObject, callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void;
   /**
    * 删除缓存中的结果
    * @param data 键值对数据数组
    */
-  public removeCache(data: utils.KeyValueObject[], callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void;
+  public removeCache(data: utils.KVObject[], callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void;
 
-  public removeCache(data: utils.KeyValueObject | utils.KeyValueObject[], callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void {
+  public removeCache(data: utils.KVObject | utils.KVObject[], callback?: utils.CallbackFunction<string[]>): Promise<string[]> | void {
     if (!Array.isArray(data)) {
       data = [ data ];
     }
-    const list = (data as utils.KeyValueObject[])
+    const list = (data as utils.KVObject[])
                     .map(item => this.getPrimaryCacheKey(item, false))
                     .filter(key => key) as string[];
     return this.cache.removeList(list, callback);
@@ -184,18 +184,18 @@ export class Model {
    * 从缓存中查询结果
    * @param data 键值对数据
    */
-  public getCache(data: utils.KeyValueObject, callback?: utils.CallbackFunction<utils.KeyValueObject[]>): Promise<utils.KeyValueObject[]> | void;
+  public getCache(data: utils.KVObject, callback?: utils.CallbackFunction<utils.KVObject[]>): Promise<utils.KVObject[]> | void;
   /**
    * 从缓存中查询结果
    * @param data 键值对数据数组
    */
-  public getCache(data: utils.KeyValueObject[], callback?: utils.CallbackFunction<utils.KeyValueObject[]>): Promise<utils.KeyValueObject[]> | void;
+  public getCache(data: utils.KVObject[], callback?: utils.CallbackFunction<utils.KVObject[]>): Promise<utils.KVObject[]> | void;
 
-  public getCache(data: utils.KeyValueObject | utils.KeyValueObject[], callback?: utils.CallbackFunction<utils.KeyValueObject[]>): Promise<utils.KeyValueObject[]> | void {
+  public getCache(data: utils.KVObject | utils.KVObject[], callback?: utils.CallbackFunction<utils.KVObject[]>): Promise<utils.KVObject[]> | void {
     if (!Array.isArray(data)) {
       data = [ data ];
     }
-    const list = (data as utils.KeyValueObject[])
+    const list = (data as utils.KVObject[])
                     .map(item => this.getPrimaryCacheKey(item, false))
                     .filter(key => key) as string[];
     return this.cache.getList(list, (err, ret) => {
@@ -278,7 +278,7 @@ export class Model {
    * 更新数据
    * @param update 键值对数据
    */
-  public update(update: utils.KeyValueObject): query.QueryBuilder;
+  public update(update: utils.KVObject): query.QueryBuilder;
   /**
    * 更新数据
    * @param update SQL 语句
@@ -289,7 +289,7 @@ export class Model {
    * @param update SQL 模板语句
    * @param values 模板参数，如 { a: 123 }
    */
-  public update(update: string, values: utils.KeyValueObject): query.QueryBuilder;
+  public update(update: string, values: utils.KVObject): query.QueryBuilder;
   /**
    * 更新数据
    * @param update SQL 模板语句
@@ -297,7 +297,7 @@ export class Model {
    */
   public update(update: string, values: any[]): query.QueryBuilder;
 
-  public update(update: utils.KeyValueObject | string, values?: utils.KeyValueObject | any[]): query.QueryBuilder {
+  public update(update: utils.KVObject | string, values?: utils.KVObject | any[]): query.QueryBuilder {
     assert.ok(arguments.length === 1 || arguments.length === 2, `expected 1 or 2 argument for update() but got ${ arguments.length }`);
     assert.ok(typeof values !== "function", `update() does not expected a callback function, maybe this is what you want: update(data).exec(callback)`);
     // 格式化输入
@@ -312,7 +312,7 @@ export class Model {
    * 更新一行数据
    * @param update 键值对数据
    */
-  public updateOne(update: utils.KeyValueObject): query.QueryBuilder;
+  public updateOne(update: utils.KVObject): query.QueryBuilder;
   /**
    * 更新一行数据
    * @param update SQL 语句
@@ -323,7 +323,7 @@ export class Model {
    * @param update SQL 模板语句
    * @param values 模板参数，如 { a: 123 }
    */
-  public updateOne(update: string, values: utils.KeyValueObject): query.QueryBuilder;
+  public updateOne(update: string, values: utils.KVObject): query.QueryBuilder;
   /**
    * 更新一行数据
    * @param update SQL 模板语句
@@ -331,7 +331,7 @@ export class Model {
    */
   public updateOne(update: string, values: any[]): query.QueryBuilder;
 
-  public updateOne(update: utils.KeyValueObject | string, values?: utils.KeyValueObject | any[]): query.QueryBuilder {
+  public updateOne(update: utils.KVObject | string, values?: utils.KVObject | any[]): query.QueryBuilder {
     assert.ok(arguments.length === 1 || arguments.length === 2, `expected 1 or 2 argument for updateOne() but got ${ arguments.length }`);
     assert.ok(typeof values !== "function", `updateOne() does not expected a callback function, maybe this is what you want: updateOne(data).exec(callback)`);
     // 格式化输入
@@ -362,14 +362,14 @@ export class Model {
    * 插入数据
    * @param data 键值对数据
    */
-  public insert(data: utils.KeyValueObject): query.QueryBuilder;
+  public insert(data: utils.KVObject): query.QueryBuilder;
   /**
    * 插入数据
    * @param data 键值对数据数组
    */
-  public insert(data: utils.KeyValueObject[]): query.QueryBuilder;
+  public insert(data: utils.KVObject[]): query.QueryBuilder;
 
-  public insert(data: utils.KeyValueObject | utils.KeyValueObject[]): query.QueryBuilder {
+  public insert(data: utils.KVObject | utils.KVObject[]): query.QueryBuilder {
     assert.equal(arguments.length, 1, `expected 1  argument for insert() but got ${ arguments.length }`);
     // 格式化输入
     if (Array.isArray(data)) {
@@ -379,7 +379,7 @@ export class Model {
     }
     // 检查是否包含主键
     if (!this.primaryKeyAutoIncrement) {
-      for (const item of (data as utils.KeyValueObject[])) {
+      for (const item of (data as utils.KVObject[])) {
         for (const key of this.primaryKey) {
           if (typeof item[key] === "undefined") {
             throw new Error(`missing primary key "${ key }"`);
@@ -394,7 +394,7 @@ export class Model {
    * 增加指定字段的值
    * @param data 键值对数据，如：{ count: 1 }
    */
-  public incr(data: utils.KeyValueObject): query.QueryBuilder {
+  public incr(data: utils.KVObject): query.QueryBuilder {
     assert.equal(arguments.length, 1, `expected 1  argument for incr() but got ${ arguments.length }`);
     const q = this.query({ format: false }).update();
     for (const name in data) {
@@ -413,7 +413,7 @@ export class Model {
    * @param sql SQL 语句模板
    * @param values 模板参数，如 { a: 123 }
    */
-  public sql(sql: string, values: utils.KeyValueObject): query.QueryBuilder;
+  public sql(sql: string, values: utils.KVObject): query.QueryBuilder;
   /**
    * 执行 SQL 查询
    * @param sql SQL 语句模板
@@ -421,7 +421,7 @@ export class Model {
    */
   public sql(sql: string, values: any[]): query.QueryBuilder;
 
-  public sql(sql: string, values?: utils.KeyValueObject | any[]): query.QueryBuilder {
+  public sql(sql: string, values?: utils.KVObject | any[]): query.QueryBuilder {
     assert.ok(arguments.length === 1 || arguments.length === 2, `expected 1 or 2 argument for sql() but got ${ arguments.length }`);
     assert.ok(typeof values !== "function", `sql() does not expected a callback function, maybe this is what you want: sql(str).exec(callback)`);
     return this.query({ format: !utils.isUpdateSQL(sql) }).sql(sql, values);
@@ -431,15 +431,15 @@ export class Model {
    * 获取指定主键的数据，优先从缓存读取
    * @param query 键值对数据
    */
-  public getByPrimary(query: utils.KeyValueObject): Promise<utils.KeyValueObject>;
+  public getByPrimary(query: utils.KVObject): Promise<utils.KVObject>;
   /**
    * 获取指定主键的数据，优先从缓存读取
    * @param query 查询条件
    * @param callback 回调函数
    */
-  public getByPrimary(query: utils.KeyValueObject, callback: utils.CallbackFunction<utils.KeyValueObject>): void;
+  public getByPrimary(query: utils.KVObject, callback: utils.CallbackFunction<utils.KVObject>): void;
 
-  public getByPrimary(query: utils.KeyValueObject, callback?: utils.CallbackFunction<utils.KeyValueObject>): Promise<utils.KeyValueObject> | void {
+  public getByPrimary(query: utils.KVObject, callback?: utils.CallbackFunction<utils.KVObject>): Promise<utils.KVObject> | void {
     callback = utils.tryCreatePromiseCallback(callback);
     query = this.keepPrimaryFields(query);
     // 先尝试从缓存中获取
@@ -468,16 +468,16 @@ export class Model {
    * @param query 查询条件
    * @param update 更新数据
    */
-  public updateByPrimary(query: utils.KeyValueObject, update: utils.KeyValueObject): Promise<utils.KeyValueObject>;
+  public updateByPrimary(query: utils.KVObject, update: utils.KVObject): Promise<utils.KVObject>;
   /**
    * 更新指定主键的数据，并更新缓存
    * @param query 查询条件
    * @param update 更新数据
    * @param callback 回调函数
    */
-  public updateByPrimary(query: utils.KeyValueObject, update: utils.KeyValueObject, callback: utils.CallbackFunction<utils.KeyValueObject>): Promise<utils.KeyValueObject> | void;
+  public updateByPrimary(query: utils.KVObject, update: utils.KVObject, callback: utils.CallbackFunction<utils.KVObject>): Promise<utils.KVObject> | void;
 
-  public updateByPrimary(query: utils.KeyValueObject, update: utils.KeyValueObject, callback?: utils.CallbackFunction<utils.KeyValueObject>): Promise<utils.KeyValueObject> | void {
+  public updateByPrimary(query: utils.KVObject, update: utils.KVObject, callback?: utils.CallbackFunction<utils.KVObject>): Promise<utils.KVObject> | void {
     callback = utils.tryCreatePromiseCallback(callback);
     this.updateOne(update)
       .where(this.keepPrimaryFields(query))
@@ -494,15 +494,15 @@ export class Model {
    * 删除主键的数据，并删除缓存
    * @param query 查询条件
    */
-  public deleteByPrimary(query: utils.KeyValueObject): Promise<utils.KeyValueObject>;
+  public deleteByPrimary(query: utils.KVObject): Promise<utils.KVObject>;
   /**
    * 删除主键的数据，并删除缓存
    * @param query 查询条件
    * @param callback 回调函数
    */
-  public deleteByPrimary(query: utils.KeyValueObject, callback: utils.CallbackFunction<utils.KeyValueObject>): Promise<utils.KeyValueObject> | void;
+  public deleteByPrimary(query: utils.KVObject, callback: utils.CallbackFunction<utils.KVObject>): Promise<utils.KVObject> | void;
 
-  public deleteByPrimary(query: utils.KeyValueObject, callback?: utils.CallbackFunction<utils.KeyValueObject>): Promise<utils.KeyValueObject> | void {
+  public deleteByPrimary(query: utils.KVObject, callback?: utils.CallbackFunction<utils.KVObject>): Promise<utils.KVObject> | void {
     callback = utils.tryCreatePromiseCallback(callback);
     this.deleteOne()
       .where(this.keepPrimaryFields(query))

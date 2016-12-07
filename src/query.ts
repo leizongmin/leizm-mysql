@@ -114,7 +114,7 @@ export class QueryBuilder {
    * @param tpl 模板字符串
    * @param values 键值对数据
    */
-  public format(tpl: string, values: utils.KeyValueObject): string;
+  public format(tpl: string, values: utils.KVObject): string;
   /**
    * 格式化模板字符串
    * @param tpl 模板字符串
@@ -122,7 +122,7 @@ export class QueryBuilder {
    */
   public format(tpl: string, values: any[]): string;
 
-  public format(tpl: string, values?: utils.KeyValueObject | any[]): string {
+  public format(tpl: string, values?: utils.KVObject | any[]): string {
     assert.ok(typeof tpl === "string", `first parameter must be a string`);
     if (!values) {
       return tpl;
@@ -138,7 +138,7 @@ export class QueryBuilder {
    * 查询条件
    * @param condition 键值对数据：{ aaa: 1, bbb: 22 })
    */
-  public where(condition: utils.KeyValueObject): this;
+  public where(condition: utils.KVObject): this;
   /**
    * 查询条件
    * @param condition SQL 语句
@@ -148,9 +148,9 @@ export class QueryBuilder {
    * 查询条件
    * @param condition 模板字符串，可以为 ('aaa=:a AND bbb=:b', { a: 123, b: 456 }) 或 ('aaa=? AND bbb=?', [ 123, 456 ])
    */
-  public where(condition: string, values: utils.KeyValueObject | any[]): this;
+  public where(condition: string, values: utils.KVObject | any[]): this;
 
-  public where(condition: utils.KeyValueObject | string, values?: utils.KeyValueObject | any[]): this {
+  public where(condition: utils.KVObject | string, values?: utils.KVObject | any[]): this {
     this._data.conditions = [];
     if (typeof condition === "string") {
       return this.and(condition, values);
@@ -162,7 +162,7 @@ export class QueryBuilder {
    * 查询条件
    * @param condition 键值对数据：{ aaa: 1, bbb: 22 })
    */
-  public and(condition: utils.KeyValueObject): this;
+  public and(condition: utils.KVObject): this;
   /**
    * 查询条件
    * @param condition SQL 语句
@@ -172,14 +172,14 @@ export class QueryBuilder {
    * 查询条件
    * @param condition 模板字符串，可以为 ('aaa=:a AND bbb=:b', { a: 123, b: 456 })
    */
-  public and(condition: string, values: utils.KeyValueObject): this;
+  public and(condition: string, values: utils.KVObject): this;
   /**
    * 查询条件
    * @param condition 模板字符串，可以为 ('aaa=? AND bbb=?', [ 123, 456 ])
    */
   public and(condition: string, values: any[]): this;
 
-  public and(condition: utils.KeyValueObject | string, values?: utils.KeyValueObject | any[]): this {
+  public and(condition: utils.KVObject | string, values?: utils.KVObject | any[]): this {
     const t = typeof condition;
     assert.ok(condition, `missing condition`);
     assert.ok(t === "string" || t === "object", `condition must be a string or object`);
@@ -233,7 +233,7 @@ export class QueryBuilder {
    * 更新
    * @param update 键值对数据，如 { a: 123, b: 456 }
    */
-  public update(update: utils.KeyValueObject): this;
+  public update(update: utils.KVObject): this;
   /**
    * 更新
    * @param update SQL 语句，如 a=a+1
@@ -244,7 +244,7 @@ export class QueryBuilder {
    * @param update SQL 语句模板，如 a=:a
    * @param values 模板参数，如 { a: 123 }
    */
-  public update(update: string, values: utils.KeyValueObject): this;
+  public update(update: string, values: utils.KVObject): this;
   /**
    * 更新
    * @param update SQL 语句模板，如 a=?
@@ -252,7 +252,7 @@ export class QueryBuilder {
    */
   public update(update: string, values: any[]): this;
 
-  public update(update?: utils.KeyValueObject | string, values?: utils.KeyValueObject | any[]): this {
+  public update(update?: utils.KVObject | string, values?: utils.KVObject | any[]): this {
     assert.ok(this._data.type === "", `cannot change query type after it was set to "${ this._data.type }"`);
     this._data.type = "UPDATE";
     this._data.update = [];
@@ -269,7 +269,7 @@ export class QueryBuilder {
    * 更新
    * @param update 键值对数据，如 { a: 123, b: 456 }
    */
-  public set(update: utils.KeyValueObject): this;
+  public set(update: utils.KVObject): this;
   /**
    * 更新
    * @param update SQL 语句，如 a=a+1
@@ -280,7 +280,7 @@ export class QueryBuilder {
    * @param update SQL 语句模板，如 a=:a
    * @param values 模板参数，如 { a: 123 }
    */
-  public set(update: string, values: utils.KeyValueObject): this;
+  public set(update: string, values: utils.KVObject): this;
   /**
    * 更新
    * @param update SQL 语句模板，如 a=?
@@ -288,7 +288,7 @@ export class QueryBuilder {
    */
   public set(update: string, values: any[]): this;
 
-  public set(update: utils.KeyValueObject | string, values?: utils.KeyValueObject | any[]): this {
+  public set(update: utils.KVObject | string, values?: utils.KVObject | any[]): this {
     const t = typeof update;
     assert.ok(this._data.type === "UPDATE", `query type must be UPDATE, please call .update() before`);
     assert.ok(update, `missing update data`);
@@ -305,14 +305,14 @@ export class QueryBuilder {
    * 插入
    * @param data 键值对数据
    */
-  public insert(data: utils.KeyValueObject): this;
+  public insert(data: utils.KVObject): this;
   /**
    * 插入
    * @param data 键值对数据数组
    */
-  public insert(data: utils.KeyValueObject[]): this;
+  public insert(data: utils.KVObject[]): this;
 
-  public insert(data: utils.KeyValueObject | utils.KeyValueObject[]): this {
+  public insert(data: utils.KVObject | utils.KVObject[]): this {
     assert.ok(this._data.type === "", `cannot change query type after it was set to "${ this._data.type }"`);
     this._data.type = "INSERT";
     assert.ok(data, `missing data`);
@@ -325,7 +325,7 @@ export class QueryBuilder {
     const originFields = Object.keys(data[0]);
     const fields = originFields.map(name => utils.sqlEscapeId(name));
     const values: string[] = [];
-    for (const item of (data as utils.KeyValueObject[])) {
+    for (const item of (data as utils.KVObject[])) {
       assert.ok(item && typeof item === "object", `every item of data array must be an object`);
       const line: string[] = [];
       for (const field of originFields) {
@@ -357,7 +357,7 @@ export class QueryBuilder {
    * @param sql SQL 查询语句
    * @param values 模板参数，如 { a: 123 }
    */
-  public sql(sql: string, values: utils.KeyValueObject): this;
+  public sql(sql: string, values: utils.KVObject): this;
   /**
    * 自定义SQL语句
    * @param sql SQL 查询语句
@@ -365,7 +365,7 @@ export class QueryBuilder {
    */
   public sql(sql: string, values: any[]): this;
 
-  public sql(sql: string, values?: utils.KeyValueObject | any[]): this {
+  public sql(sql: string, values?: utils.KVObject | any[]): this {
     assert.ok(this._data.type === "", `cannot change query type after it was set to "${ this._data.type }"`);
     this._data.type = "CUSTOM";
     this._data.sqlTpl = sql;
@@ -383,7 +383,7 @@ export class QueryBuilder {
    * @param tpl SQL 查询语句
    * @param values 模板参数，如 { a: 123 }
    */
-  public order(tpl: string, values: utils.KeyValueObject): this;
+  public order(tpl: string, values: utils.KVObject): this;
   /**
    * 排序方法
    * @param tpl SQL 查询语句
@@ -391,7 +391,7 @@ export class QueryBuilder {
    */
   public order(tpl: string, values: any[]): this;
 
-  public order(tpl: string, values?: utils.KeyValueObject | any[]): this {
+  public order(tpl: string, values?: utils.KVObject | any[]): this {
     if (values) {
       this._data.orderFields = this.format(tpl, values);
     } else {

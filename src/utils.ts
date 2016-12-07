@@ -37,7 +37,7 @@ export const sqlFormat = mysql.format;
 /**
  * 键值对对象
  */
-export interface KeyValueObject {
+export interface KVObject {
   [key: string]: any;
 }
 
@@ -67,7 +67,7 @@ export function tryCreatePromiseCallback<T>(callback?: CallbackFunction<T>): Cal
  * @param values 参数对象
  * @param disable$ 是否没有 $ 开头的 key
  */
-export function sqlFormatObject(sql: string, values: KeyValueObject, disable$?: boolean): string {
+export function sqlFormatObject(sql: string, values: KVObject, disable$?: boolean): string {
   values = values || {};
   return sql.replace(/:((:)?[\w$]+)/g, (txt, key) => {
     const isId = key[0] === ":";
@@ -119,7 +119,7 @@ export function isCacheInstance(cache: any): boolean {
  * 返回根据对象生成的 SQL UPDATE 语句
  * @param data 键值对对象
  */
-export function sqlUpdateString(data: KeyValueObject): string {
+export function sqlUpdateString(data: KVObject): string {
   return Object.keys(data)
           .map(name => `${ sqlEscapeId(name) }=${ sqlEscape(data[name]) }`)
           .join(", ");
