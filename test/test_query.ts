@@ -74,7 +74,7 @@ describe("QueryBuilder", function () {
       const sql = query.select("name", "age").where({
         a: 123,
         b: 456,
-      }).skip(10).limit(20).order("`a` DESC, `b` ASC").build();
+      }).skip(10).limit(20).orderBy("`a` DESC, `b` ASC").build();
       console.log(sql);
       expect(sql).to.equal("SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20");
     }
@@ -83,7 +83,7 @@ describe("QueryBuilder", function () {
       const sql = query.select("name", "age").where({
         a: 123,
         b: 456,
-      }).skip(10).limit(20).order("`a` ?, `b` ?", [ "DESC", "ASC" ]).build();
+      }).skip(10).limit(20).orderBy("`a` ?, `b` ?", [ "DESC", "ASC" ]).build();
       console.log(sql);
       expect(sql).to.equal("SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20");
     }
@@ -93,7 +93,7 @@ describe("QueryBuilder", function () {
         a: 123,
       }).and({
         b: 456,
-      }).skip(10).limit(20).order("`a` ?, `b` ?", [ "DESC", "ASC" ]).build();
+      }).skip(10).limit(20).orderBy("`a` ?, `b` ?", [ "DESC", "ASC" ]).build();
       console.log(sql);
       expect(sql).to.equal("SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20");
     }
@@ -176,7 +176,7 @@ describe("QueryBuilder", function () {
         b: 456,
       }).limit(12).build();
       console.log(sql);
-      expect(sql).to.equal("UPDATE `test1` SET `a`=123, `b`=456  LIMIT 12");
+      expect(sql).to.equal("UPDATE `test1` SET `a`=123, `b`=456 LIMIT 12");
     }
     {
       const query = orm.createQueryBuilder({ table: "test1" });
@@ -267,14 +267,14 @@ describe("QueryBuilder", function () {
     {
       const query = orm.createQueryBuilder({ table: "test1" });
       const sql = query.sql('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` :$orderBy :$limit')
-                  .limit(10).skip(5).order("`id` ASC").build();
+                  .limit(10).skip(5).orderBy("`id` ASC").build();
       console.log(sql);
       expect(sql).to.equal('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` ORDER BY `id` ASC LIMIT 5,10');
     }
     {
       const query = orm.createQueryBuilder({ table: "test1" });
       const sql = query.sql("SELECT :$fields FROM `test1`")
-                  .fields("a", "b", "c").limit(10).skip(5).order("`id` ASC").build();
+                  .fields("a", "b", "c").limit(10).skip(5).orderBy("`id` ASC").build();
       console.log(sql);
       expect(sql).to.equal("SELECT `a`, `b`, `c` FROM `test1`");
     }
@@ -286,11 +286,12 @@ describe("QueryBuilder", function () {
       const sql = query.select().options({
         skip: 1,
         limit: 2,
-        order: "`id` DESC",
+        orderBy: "`id` DESC",
+        groupBy: "`name`",
         fields: [ "id", "name" ],
       }).build();
       console.log(sql);
-      expect(sql).to.equal("SELECT `id`, `name` FROM `test1`  ORDER BY `id` DESC LIMIT 1,2");
+      expect(sql).to.equal("SELECT `id`, `name` FROM `test1` GROUP BY `name` ORDER BY `id` DESC LIMIT 1,2");
     }
   });
 

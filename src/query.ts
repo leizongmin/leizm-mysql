@@ -39,7 +39,11 @@ export interface QueryOptionsParams {
   /**
    * 排序方向
    */
-  order: string;
+  orderBy: string;
+  /**
+   * 分组
+   */
+  groupBy: string;
   /**
    * 返回字段列表
    */
@@ -381,21 +385,21 @@ export class QueryBuilder {
    * 排序方法
    * @param tpl SQL 查询语句
    */
-  public order(tpl: string): this;
+  public orderBy(tpl: string): this;
   /**
    * 排序方法
    * @param tpl SQL 查询语句
    * @param values 模板参数，如 { a: 123 }
    */
-  public order(tpl: string, values: utils.KVObject): this;
+  public orderBy(tpl: string, values: utils.KVObject): this;
   /**
    * 排序方法
    * @param tpl SQL 查询语句
    * @param values 模板参数，如 [ 123 ]
    */
-  public order(tpl: string, values: any[]): this;
+  public orderBy(tpl: string, values: any[]): this;
 
-  public order(tpl: string, values?: utils.KVObject | any[]): this {
+  public orderBy(tpl: string, values?: utils.KVObject | any[]): this {
     if (values) {
       this._data.orderFields = this.format(tpl, values);
     } else {
@@ -459,7 +463,7 @@ export class QueryBuilder {
 
   /**
    * 批量设置 options
-   * @param options 选项，包含 { skip, limit, order, fields }
+   * @param options 选项，包含 { skip, limit, orderBy, groupBy, fields }
    */
   public options(options: QueryOptionsParams): this {
     assert.ok(options, `options must be an Object`);
@@ -471,8 +475,11 @@ export class QueryBuilder {
       case "limit":
         this.limit(options.limit);
         break;
-      case "order":
-        this.order(options.order);
+      case "orderBy":
+        this.orderBy(options.orderBy);
+        break;
+      case "groupBy":
+        this.groupBy(options.groupBy);
         break;
       case "fields":
         this.fields(...options.fields);
@@ -494,21 +501,27 @@ export class QueryBuilder {
     const limit = d.limit;
     let sql: string;
     switch (d.type) {
-    case "SELECT":
-    const tail = [ d.orderBy, d.groupBy, d.limit ].filter(v => v).join(" ");
-      sql = `SELECT ${ d.fields } FROM ${ t } ${ where } ${ tail }`;
+    case "SELECT": {
+      const tail = utils.joinMultiString(where, d.groupBy, d.orderBy, d.limit);
+      sql = `SELECT ${ d.fields } FROM ${ t } ${ tail }`;
       break;
-    case "INSERT":
+    }
+    case "INSERT": {
       sql = `INSERT INTO ${ t } ${ d.insert }`;
       break;
-    case "UPDATE":
+    }
+    case "UPDATE": {
       assert.ok(d.update.length > 0, `update data connot be empty`);
-      sql = `UPDATE ${ t } SET ${ d.update.join(", ") } ${ where } ${ limit }`;
+      const tail = utils.joinMultiString(where, limit);
+      sql = `UPDATE ${ t } SET ${ d.update.join(", ") } ${ tail }`;
       break;
-    case "DELETE":
-      sql = `DELETE FROM ${ t } ${ where } ${ limit }`;
+    }
+    case "DELETE": {
+      const tail = utils.joinMultiString(where, limit);
+      sql = `DELETE FROM ${ t } ${ tail }`;
       break;
-    case "CUSTOM":
+    }
+    case "CUSTOM": {
       this._data.sql = this.format(utils.sqlFormatObject(d.sqlTpl, {
         $table: this._tableNameEscaped,
         $orderBy: this._data.orderBy,
@@ -519,6 +532,7 @@ export class QueryBuilder {
       }, true), d.sqlValues);
       sql = this._data.sql;
       break;
+    }
     default:
       throw new Error(`invalid query type "${ d.type }"`);
     }

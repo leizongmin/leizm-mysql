@@ -149,3 +149,11 @@ export function sqlLimitString(skip: number, limit: number): string {
 export function isUpdateSQL(sql: string): boolean {
   return !(/^SELECT\s/.test(sql));
 }
+
+/**
+ * 合并多段文本
+ * @param strs 文本数组
+ */
+export function joinMultiString(...strs: string[]): string {
+  return strs.map(v => v.trim()).filter(v => v).join(" ");
+}

@@ -88,7 +88,7 @@ describe("Model - normal", function () {
       expect(list).to.have.lengthOf(2);
     }
     {
-      const list = yield model.find().order("`blog_id` DESC").exec();
+      const list = yield model.find().orderBy("`blog_id` DESC").exec();
       console.log(list);
       expect(list).to.have.lengthOf(3);
       const list2 = list.slice();
@@ -201,7 +201,7 @@ describe("Model - normal", function () {
       const ret = yield model.updateOne("`info`=:info, `created_at`=:created_at", {
         info: JSON.stringify(info),
         created_at,
-      }).where({ user_id }).order("`id` ASC").exec();
+      }).where({ user_id }).orderBy("`id` ASC").exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
       expect(ret.changedRows).to.equal(1);
