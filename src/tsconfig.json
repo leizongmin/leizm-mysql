@@ -3,17 +3,14 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es6",
-    "rootDir": "src",
-    "outDir": "dist",
+    "rootDir": ".",
+    "outDir": "../dist",
     "sourceMap": true,
     "declaration": true,
     "noImplicitAny": true,
     "strictNullChecks": false,
     "noImplicitReturns": true,
+    "noUnusedLocals": true,
     "suppressImplicitAnyIndexErrors": true
-  },
-  "exclude": [
-    "node_modules",
-    "test"
-  ]
+  }
 }
