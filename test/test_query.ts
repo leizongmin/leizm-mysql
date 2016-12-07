@@ -49,7 +49,7 @@ describe("QueryBuilder", function () {
         b: 456,
       }).limit(10).build();
       console.log(sql);
-      expect(sql).to.equal("SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456  LIMIT 10");
+      expect(sql).to.equal("SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 LIMIT 10");
     }
     {
       const query = orm.createQueryBuilder({ table: "test1" });
@@ -58,7 +58,7 @@ describe("QueryBuilder", function () {
         b: 456,
       }).skip(10).build();
       console.log(sql);
-      expect(sql).to.equal("SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456  LIMIT 10,18446744073709551615");
+      expect(sql).to.equal("SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 LIMIT 10,18446744073709551615");
     }
     {
       const query = orm.createQueryBuilder({ table: "test1" });
@@ -67,7 +67,7 @@ describe("QueryBuilder", function () {
         b: 456,
       }).skip(10).limit(20).build();
       console.log(sql);
-      expect(sql).to.equal("SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456  LIMIT 10,20");
+      expect(sql).to.equal("SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 LIMIT 10,20");
     }
     {
       const query = orm.createQueryBuilder({ table: "test1" });
@@ -98,6 +98,24 @@ describe("QueryBuilder", function () {
       expect(sql).to.equal("SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20");
     }
   });
+  it("groupBy", function () {
+    {
+      const query = orm.createQueryBuilder({ table: "test1" });
+      const sql = query.select("name", "age").where({
+        a: 123,
+      }).skip(10).limit(20).groupBy("`name`").build();
+      console.log(sql);
+      expect(sql).to.equal("SELECT `name`, `age` FROM `test1` WHERE `a`=123 GROUP BY `name` LIMIT 10,20");
+    }
+    {
+      const query = orm.createQueryBuilder({ table: "test1" });
+      const sql = query.select("name", "age").where({
+        a: 123,
+      }).skip(10).limit(20).groupBy("`name` HAVING `b`=?", [ 22 ]).build();
+      console.log(sql);
+      expect(sql).to.equal("SELECT `name`, `age` FROM `test1` WHERE `a`=123 GROUP BY `name` HAVING `b`=22 LIMIT 10,20");
+    }
+  });
   it("count", function () {
     {
       const query = orm.createQueryBuilder({ table: "test1" });
@@ -115,7 +133,7 @@ describe("QueryBuilder", function () {
         b: 789,
       }).limit(1).build();
       console.log(sql);
-      expect(sql).to.equal("SELECT COUNT(*) AS `c` FROM `test1` WHERE `a`=456 AND `b`=789  LIMIT 1");
+      expect(sql).to.equal("SELECT COUNT(*) AS `c` FROM `test1` WHERE `a`=456 AND `b`=789 LIMIT 1");
     }
   });
   it("insert", function () {

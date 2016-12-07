@@ -63,6 +63,8 @@ export class QueryBuilder {
     sqlValues: any[];
     orderFields: string;
     orderBy: string;
+    groupBy: string;
+    groupByFields: string;
     skipRows: number;
     limitRows: number;
     limit: string;
@@ -98,6 +100,8 @@ export class QueryBuilder {
       sqlValues: [],
       orderFields: "",
       orderBy: "",
+      groupBy: "",
+      groupByFields: "",
       skipRows: 0,
       limitRows: 0,
       limit: "",
@@ -403,6 +407,35 @@ export class QueryBuilder {
   }
 
   /**
+   * 分组方法
+   * @param tpl SQL 查询语句
+   */
+  public groupBy(tpl: string): this;
+  /**
+   * 分组方法
+   * @param tpl SQL 查询语句
+   * @param values 模板参数，如 { a: 123 }
+   */
+  public groupBy(tpl: string, values: utils.KVObject): this;
+  /**
+   * 分组方法
+   * @param tpl SQL 查询语句
+   * @param values 模板参数，如 [ 123 ]
+   */
+  public groupBy(tpl: string, values: any[]): this;
+
+  public groupBy(tpl: string, values?: utils.KVObject | any[]): this {
+    if (values) {
+      this._data.groupByFields = this.format(tpl, values);
+    } else {
+      this._data.groupByFields = tpl;
+    }
+    this._data.groupBy = `GROUP BY ${ this._data.groupByFields }`;
+    this._data.groupBy = this._data.groupBy.replace(/'DESC'/ig, "DESC").replace(/'ASC'/ig, "ASC");
+    return this;
+  }
+
+  /**
    * 跳过指定行数
    * @param rows 行数
    */
@@ -462,7 +495,8 @@ export class QueryBuilder {
     let sql: string;
     switch (d.type) {
     case "SELECT":
-      sql = `SELECT ${ d.fields } FROM ${ t } ${ where } ${ d.orderBy } ${ d.limit }`;
+    const tail = [ d.orderBy, d.groupBy, d.limit ].filter(v => v).join(" ");
+      sql = `SELECT ${ d.fields } FROM ${ t } ${ where } ${ tail }`;
       break;
     case "INSERT":
       sql = `INSERT INTO ${ t } ${ d.insert }`;
