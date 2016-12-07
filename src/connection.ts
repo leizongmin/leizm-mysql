@@ -125,7 +125,7 @@ export class Connection extends events.EventEmitter {
   public close(callback: utils.Callback<void>): void;
 
   public close(callback?: utils.Callback<void>): Promise<void> | void {
-    callback = utils.tryCreatePromiseCallback<void>(callback);
+    callback = utils.wrapCallback<void>(callback);
     this._poolCluster.end();
     process.nextTick(callback);
     return callback.promise;
@@ -142,7 +142,7 @@ export class Connection extends events.EventEmitter {
   public getConnection(callback: utils.Callback<WrappedConnection>): void;
 
   public getConnection(callback?: utils.Callback<WrappedConnection>): Promise<WrappedConnection> | void {
-    callback = utils.tryCreatePromiseCallback<WrappedConnection>(callback);
+    callback = utils.wrapCallback<WrappedConnection>(callback);
     return this._getConnection(this._poolCluster, callback);
   }
 
@@ -157,7 +157,7 @@ export class Connection extends events.EventEmitter {
   public getMasterConnection(callback: utils.Callback<WrappedConnection>): void;
 
   public getMasterConnection(callback?: utils.Callback<WrappedConnection>): Promise<WrappedConnection> | void {
-    callback = utils.tryCreatePromiseCallback<WrappedConnection>(callback);
+    callback = utils.wrapCallback<WrappedConnection>(callback);
     return this._getConnection(this._poolCluster, callback);
   }
 
@@ -172,7 +172,7 @@ export class Connection extends events.EventEmitter {
   public getSlaveConnection(callback: utils.Callback<WrappedConnection>): void;
 
   public getSlaveConnection(callback?: utils.Callback<WrappedConnection>): Promise<WrappedConnection> | void {
-    callback = utils.tryCreatePromiseCallback<WrappedConnection>(callback);
+    callback = utils.wrapCallback<WrappedConnection>(callback);
     return this._getConnection(this._poolCluster, callback);
   }
 
@@ -189,7 +189,7 @@ export class Connection extends events.EventEmitter {
   public query(sql: string, callback: utils.Callback<any>): void;
 
   public query(sql: string, callback?: utils.Callback<any>): Promise<any> | void {
-    callback = utils.tryCreatePromiseCallback(callback);
+    callback = utils.wrapCallback(callback);
     if (utils.isUpdateSQL(sql)) {
       return this.queryMaster(sql, callback);
     }
@@ -209,7 +209,7 @@ export class Connection extends events.EventEmitter {
   public queryMaster(sql: string, callback: utils.Callback<any>): void;
 
   public queryMaster(sql: string, callback?: utils.Callback<any>): Promise<any> | void {
-    callback = utils.tryCreatePromiseCallback(callback);
+    callback = utils.wrapCallback(callback);
     return this._query(this._poolMaster, sql, callback);
   }
 
@@ -226,7 +226,7 @@ export class Connection extends events.EventEmitter {
   public querySlave(sql: string, callback: utils.Callback<any>): void;
 
   public querySlave(sql: string, callback?: utils.Callback<any>): Promise<any> | void {
-    callback = utils.tryCreatePromiseCallback(callback);
+    callback = utils.wrapCallback(callback);
     return this._query(this._poolSlave, sql, callback);
   }
 
@@ -273,7 +273,7 @@ export class Connection extends events.EventEmitter {
   private _getConnection(pool: mysql.IPool | mysql.IPoolCluster, callback: utils.Callback<WrappedConnection>): void;
 
   private _getConnection(pool: mysql.IPool | mysql.IPoolCluster, callback?: utils.Callback<WrappedConnection>): Promise<WrappedConnection> | void {
-    callback = utils.tryCreatePromiseCallback<WrappedConnection>(callback);
+    callback = utils.wrapCallback<WrappedConnection>(callback);
     pool.getConnection((err, connection) => {
       if (err) {
         return callback(err);
@@ -298,7 +298,7 @@ export class Connection extends events.EventEmitter {
   private _query(pool: mysql.IPool | mysql.IPoolCluster, sql: string, callback?: utils.Callback<any>): void;
 
   private _query(pool: mysql.IPool | mysql.IPoolCluster, sql: string, callback?: utils.Callback<any>): Promise<any> | void {
-    callback = utils.tryCreatePromiseCallback<any>(callback);
+    callback = utils.wrapCallback<any>(callback);
     utils.connectionDebug("query sql: %s", sql);
     pool.getConnection((err, connection) => {
       if (err) {

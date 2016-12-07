@@ -496,7 +496,7 @@ export class QueryBuilder {
    */
   public exec(callback?: utils.Callback<any>): Promise<any> | void {
     assert.ok(this._execCallback, `please provide a exec callback when create QueryBuilder instance`);
-    callback = utils.tryCreatePromiseCallback<any>(callback);
+    callback = utils.wrapCallback<any>(callback);
     this._execCallback(this.build(), callback);
     return callback.promise;
   }

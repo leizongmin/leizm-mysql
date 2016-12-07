@@ -87,7 +87,7 @@ export class Cache extends events.EventEmitter {
   public saveList(list: CacheDataItem[], callback: utils.Callback<string[]>): void;
 
   public saveList(list: CacheDataItem[], callback?: utils.Callback<string[]>): Promise<string[]> | void {
-    callback = utils.tryCreatePromiseCallback<string[]>(callback);
+    callback = utils.wrapCallback<string[]>(callback);
     const p = this._redis.multi();
     const keys: string[] = [];
     for (const item of list) {
@@ -112,7 +112,7 @@ export class Cache extends events.EventEmitter {
   public getList(keys: string[], callback: utils.Callback<string[]>): void;
 
   public getList(keys: string[], callback?: utils.Callback<string[]>): Promise<string[]> | void {
-    callback = utils.tryCreatePromiseCallback<string[]>(callback);
+    callback = utils.wrapCallback<string[]>(callback);
     keys = keys.map(key => this._getKey(key));
     this._redis.mget(keys, callback);
     return callback.promise;
@@ -131,7 +131,7 @@ export class Cache extends events.EventEmitter {
   public removeList(list: string[], callback: utils.Callback<string[]>): void;
 
   public removeList(list: string[], callback?: utils.Callback<string[]>): Promise<string[]> | void {
-    callback = utils.tryCreatePromiseCallback<string[]>(callback);
+    callback = utils.wrapCallback<string[]>(callback);
     const p = this._redis.multi();
     const keys: string[] = [];
     for (const item of list) {
@@ -154,7 +154,7 @@ export class Cache extends events.EventEmitter {
   public close(callback: utils.Callback<void>): void;
 
   public close(callback?: utils.Callback<void>): Promise<void> | void {
-    callback = utils.tryCreatePromiseCallback<void>(callback);
+    callback = utils.wrapCallback<void>(callback);
     this._redis.quit(callback);
     return callback.promise;
   }

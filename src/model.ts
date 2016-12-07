@@ -213,7 +213,7 @@ export class Model {
     return new query.QueryBuilder({
       table: this.tableName,
       exec: (sql, callback) => {
-        callback = utils.tryCreatePromiseCallback(callback);
+        callback = utils.wrapCallback(callback);
         this.connection.query(sql, (err, ret) => {
           // 格式化输出
           if (ret && options.format) {
@@ -440,7 +440,7 @@ export class Model {
   public getByPrimary(query: utils.KVObject, callback: utils.Callback<utils.KVObject>): void;
 
   public getByPrimary(query: utils.KVObject, callback?: utils.Callback<utils.KVObject>): Promise<utils.KVObject> | void {
-    callback = utils.tryCreatePromiseCallback(callback);
+    callback = utils.wrapCallback(callback);
     query = this.keepPrimaryFields(query);
     // 先尝试从缓存中获取
     this.getCache(query, (err, list) => {
@@ -478,7 +478,7 @@ export class Model {
   public updateByPrimary(query: utils.KVObject, update: utils.KVObject, callback: utils.Callback<utils.KVObject>): Promise<utils.KVObject> | void;
 
   public updateByPrimary(query: utils.KVObject, update: utils.KVObject, callback?: utils.Callback<utils.KVObject>): Promise<utils.KVObject> | void {
-    callback = utils.tryCreatePromiseCallback(callback);
+    callback = utils.wrapCallback(callback);
     this.updateOne(update)
       .where(this.keepPrimaryFields(query))
       .exec((err, ret) => {
@@ -503,7 +503,7 @@ export class Model {
   public deleteByPrimary(query: utils.KVObject, callback: utils.Callback<utils.KVObject>): Promise<utils.KVObject> | void;
 
   public deleteByPrimary(query: utils.KVObject, callback?: utils.Callback<utils.KVObject>): Promise<utils.KVObject> | void {
-    callback = utils.tryCreatePromiseCallback(callback);
+    callback = utils.wrapCallback(callback);
     this.deleteOne()
       .where(this.keepPrimaryFields(query))
       .exec((err, ret) => {
