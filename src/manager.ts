@@ -11,6 +11,7 @@ import cache = require("./cache");
 import connection = require("./connection");
 import model = require("./model");
 import utils = require("./utils");
+import { Callback } from "./define";
 
 export interface ManagerOptions extends cache.CacheOptions, connection.ConnectionOptions {}
 
@@ -71,7 +72,7 @@ export class Manager extends events.EventEmitter {
    * 关闭
    * @param callback 回调函数
    */
-  public close(callback?: utils.Callback<void>): Promise<void> | void {
+  public close(callback?: Callback<void>): Promise<void> | void {
     callback = utils.wrapCallback(callback);
     const self = this;
     coroutine(function* () {

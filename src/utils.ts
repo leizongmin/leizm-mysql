@@ -7,6 +7,7 @@
 import createDebug = require("debug");
 import mysql = require("mysql");
 import utils = require("lei-utils");
+import { Callback, KVObject } from "./define";
 
 declare module "mysql" {
   function escapeId(value: string): string;
@@ -33,21 +34,6 @@ export const otherDebug = debug("other");
 export const sqlEscape = mysql.escape;
 export const sqlEscapeId = mysql.escapeId;
 export const sqlFormat = mysql.format;
-
-/**
- * 键值对对象
- */
-export interface KVObject {
-  [key: string]: any;
-}
-
-/**
- * 回调函数
- */
-export interface Callback<T> {
-  (err: Error | null, ret?: T): void;
-  promise?: Promise<T>;
-}
 
 /**
  * 如果传入的 callback 参数不存在，尝试创建支持 Promise 的回调函数

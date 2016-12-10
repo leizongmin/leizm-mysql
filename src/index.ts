@@ -17,6 +17,7 @@ export * from "./query";
 export * from "./schema";
 export * from "./manager";
 export * from "./cache";
+export * from "./define";
 export const utils = require("./utils");
 
 /**

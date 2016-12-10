@@ -9,6 +9,7 @@ import events = require("events");
 import mysql = require("mysql");
 import utils = require("./utils");
 import coroutine = require("lei-coroutine");
+import { Callback, KVObject } from "./define";
 
 export interface WrappedConnection {
   /**
@@ -58,7 +59,7 @@ function wrapConnection(connection: any): WrappedConnection {
       case "beginTransaction":
       case "commit":
       case "rollback":
-        return function (...args: any[]) {
+        return (...args: any[]) => {
           const cb = args[args.length - 1];
           if (typeof cb === "function") {
             return target[name](...args);
@@ -122,9 +123,9 @@ export class Connection extends events.EventEmitter {
    * 关闭连接
    * @param callback 回调函数
    */
-  public close(callback: utils.Callback<void>): void;
+  public close(callback: Callback<void>): void;
 
-  public close(callback?: utils.Callback<void>): Promise<void> | void {
+  public close(callback?: Callback<void>): Promise<void> | void {
     callback = utils.wrapCallback<void>(callback);
     this._poolCluster.end();
     process.nextTick(callback);
@@ -139,9 +140,9 @@ export class Connection extends events.EventEmitter {
    * 获取一个原始连接
    * @param callback 回调函数
    */
-  public getConnection(callback: utils.Callback<WrappedConnection>): void;
+  public getConnection(callback: Callback<WrappedConnection>): void;
 
-  public getConnection(callback?: utils.Callback<WrappedConnection>): Promise<WrappedConnection> | void {
+  public getConnection(callback?: Callback<WrappedConnection>): Promise<WrappedConnection> | void {
     callback = utils.wrapCallback<WrappedConnection>(callback);
     return this._getConnection(this._poolCluster, callback);
   }
@@ -154,9 +155,9 @@ export class Connection extends events.EventEmitter {
    * 获取一个 MASTER 连接
    * @param callback 回调函数
    */
-  public getMasterConnection(callback: utils.Callback<WrappedConnection>): void;
+  public getMasterConnection(callback: Callback<WrappedConnection>): void;
 
-  public getMasterConnection(callback?: utils.Callback<WrappedConnection>): Promise<WrappedConnection> | void {
+  public getMasterConnection(callback?: Callback<WrappedConnection>): Promise<WrappedConnection> | void {
     callback = utils.wrapCallback<WrappedConnection>(callback);
     return this._getConnection(this._poolCluster, callback);
   }
@@ -169,9 +170,9 @@ export class Connection extends events.EventEmitter {
    * 获取一个 SLAVE 连接
    * @param callback 回调函数
    */
-  public getSlaveConnection(callback: utils.Callback<WrappedConnection>): void;
+  public getSlaveConnection(callback: Callback<WrappedConnection>): void;
 
-  public getSlaveConnection(callback?: utils.Callback<WrappedConnection>): Promise<WrappedConnection> | void {
+  public getSlaveConnection(callback?: Callback<WrappedConnection>): Promise<WrappedConnection> | void {
     callback = utils.wrapCallback<WrappedConnection>(callback);
     return this._getConnection(this._poolCluster, callback);
   }
@@ -186,9 +187,9 @@ export class Connection extends events.EventEmitter {
    * @param sql 要执行的 SQL 查询语句
    * @param callback 回调函数
    */
-  public query(sql: string, callback: utils.Callback<any>): void;
+  public query(sql: string, callback: Callback<any>): void;
 
-  public query(sql: string, callback?: utils.Callback<any>): Promise<any> | void {
+  public query(sql: string, callback?: Callback<any>): Promise<any> | void {
     callback = utils.wrapCallback(callback);
     if (utils.isUpdateSQL(sql)) {
       return this.queryMaster(sql, callback);
@@ -206,9 +207,9 @@ export class Connection extends events.EventEmitter {
    * @param sql 要执行的 SQL 查询语句
    * @param callback 回调函数
    */
-  public queryMaster(sql: string, callback: utils.Callback<any>): void;
+  public queryMaster(sql: string, callback: Callback<any>): void;
 
-  public queryMaster(sql: string, callback?: utils.Callback<any>): Promise<any> | void {
+  public queryMaster(sql: string, callback?: Callback<any>): Promise<any> | void {
     callback = utils.wrapCallback(callback);
     return this._query(this._poolMaster, sql, callback);
   }
@@ -223,9 +224,9 @@ export class Connection extends events.EventEmitter {
    * @param sql 要执行的 SQL 查询语句
    * @param callback 回调函数
    */
-  public querySlave(sql: string, callback: utils.Callback<any>): void;
+  public querySlave(sql: string, callback: Callback<any>): void;
 
-  public querySlave(sql: string, callback?: utils.Callback<any>): Promise<any> | void {
+  public querySlave(sql: string, callback?: Callback<any>): Promise<any> | void {
     callback = utils.wrapCallback(callback);
     return this._query(this._poolSlave, sql, callback);
   }
@@ -251,9 +252,9 @@ export class Connection extends events.EventEmitter {
   /**
    * 以键值对参数形式格式化查询
    */
-  public format(sql: string, values: utils.KVObject): string;
+  public format(sql: string, values: KVObject): string;
 
-  public format(sql: string, values: any[] | utils.KVObject): string {
+  public format(sql: string, values: any[] | KVObject): string {
     if (Array.isArray(values)) {
       return utils.sqlFormat(sql, values);
     }
@@ -270,9 +271,9 @@ export class Connection extends events.EventEmitter {
    * @param pool 连接池
    * @param callback 回调函数
    */
-  private _getConnection(pool: mysql.IPool | mysql.IPoolCluster, callback: utils.Callback<WrappedConnection>): void;
+  private _getConnection(pool: mysql.IPool | mysql.IPoolCluster, callback: Callback<WrappedConnection>): void;
 
-  private _getConnection(pool: mysql.IPool | mysql.IPoolCluster, callback?: utils.Callback<WrappedConnection>): Promise<WrappedConnection> | void {
+  private _getConnection(pool: mysql.IPool | mysql.IPoolCluster, callback?: Callback<WrappedConnection>): Promise<WrappedConnection> | void {
     callback = utils.wrapCallback<WrappedConnection>(callback);
     pool.getConnection((err, connection) => {
       if (err) {
@@ -295,9 +296,9 @@ export class Connection extends events.EventEmitter {
    * @param sql  SQL 查询语句
    * @param callback 回调函数
    */
-  private _query(pool: mysql.IPool | mysql.IPoolCluster, sql: string, callback?: utils.Callback<any>): void;
+  private _query(pool: mysql.IPool | mysql.IPoolCluster, sql: string, callback?: Callback<any>): void;
 
-  private _query(pool: mysql.IPool | mysql.IPoolCluster, sql: string, callback?: utils.Callback<any>): Promise<any> | void {
+  private _query(pool: mysql.IPool | mysql.IPoolCluster, sql: string, callback?: Callback<any>): Promise<any> | void {
     callback = utils.wrapCallback<any>(callback);
     utils.connectionDebug("query sql: %s", sql);
     pool.getConnection((err, connection) => {
