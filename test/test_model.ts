@@ -257,4 +257,28 @@ describe("Model - normal", function () {
     }
   }));
 
+  it("insert undeifned value", async function () {
+    {
+      const ret = await model.insert({
+        blog_id: 2001,
+        user_id: 3,
+        created_at: undefined,
+        info: undefined,
+        score: undefined,
+      }).exec();
+      console.log(ret);
+      expect(ret.affectedRows).to.equal(1);
+    }
+    {
+      const ret = await model.findOne().where({ blog_id: 2001 }).exec();
+      console.log(ret);
+      expect(ret).to.include({
+        blog_id: 2001,
+        user_id: 3,
+        score: 0,
+      });
+      expect(ret.info).to.deep.equal({});
+    }
+  });
+
 });

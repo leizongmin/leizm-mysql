@@ -173,8 +173,8 @@ export class Schema {
     const ret = {};
     for (const name in data) {
       const field = this._fields[name];
-      // 自动去掉不存在的字段
-      if (field) {
+      // 自动去掉不存在的字段和值为 undefined 的字段
+      if (field && typeof data[name] !== "undefined") {
         const fieldInfo = (field as SchemaField);
         if (fieldInfo.output) {
           ret[name] = fieldInfo.input(data[name]);
