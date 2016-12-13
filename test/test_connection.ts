@@ -18,10 +18,10 @@ describe("Connection", function () {
     const conn = orm.createConnection({
       connections: [ utils.getConnectionConfig() ],
     });
-    {
-      const ret = yield conn.query('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`');
-      console.log(ret);
-    }
+    // {
+    //   const ret = yield conn.query('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`');
+    //   console.log(ret);
+    // }
     {
       const ret = yield conn.query("DROP TABLE IF EXISTS `blog_contents`");
       console.log(ret);
