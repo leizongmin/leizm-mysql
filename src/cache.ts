@@ -89,14 +89,18 @@ export class Cache extends events.EventEmitter {
 
   public saveList(list: CacheDataItem[], callback?: Callback<string[]>): Promise<string[]> | void {
     callback = utils.wrapCallback<string[]>(callback);
-    const p = this._redis.multi();
-    const keys: string[] = [];
-    for (const item of list) {
-      const key = this._getKey(item.key);
-      keys.push(key);
-      p.setex(key, this._ttl, item.data);
+    if (list && list.length > 0) {
+      const p = this._redis.multi();
+      const keys: string[] = [];
+      for (const item of list) {
+        const key = this._getKey(item.key);
+        keys.push(key);
+        p.setex(key, this._ttl, item.data);
+      }
+      p.exec(err => callback(err, keys));
+    } else {
+      process.nextTick(() => callback(null, []));
     }
-    p.exec(err => callback(err, keys));
     return callback.promise;
   }
 
@@ -114,8 +118,12 @@ export class Cache extends events.EventEmitter {
 
   public getList(keys: string[], callback?: Callback<string[]>): Promise<string[]> | void {
     callback = utils.wrapCallback<string[]>(callback);
-    keys = keys.map(key => this._getKey(key));
-    this._redis.mget(keys, callback);
+    if (keys && keys.length > 0) {
+      keys = keys.map(key => this._getKey(key));
+      this._redis.mget(keys, callback);
+    } else {
+      process.nextTick(() => callback(null, []));
+    }
     return callback.promise;
   }
 
@@ -133,14 +141,18 @@ export class Cache extends events.EventEmitter {
 
   public removeList(list: string[], callback?: Callback<string[]>): Promise<string[]> | void {
     callback = utils.wrapCallback<string[]>(callback);
-    const p = this._redis.multi();
-    const keys: string[] = [];
-    for (const item of list) {
-      const key = this._getKey(item);
-      keys.push(key);
-      p.del(key);
+    if (list && list.length > 0) {
+      const p = this._redis.multi();
+      const keys: string[] = [];
+      for (const item of list) {
+        const key = this._getKey(item);
+        keys.push(key);
+        p.del(key);
+      }
+      p.exec(err => callback(err, keys));
+    } else {
+      process.nextTick(() => callback(null, []));
     }
-    p.exec(err => callback(err, keys));
     return callback.promise;
   }
 
