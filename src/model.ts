@@ -378,7 +378,7 @@ export class Model {
     } else {
       data = [ this.schema.formatInput(data) ];
     }
-    // 检查是否包含主键
+    // 检查是否包含主键（仅当主键不是自增时）
     if (!this.primaryKeyAutoIncrement) {
       for (const item of (data as KVObject[])) {
         for (const key of this.primaryKey) {
