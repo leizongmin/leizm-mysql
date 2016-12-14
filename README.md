@@ -1,5 +1,27 @@
+[![NPM version][npm-image]][npm-url]
+[![build status][travis-image]][travis-url]
+[![Test coverage][coveralls-image]][coveralls-url]
+[![David deps][david-image]][david-url]
+[![node version][node-image]][node-url]
+[![npm download][download-image]][download-url]
+[![npm license][license-image]][download-url]
+
+[npm-image]: https://img.shields.io/npm/v/super-orm.svg?style=flat-square
+[npm-url]: https://npmjs.org/package/super-orm
+[travis-image]: https://img.shields.io/travis/SuperID/super-orm.svg?style=flat-square
+[travis-url]: https://travis-ci.org/SuperID/super-orm
+[coveralls-image]: https://img.shields.io/coveralls/SuperID/super-orm.svg?style=flat-square
+[coveralls-url]: https://coveralls.io/r/SuperID/super-orm?branch=master
+[david-image]: https://img.shields.io/david/SuperID/super-orm.svg?style=flat-square
+[david-url]: https://david-dm.org/SuperID/super-orm
+[node-image]: https://img.shields.io/badge/node.js-%3E=_6.0-green.svg?style=flat-square
+[node-url]: http://nodejs.org/download/
+[download-image]: https://img.shields.io/npm/dm/super-orm.svg?style=flat-square
+[download-url]: https://npmjs.org/package/super-orm
+[license-image]: https://img.shields.io/npm/l/super-orm.svg
+
 # super-orm
-基于 Node.js 的 MySQL ORM 模块，支持缓存、多 MySQL 连接
+基于 Node.js 的 MySQL ORM 模块，支持缓存、多 MySQL 连接，支持 TypeScript
 
 
 ## 安装
@@ -8,7 +30,12 @@
 $ npm install super-orm --save
 ```
 
-**仅支持 Node.js v6.0 及更高版本**
+
+## 环境要求
+
++ Node.js v6.0 及更高版本 - 运行环境
++ MySQL 5.6 及更高版本 - SQL 数据存储
++ Redis 2.6 及更高版本 - 缓存存储
 
 
 ## 使用
@@ -107,6 +134,11 @@ manager.connection.query('CREATE TABLE `hello`')
   await conn.release();
 })();
 ```
+
+
+## API 接口
+
+**正在整理中**
 
 
 ## License
