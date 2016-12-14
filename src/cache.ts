@@ -12,10 +12,9 @@ import { Callback } from "./define";
 
 const GET_BY_POINTER_SCRIPT = `
 local k = redis.call("get", KEYS[1])
-if (k == false) then
-  return k
+if (k) then
+  return redis.call("get", k)
 end
-return redis.call("get", k)
 `.trim();
 
 export interface CacheOptions {
