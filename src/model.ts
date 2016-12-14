@@ -12,6 +12,8 @@ import schema = require("./schema");
 import query = require("./query");
 import { Callback, KVObject } from "./define";
 
+export type ModelKey = string | string[];
+
 export interface ModelBaseOptions extends schema.SchemaOptions {
   /**
    * 表名
@@ -20,7 +22,7 @@ export interface ModelBaseOptions extends schema.SchemaOptions {
   /**
    * 主键
    */
-  primary?: string | string[];
+  primary?: ModelKey;
   /**
    * 主键是否自增
    */
