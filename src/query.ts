@@ -55,7 +55,7 @@ export class QueryBuilder {
 
   private _tableName: string;
   private _tableNameEscaped: string;
-  private _execCallback: QueryBuilderExecFunction;
+  private _execCallback: QueryBuilderExecFunction | null;
   private _data: {
     fields: string;
     conditions: string[];
@@ -98,10 +98,10 @@ export class QueryBuilder {
       conditions: [],
       type: "",
       update: [],
-      insert: null,
-      delete: null,
-      sql: null,
-      sqlTpl: null,
+      insert: "",
+      delete: "",
+      sql: "",
+      sqlTpl: "",
       sqlValues: [],
       orderFields: "",
       orderBy: "",
@@ -162,7 +162,10 @@ export class QueryBuilder {
   public where(condition: KVObject | string, values?: KVObject | any[]): this {
     this._data.conditions = [];
     if (typeof condition === "string") {
-      return this.and(condition, values);
+      if (values) {
+        return this.and(condition, values);
+      }
+      return this.and(condition);
     }
     return this.and(condition);
   }
@@ -267,7 +270,10 @@ export class QueryBuilder {
     this._data.update = [];
     if (update) {
       if (typeof update === "string") {
-        return this.set(update, values);
+        if (values) {
+          return this.set(update, values);
+        }
+        return this.set(update);
       }
       return this.set(update);
     }
@@ -544,10 +550,13 @@ export class QueryBuilder {
    * 执行
    */
   public exec(callback?: Callback<any>): Promise<any> | void {
-    assert.ok(this._execCallback, `please provide a exec callback when create QueryBuilder instance`);
-    callback = utils.wrapCallback<any>(callback);
-    this._execCallback(this.build(), callback);
-    return callback.promise;
+    const cb = utils.wrapCallback<any>(callback);
+    if (this._execCallback) {
+      this._execCallback(this.build(), cb);
+    } else {
+      process.nextTick(() => cb(new Error(`please provide a exec callback when create QueryBuilder instance`)));
+    }
+    return cb.promise;
   }
 
 }

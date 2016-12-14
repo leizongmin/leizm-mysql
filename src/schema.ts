@@ -176,7 +176,7 @@ export class Schema {
       // 自动去掉不存在的字段和值为 undefined 的字段
       if (field && typeof data[name] !== "undefined") {
         const fieldInfo = (field as SchemaField);
-        if (fieldInfo.output) {
+        if (fieldInfo.input) {
           ret[name] = fieldInfo.input(data[name]);
         } else {
           ret[name] = data[name];

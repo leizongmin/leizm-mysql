@@ -61,7 +61,7 @@ export class Manager extends events.EventEmitter {
    * 获取 model
    * @param name Model 名称
    */
-  public model(name: string): model.Model {
+  public model(name: string): model.Model | undefined {
     if (!this._models.has(name)) {
       throw new Error(`model "${ name }" does not exists`);
     }
@@ -73,14 +73,14 @@ export class Manager extends events.EventEmitter {
    * @param callback 回调函数
    */
   public close(callback?: Callback<void>): Promise<void> | void {
-    callback = utils.wrapCallback(callback);
+    const cb = utils.wrapCallback(callback);
     const self = this;
     coroutine(function* () {
       yield self.cache.close();
       yield self.connection.close();
       self._models.clear();
-    }).then(() => callback(null)).catch(err => callback(err));
-    return callback.promise;
+    }).then(() => cb(null)).catch(err => cb(err));
+    return cb.promise;
   }
 
 }

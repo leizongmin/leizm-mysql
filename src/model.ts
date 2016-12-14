@@ -48,7 +48,7 @@ export interface ModelQueryOptions {
   /**
    * 回调函数
    */
-  callback?: (err: Error, ret: any, callback?: Callback<any>) => void;
+  callback?: (err: Error | null, ret: any, callback: Callback<any>) => void;
 }
 
 export class Model {
@@ -87,8 +87,6 @@ export class Model {
       } else {
         this.primaryKey = [ options.primary ];
       }
-    } else {
-      this.primaryKey = null;
     }
 
     if (options.autoIncrement) {
@@ -147,6 +145,7 @@ export class Model {
   public saveCache(data: cache.CacheDataItem[], callback?: Callback<string[]>): Promise<string[]> | void;
 
   public saveCache(data: cache.CacheDataItem | cache.CacheDataItem[], callback?: Callback<string[]>): Promise<string[]> | void {
+    const cb = utils.wrapCallback(callback);
     if (!Array.isArray(data)) {
       data = [ data ];
     }
@@ -159,7 +158,8 @@ export class Model {
         data: this.schema.serialize(item),
       };
     }).filter(item => item.key) as cache.CacheDataItem[];
-    return this.cache.saveList(list, callback);
+    this.cache.saveList(list, cb);
+    return cb.promise;
   }
 
   /**
@@ -174,13 +174,15 @@ export class Model {
   public removeCache(data: KVObject[], callback?: Callback<string[]>): Promise<string[]> | void;
 
   public removeCache(data: KVObject | KVObject[], callback?: Callback<string[]>): Promise<string[]> | void {
+    const cb = utils.wrapCallback(callback);
     if (!Array.isArray(data)) {
       data = [ data ];
     }
     const list = (data as KVObject[])
                     .map(item => this.getPrimaryCacheKey(item, false))
                     .filter(key => key) as string[];
-    return this.cache.removeList(list, callback);
+    this.cache.removeList(list, cb);
+    return cb.promise;
   }
 
   /**
@@ -195,18 +197,20 @@ export class Model {
   public getCache(data: KVObject[], callback?: Callback<KVObject[]>): Promise<KVObject[]> | void;
 
   public getCache(data: KVObject | KVObject[], callback?: Callback<KVObject[]>): Promise<KVObject[]> | void {
+    const cb = utils.wrapCallback(callback);
     if (!Array.isArray(data)) {
       data = [ data ];
     }
     const list = (data as KVObject[])
                     .map(item => this.getPrimaryCacheKey(item, false))
                     .filter(key => key) as string[];
-    return this.cache.getList(list, (err, ret) => {
+    this.cache.getList(list, (err, ret) => {
       if (err) {
-        return callback(err);
+        return cb(err);
       }
-      callback(null, ret.map(v => this.schema.unserialize(v)));
+      cb(null, ret && ret.map(v => this.schema.unserialize(v)));
     });
+    return cb.promise;
   }
 
   /**
@@ -216,7 +220,7 @@ export class Model {
     return new query.QueryBuilder({
       table: this.tableName,
       exec: (sql, callback) => {
-        callback = utils.wrapCallback(callback);
+        const cb = utils.wrapCallback(callback);
         this.connection.query(sql, (err, ret) => {
           // 格式化输出
           if (ret && options.format) {
@@ -227,12 +231,12 @@ export class Model {
             }
           }
           if (!options.callback) {
-            return callback(err, ret);
+            return cb(err, ret);
           }
           // 处理回调结果
-          options.callback(err, ret, callback);
+          options.callback(err, ret, cb);
         });
-        return callback.promise;
+        return cb.promise;
       },
     });
   }
@@ -305,7 +309,10 @@ export class Model {
     assert.ok(typeof values !== "function", `update() does not expected a callback function, maybe this is what you want: update(data).exec(callback)`);
     // 格式化输入
     if (typeof update === "string") {
-      return this.query({ format: false }).update(update, values);
+      if (values) {
+        return this.query({ format: false }).update(update, values);
+      }
+      return this.query({ format: false }).update(update);
     }
     update = this.schema.formatInput(update);
     return this.query({ format: false }).update(update);
@@ -339,7 +346,10 @@ export class Model {
     assert.ok(typeof values !== "function", `updateOne() does not expected a callback function, maybe this is what you want: updateOne(data).exec(callback)`);
     // 格式化输入
     if (typeof update === "string") {
-      return this.query({ format: false }).update(update, values).limit(1);
+      if (values) {
+        return this.query({ format: false }).update(update, values).limit(1);
+      }
+      return this.query({ format: false }).update(update).limit(1);
     }
     update = this.schema.formatInput(update);
     return this.query({ format: false }).update(update);
@@ -427,7 +437,10 @@ export class Model {
   public sql(sql: string, values?: KVObject | any[]): query.QueryBuilder {
     assert.ok(arguments.length === 1 || arguments.length === 2, `expected 1 or 2 argument for sql() but got ${ arguments.length }`);
     assert.ok(typeof values !== "function", `sql() does not expected a callback function, maybe this is what you want: sql(str).exec(callback)`);
-    return this.query({ format: !utils.isUpdateSQL(sql) }).sql(sql, values);
+    if (values) {
+      return this.query({ format: !utils.isUpdateSQL(sql) }).sql(sql, values);
+    }
+    return this.query({ format: !utils.isUpdateSQL(sql) }).sql(sql);
   }
 
   /**
@@ -443,27 +456,27 @@ export class Model {
   public getByPrimary(query: KVObject, callback: Callback<KVObject>): void;
 
   public getByPrimary(query: KVObject, callback?: Callback<KVObject>): Promise<KVObject> | void {
-    callback = utils.wrapCallback(callback);
+    const cb = utils.wrapCallback(callback);
     query = this.keepPrimaryFields(query);
     // 先尝试从缓存中获取
     this.getCache(query, (err, list) => {
       if (err) {
-        return callback(err);
+        return cb(err);
       }
       const c = list && list[0];
       if (c) {
-        return callback(err, c);
+        return cb(err, c);
       }
       // 从数据库查询
       this.findOne().where(query).exec((err2, ret) => {
         if (err2) {
-          return callback(err2);
+          return cb(err2);
         }
         // 保存到缓存
-        this.saveCache(ret, err3 => callback(err3, ret));
+        this.saveCache(ret, err3 => cb(err3, ret));
       });
     });
-    return callback.promise;
+    return cb.promise;
   }
 
   /**
@@ -481,16 +494,16 @@ export class Model {
   public updateByPrimary(query: KVObject, update: KVObject, callback: Callback<KVObject>): Promise<KVObject> | void;
 
   public updateByPrimary(query: KVObject, update: KVObject, callback?: Callback<KVObject>): Promise<KVObject> | void {
-    callback = utils.wrapCallback(callback);
+    const cb = utils.wrapCallback(callback);
     this.updateOne(update)
       .where(this.keepPrimaryFields(query))
       .exec((err, ret) => {
         if (err) {
-          return callback(err);
+          return cb(err);
         }
-        this.removeCache(query, err2 => callback(err2, ret));
+        this.removeCache(query, err2 => cb(err2, ret));
       });
-    return callback.promise;
+    return cb.promise;
   }
 
   /**
@@ -506,16 +519,16 @@ export class Model {
   public deleteByPrimary(query: KVObject, callback: Callback<KVObject>): Promise<KVObject> | void;
 
   public deleteByPrimary(query: KVObject, callback?: Callback<KVObject>): Promise<KVObject> | void {
-    callback = utils.wrapCallback(callback);
+    const cb = utils.wrapCallback(callback);
     this.deleteOne()
       .where(this.keepPrimaryFields(query))
       .exec((err, ret) => {
         if (err) {
-          return callback(err);
+          return cb(err);
         }
-        this.removeCache(query, err2 => callback(err2, ret));
+        this.removeCache(query, err2 => cb(err2, ret));
       });
-    return callback.promise;
+    return cb.promise;
   }
 
 }

@@ -88,7 +88,7 @@ export class Cache extends events.EventEmitter {
   public saveList(list: CacheDataItem[], callback: Callback<string[]>): void;
 
   public saveList(list: CacheDataItem[], callback?: Callback<string[]>): Promise<string[]> | void {
-    callback = utils.wrapCallback<string[]>(callback);
+    const cb = utils.wrapCallback<string[]>(callback);
     if (list && list.length > 0) {
       const p = this._redis.multi();
       const keys: string[] = [];
@@ -97,11 +97,11 @@ export class Cache extends events.EventEmitter {
         keys.push(key);
         p.setex(key, this._ttl, item.data);
       }
-      p.exec(err => callback(err, keys));
+      p.exec(err => cb(err, keys));
     } else {
-      process.nextTick(() => callback(null, []));
+      process.nextTick(() => cb(null, []));
     }
-    return callback.promise;
+    return cb.promise;
   }
 
   /**
@@ -117,14 +117,14 @@ export class Cache extends events.EventEmitter {
   public getList(keys: string[], callback: Callback<string[]>): void;
 
   public getList(keys: string[], callback?: Callback<string[]>): Promise<string[]> | void {
-    callback = utils.wrapCallback<string[]>(callback);
+    const cb = utils.wrapCallback<string[]>(callback);
     if (keys && keys.length > 0) {
       keys = keys.map(key => this._getKey(key));
-      this._redis.mget(keys, callback);
+      this._redis.mget(keys, cb);
     } else {
-      process.nextTick(() => callback(null, []));
+      process.nextTick(() => cb(null, []));
     }
-    return callback.promise;
+    return cb.promise;
   }
 
   /**
@@ -140,7 +140,7 @@ export class Cache extends events.EventEmitter {
   public removeList(list: string[], callback: Callback<string[]>): void;
 
   public removeList(list: string[], callback?: Callback<string[]>): Promise<string[]> | void {
-    callback = utils.wrapCallback<string[]>(callback);
+    const cb = utils.wrapCallback<string[]>(callback);
     if (list && list.length > 0) {
       const p = this._redis.multi();
       const keys: string[] = [];
@@ -149,11 +149,11 @@ export class Cache extends events.EventEmitter {
         keys.push(key);
         p.del(key);
       }
-      p.exec(err => callback(err, keys));
+      p.exec(err => cb(err, keys));
     } else {
-      process.nextTick(() => callback(null, []));
+      process.nextTick(() => cb(null, []));
     }
-    return callback.promise;
+    return cb.promise;
   }
 
   /**
@@ -167,9 +167,9 @@ export class Cache extends events.EventEmitter {
   public close(callback: Callback<void>): void;
 
   public close(callback?: Callback<void>): Promise<void> | void {
-    callback = utils.wrapCallback<void>(callback);
-    this._redis.quit(callback);
-    return callback.promise;
+    const cb = utils.wrapCallback(callback);
+    this._redis.quit(cb);
+    return cb.promise;
   }
 
   /**
