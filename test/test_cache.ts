@@ -5,7 +5,6 @@
  */
 
 import chai = require("chai");
-import coroutine = require("lei-coroutine");
 import orm = require("../");
 import utils = require("./utils");
 
@@ -13,11 +12,10 @@ const expect = chai.expect;
 
 describe("Cache", function () {
 
-  it("cache.saveList()", coroutine.wrap(function* () {
-
+  it("cache.saveList()", async function () {
     const cache = orm.createCache(utils.getCacheConfig());
     {
-      const ret = yield cache.saveList([{
+      const ret = await cache.saveList([{
         key: "aaaaa",
         data: "HaHa",
       }, {
@@ -31,23 +29,20 @@ describe("Cache", function () {
       for (const k of ret) {
         p.ttl(k);
       }
-      const ret2 = yield p.exec();
+      const ret2 = await p.exec();
       console.log(ret2);
       for (const item of ret2) {
         expect(item[0]).to.be.null;
         expect(item[1]).to.be.above(0);
       }
     }
+    await cache.close();
+  });
 
-    yield cache.close();
-
-  }));
-
-  it("cache.getList() & cache.removeList()", coroutine.wrap(function* () {
-
+  it("cache.getList() & cache.removeList()", async function () {
     const cache = orm.createCache(utils.getCacheConfig());
     {
-      const ret = yield cache.saveList([{
+      const ret = await cache.saveList([{
         key: "test1",
         data: "data1",
       }, {
@@ -57,21 +52,20 @@ describe("Cache", function () {
       console.log(ret);
     }
     {
-      const ret = yield cache.getList([ "test0", "test1", "test2", "test3" ]);
+      const ret = await cache.getList([ "test0", "test1", "test2", "test3" ]);
       console.log(ret);
       expect(ret).to.deep.equal([ null, "data1", "data2", null ]);
     }
     {
-      const ret = yield cache.removeList([ "test0", "test1" ]);
+      const ret = await cache.removeList([ "test0", "test1" ]);
       console.log(ret);
     }
     {
-      const ret = yield cache.getList([ "test0", "test1", "test2", "test3" ]);
+      const ret = await cache.getList([ "test0", "test1", "test2", "test3" ]);
       console.log(ret);
       expect(ret).to.deep.equal([ null, null, "data2", null ]);
     }
-    yield cache.close();
-
-  }));
+    await cache.close();
+  });
 
 });

@@ -5,7 +5,6 @@
  */
 
 import chai = require("chai");
-import coroutine = require("lei-coroutine");
 import orm = require("../");
 import utils = require("./utils");
 
@@ -13,22 +12,22 @@ const expect = chai.expect;
 
 describe("Connection", function () {
 
-  it("getConnection() support promise", coroutine.wrap(function* () {
+  it("getConnection() support promise", async function () {
 
     const conn = orm.createConnection({
       connections: [ utils.getConnectionConfig() ],
     });
     // {
-    //   const ret = yield conn.query('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`');
+    //   const ret = await conn.query('SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`');
     //   console.log(ret);
     // }
     {
-      const ret = yield conn.query("DROP TABLE IF EXISTS `blog_contents`");
+      const ret = await conn.query("DROP TABLE IF EXISTS `blog_contents`");
       console.log(ret);
     }
     {
-      const sql = yield utils.readTestFile("blog_contents.sql");
-      const ret = yield conn.query(sql);
+      const sql = await utils.readTestFile("blog_contents.sql");
+      const ret = await conn.query(sql);
       console.log(ret);
     }
     {
@@ -37,43 +36,43 @@ describe("Connection", function () {
         id: 2,
       });
       console.log(sql);
-      const ret = yield conn.query(sql);
+      const ret = await conn.query(sql);
       console.log(ret);
     }
     {
       const sql = conn.format("SELECT * FROM ?? WHERE id=?", [ "blog_contents", 2 ]);
       console.log(sql);
-      const ret = yield conn.query(sql);
+      const ret = await conn.query(sql);
       console.log(ret);
     }
     {
-      const c = yield conn.getMasterConnection();
+      const c = await conn.getMasterConnection();
       console.log(c.escape(new Date()));
-      yield c.beginTransaction();
+      await c.beginTransaction();
       try {
-        const ret = yield c.query('INSERT INTO `blog_contents`(`id`,`content`) VALUES (1234, "456")');
+        const ret = await c.query('INSERT INTO `blog_contents`(`id`,`content`) VALUES (1234, "456")');
         console.log(ret);
       } catch (err) {
         console.log(err);
-        yield c.rollback();
+        await c.rollback();
       }
       try {
-        const ret = yield c.query('INSERT INTO `blog_contents`(`id`,`content`) VALUES (1234, "9999")');
+        const ret = await c.query('INSERT INTO `blog_contents`(`id`,`content`) VALUES (1234, "9999")');
         console.log(ret);
       } catch (err) {
         console.log(err);
-        yield c.rollback();
+        await c.rollback();
       }
       try {
-        yield c.commit();
+        await c.commit();
       } catch (err) {
         console.log(err);
-        yield c.rollback();
+        await c.rollback();
       }
       c.release();
     }
-    yield conn.close();
+    await conn.close();
 
-  }));
+  });
 
 });

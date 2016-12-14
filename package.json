@@ -37,7 +37,6 @@
     "@types/node": "^6.0.48",
     "debug": "^2.3.2",
     "ioredis": "^2.4.0",
-    "lei-coroutine": "^1.6.3",
     "lei-utils": "^3.1.0",
     "mysql": "^2.12.0"
   },

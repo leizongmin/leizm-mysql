@@ -5,7 +5,6 @@
  */
 
 import chai = require("chai");
-import coroutine = require("lei-coroutine");
 import orm = require("../");
 import utils = require("./utils");
 
@@ -42,27 +41,27 @@ describe("Model - get|update|delete by primary and cache", function () {
     },
   });
 
-  before(coroutine.wrap(function* () {
+  before(async function () {
     {
-      const sql = yield utils.readTestFile("users.sql");
-      yield connection.query("DROP TABLE IF EXISTS `users`");
-      yield connection.query(sql);
+      const sql = await utils.readTestFile("users.sql");
+      await connection.query("DROP TABLE IF EXISTS `users`");
+      await connection.query(sql);
     }
     {
-      const sql = yield utils.readTestFile("friends.sql");
-      yield connection.query("DROP TABLE IF EXISTS `friends`");
-      yield connection.query(sql);
+      const sql = await utils.readTestFile("friends.sql");
+      await connection.query("DROP TABLE IF EXISTS `friends`");
+      await connection.query(sql);
     }
-  }));
+  });
 
-  after(coroutine.wrap(function* () {
-    yield connection.close();
-    yield cache.close();
-  }));
+  after(async function () {
+    await connection.close();
+    await cache.close();
+  });
 
-  it("insert data", coroutine.wrap(function* () {
+  it("insert data", async function () {
     {
-      const ret = yield User.insert([{
+      const ret = await User.insert([{
         name: "张三",
         email: "zhangsan@ucdok.com",
         info: { age: 20 },
@@ -87,7 +86,7 @@ describe("Model - get|update|delete by primary and cache", function () {
       console.log(ret);
     }
     {
-      const ret = yield Friend.insert([{
+      const ret = await Friend.insert([{
         user_id: 1,
         friend_id: 2,
         created_at: new Date(),
@@ -114,11 +113,11 @@ describe("Model - get|update|delete by primary and cache", function () {
       }]).exec();
       console.log(ret);
     }
-  }));
+  });
 
-  it("getByPrimary", coroutine.wrap(function* () {
+  it("getByPrimary", async function () {
     {
-      const ret = yield User.getByPrimary({ id: 1, otherField: "test" });
+      const ret = await User.getByPrimary({ id: 1, otherField: "test" });
       console.log(ret);
       expect(ret).to.include({
         name: "张三",
@@ -126,7 +125,7 @@ describe("Model - get|update|delete by primary and cache", function () {
       });
     }
     {
-      const ret = yield Friend.getByPrimary({ user_id: 1, friend_id: 2, otherField: "test" });
+      const ret = await Friend.getByPrimary({ user_id: 1, friend_id: 2, otherField: "test" });
       console.log(ret);
       expect(ret).to.include({
         user_id: 1,
@@ -134,11 +133,11 @@ describe("Model - get|update|delete by primary and cache", function () {
         remark: "阿四",
       });
     }
-  }));
+  });
 
-  it("updateByPrimary", coroutine.wrap(function* () {
+  it("updateByPrimary", async function () {
     {
-      const ret = yield User.updateByPrimary({ id: 1 }, { name: "张三丰", otherField: "test" });
+      const ret = await User.updateByPrimary({ id: 1 }, { name: "张三丰", otherField: "test" });
       console.log(ret);
       expect(ret).to.include({
         id: 1,
@@ -146,7 +145,7 @@ describe("Model - get|update|delete by primary and cache", function () {
       });
     }
     {
-      const ret = yield User.getByPrimary({ id: 1 });
+      const ret = await User.getByPrimary({ id: 1 });
       console.log(ret);
       expect(ret).to.include({
         name: "张三丰",
@@ -154,7 +153,7 @@ describe("Model - get|update|delete by primary and cache", function () {
       });
     }
     {
-      const ret = yield Friend.updateByPrimary({
+      const ret = await Friend.updateByPrimary({
         user_id: 1,
         friend_id: 2,
         otherField: "test",
@@ -170,7 +169,7 @@ describe("Model - get|update|delete by primary and cache", function () {
       });
     }
     {
-      const ret = yield Friend.getByPrimary({
+      const ret = await Friend.getByPrimary({
         user_id: 1,
         friend_id: 2,
         otherField: "test",
@@ -182,11 +181,11 @@ describe("Model - get|update|delete by primary and cache", function () {
         remark: "小四",
       });
     }
-  }));
+  });
 
-  it("deleteByPrimary", coroutine.wrap(function* () {
+  it("deleteByPrimary", async function () {
     {
-      const ret = yield User.deleteByPrimary({ id: 1, otherField: "test" });
+      const ret = await User.deleteByPrimary({ id: 1, otherField: "test" });
       console.log(ret);
       expect(ret).to.include({
         id: 1,
@@ -194,12 +193,12 @@ describe("Model - get|update|delete by primary and cache", function () {
       });
     }
     {
-      const ret = yield User.getByPrimary({ id: 1, otherField: "test" });
+      const ret = await User.getByPrimary({ id: 1, otherField: "test" });
       console.log(ret);
       expect(ret).to.be.undefined;
     }
     {
-      const ret = yield Friend.deleteByPrimary({
+      const ret = await Friend.deleteByPrimary({
         user_id: 1,
         friend_id: 2,
         otherField: "test",
@@ -211,7 +210,7 @@ describe("Model - get|update|delete by primary and cache", function () {
       });
     }
     {
-      const ret = yield Friend.getByPrimary({
+      const ret = await Friend.getByPrimary({
         user_id: 1,
         friend_id: 2,
         otherField: "test",
@@ -219,19 +218,19 @@ describe("Model - get|update|delete by primary and cache", function () {
       console.log(ret);
       expect(ret).to.be.undefined;
     }
-  }));
+  });
 
-  it("finish", coroutine.wrap(function* () {
+  it("finish", async function () {
     {
-      const list = yield User.find().exec();
+      const list = await User.find().exec();
       console.log(list);
       expect(list).to.have.lengthOf(2);
     }
     {
-      const list = yield Friend.find().exec();
+      const list = await Friend.find().exec();
       console.log(list);
       expect(list).to.have.lengthOf(3);
     }
-  }));
+  });
 
 });

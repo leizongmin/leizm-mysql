@@ -5,7 +5,6 @@
  */
 
 import chai = require("chai");
-import coroutine = require("lei-coroutine");
 import orm = require("../");
 import utils = require("./utils");
 
@@ -29,18 +28,18 @@ describe("Model - normal", function () {
     },
   });
 
-  before(coroutine.wrap(function* () {
-    const sql = yield utils.readTestFile("user_blogs.sql");
-    yield connection.query("DROP TABLE IF EXISTS `user_blogs`");
-    yield connection.query(sql);
-  }));
+  before(async function () {
+    const sql = await utils.readTestFile("user_blogs.sql");
+    await connection.query("DROP TABLE IF EXISTS `user_blogs`");
+    await connection.query(sql);
+  });
 
-  after(coroutine.wrap(function* () {
-    yield connection.close();
-    yield cache.close();
-  }));
+  after(async function () {
+    await connection.close();
+    await cache.close();
+  });
 
-  it("insert", coroutine.wrap(function* () {
+  it("insert", async function () {
     const data = {
       blog_id: 1,
       user_id: 1001,
@@ -52,18 +51,18 @@ describe("Model - normal", function () {
       score: 0,
     };
     {
-      const ret = yield model.insert(data).exec();
+      const ret = await model.insert(data).exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
     }
     {
-      const ret = yield model.findOne().where(model.keepPrimaryFields(data)).exec();
+      const ret = await model.findOne().where(model.keepPrimaryFields(data)).exec();
       console.log(ret);
       expect(ret).to.deep.equal(data);
     }
     // 批量插入
     {
-      const ret = yield model.insert([{
+      const ret = await model.insert([{
         blog_id: 2,
         user_id: 1001,
         created_at: new Date(),
@@ -79,16 +78,16 @@ describe("Model - normal", function () {
       console.log(ret);
       expect(ret.affectedRows).to.equal(2);
     }
-  }));
+  });
 
-  it("find", coroutine.wrap(function* () {
+  it("find", async function () {
     {
-      const list = yield model.find().where({ user_id: 1001 }).exec();
+      const list = await model.find().where({ user_id: 1001 }).exec();
       console.log(list);
       expect(list).to.have.lengthOf(2);
     }
     {
-      const list = yield model.find().orderBy("`blog_id` DESC").exec();
+      const list = await model.find().orderBy("`blog_id` DESC").exec();
       console.log(list);
       expect(list).to.have.lengthOf(3);
       const list2 = list.slice();
@@ -96,47 +95,47 @@ describe("Model - normal", function () {
       list.sort((a: any, b: any) => b.blog_id - a.blog_id);
       expect(list).to.deep.equal(list2);
     }
-  }));
+  });
 
-  it("findOne", coroutine.wrap(function* () {
+  it("findOne", async function () {
     {
-      const ret = yield model.findOne().where({ user_id: 1001 }).exec();
+      const ret = await model.findOne().where({ user_id: 1001 }).exec();
       console.log(ret);
       expect(ret.user_id).to.equal(1001);
     }
-  }));
+  });
 
-  it("count", coroutine.wrap(function* () {
+  it("count", async function () {
     {
-      const count = yield model.count().exec();
+      const count = await model.count().exec();
       console.log(count);
       expect(count).to.equal(3);
     }
     {
-      const count = yield model.count().where({ user_id: 1001 }).exec();
+      const count = await model.count().where({ user_id: 1001 }).exec();
       console.log(count);
       expect(count).to.equal(2);
     }
     {
-      const count = yield model.count().where("`user_id`!=1001").exec();
+      const count = await model.count().where("`user_id`!=1001").exec();
       console.log(count);
       expect(count).to.equal(1);
     }
-  }));
+  });
 
-  it("sql", coroutine.wrap(function* () {
+  it("sql", async function () {
     {
-      const ret = yield model.sql("SELECT COUNT(*) AS `count` FROM :$table").exec();
+      const ret = await model.sql("SELECT COUNT(*) AS `count` FROM :$table").exec();
       console.log(ret);
       expect(ret).to.deep.equal([{ count: 3 }]);
     }
     {
-      const ret = yield model.sql("SHOW TABLES").exec();
+      const ret = await model.sql("SHOW TABLES").exec();
       console.log(ret);
     }
-  }));
+  });
 
-  it("update #1", coroutine.wrap(function* () {
+  it("update #1", async function () {
     const data = {
       info: {
         mem: process.memoryUsage(),
@@ -149,21 +148,21 @@ describe("Model - normal", function () {
       user_id: 1001,
     };
     {
-      const ret = yield model.update(data).where(query).exec();
+      const ret = await model.update(data).where(query).exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
       expect(ret.changedRows).to.equal(1);
     }
     {
-      const ret = yield model.findOne().where(query).exec();
+      const ret = await model.findOne().where(query).exec();
       console.log(ret);
       expect(ret.info).to.deep.equal(data.info);
       expect(ret.blog_id).to.equal(query.blog_id);
       expect(ret.user_id).to.equal(query.user_id);
     }
-  }));
+  });
 
-  it("update #2", coroutine.wrap(function* () {
+  it("update #2", async function () {
     const info = {
       pid: process.pid,
       uptime: process.uptime(),
@@ -173,14 +172,14 @@ describe("Model - normal", function () {
       user_id: 1001,
     };
     {
-      const ret = yield model.update("`info`=?, `created_at`=?", [ JSON.stringify(info), created_at ])
+      const ret = await model.update("`info`=?, `created_at`=?", [ JSON.stringify(info), created_at ])
                           .where(query).exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(2);
       expect(ret.changedRows).to.equal(2);
     }
     {
-      const ret = yield model.find().where(query).exec();
+      const ret = await model.find().where(query).exec();
       console.log(ret);
       expect(ret).to.have.lengthOf(2);
       for (const item of ret) {
@@ -189,16 +188,16 @@ describe("Model - normal", function () {
         expect(item.blog_id).to.be.oneOf([ 1, 2 ]);
       }
     }
-  }));
+  });
 
-  it("updateOne", coroutine.wrap(function* () {
+  it("updateOne", async function () {
     const info = {
       message: "from updateOne",
     };
     const created_at = new Date();
     const user_id = 1001;
     {
-      const ret = yield model.updateOne("`info`=:info, `created_at`=:created_at", {
+      const ret = await model.updateOne("`info`=:info, `created_at`=:created_at", {
         info: JSON.stringify(info),
         created_at,
       }).where({ user_id }).orderBy("`id` ASC").exec();
@@ -207,7 +206,7 @@ describe("Model - normal", function () {
       expect(ret.changedRows).to.equal(1);
     }
     {
-      const ret = yield model.find().exec();
+      const ret = await model.find().exec();
       console.log(ret);
       for (const item of ret) {
         if (item.user_id === user_id && item.created_at.getTime() === created_at.getTime()) {
@@ -217,45 +216,45 @@ describe("Model - normal", function () {
         }
       }
     }
-  }));
+  });
 
-  it("incr", coroutine.wrap(function* () {
+  it("incr", async function () {
     {
-      const ret = yield model.incr({ score: 5 }).where({ blog_id: 3 }).exec();
+      const ret = await model.incr({ score: 5 }).where({ blog_id: 3 }).exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
       expect(ret.changedRows).to.equal(1);
     }
     {
-      const ret = yield model.findOne().where({ blog_id: 3 }).exec();
+      const ret = await model.findOne().where({ blog_id: 3 }).exec();
       console.log(ret);
       expect(ret.score).to.equal(5);
     }
-  }));
+  });
 
-  it("deleteOne", coroutine.wrap(function* () {
+  it("deleteOne", async function () {
     {
-      const ret = yield model.deleteOne().where({ user_id: 1001 }).exec();
+      const ret = await model.deleteOne().where({ user_id: 1001 }).exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
     }
     {
-      const count = yield model.count().exec();
+      const count = await model.count().exec();
       expect(count).to.equal(2);
     }
-  }));
+  });
 
-  it("delete", coroutine.wrap(function* () {
+  it("delete", async function () {
     {
-      const ret = yield model.delete().exec();
+      const ret = await model.delete().exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(2);
     }
     {
-      const count = yield model.count().exec();
+      const count = await model.count().exec();
       expect(count).to.equal(0);
     }
-  }));
+  });
 
   it("insert undeifned value", async function () {
     {

@@ -5,7 +5,6 @@
  */
 
 import chai = require("chai");
-import coroutine = require("lei-coroutine");
 import orm = require("../");
 import utils = require("./utils");
 
@@ -20,18 +19,18 @@ describe("Manager", function () {
   }));
   console.log(manager);
 
-  before(coroutine.wrap(function* () {
-    const sql = yield utils.readTestFile("admins.sql");
-    yield manager.connection.query("DROP TABLE IF EXISTS `admins`");
-    yield manager.connection.query(sql);
-  }));
+  before(async function () {
+    const sql = await utils.readTestFile("admins.sql");
+    await manager.connection.query("DROP TABLE IF EXISTS `admins`");
+    await manager.connection.query(sql);
+  });
 
-  after(coroutine.wrap(function* () {
-    yield manager.close();
-  }));
+  after(async function () {
+    await manager.close();
+  });
 
-  it("registerModel", coroutine.wrap(function* () {
-    yield 0;
+  it("registerModel", async function () {
+    await 0;
     manager.registerModel("Admin", {
       table: "admins",
       primary: "id",
@@ -44,18 +43,18 @@ describe("Manager", function () {
         created_at: "date",
       },
     });
-  }));
+  });
 
-  it("hasModel", coroutine.wrap(function* () {
-    yield 0;
+  it("hasModel", async function () {
+    await 0;
     expect(manager.hasModel("Admin")).to.be.true;
     expect(manager.hasModel("admin")).to.be.false;
     expect(manager.hasModel("friend")).to.be.false;
-  }));
+  });
 
-  it("model", coroutine.wrap(function* () {
+  it("model", async function () {
     {
-      const ret = yield manager.model("Admin").insert({
+      const ret = await manager.model("Admin").insert({
         name: "超级管理员",
         email: "admin@ucdok.com",
         info: { role: "admin" },
@@ -66,7 +65,7 @@ describe("Manager", function () {
       expect(ret.insertId).to.equal(1);
     }
     {
-      const ret = yield manager.model("Admin").getByPrimary({ id: 1 });
+      const ret = await manager.model("Admin").getByPrimary({ id: 1 });
       console.log(ret);
       expect(ret).to.include({
         id: 1,
@@ -79,6 +78,6 @@ describe("Manager", function () {
         manager.model("Haha");
       }).to.throw('model "Haha" does not exists');
     }
-  }));
+  });
 
 });

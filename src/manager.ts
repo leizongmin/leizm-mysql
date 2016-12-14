@@ -6,7 +6,6 @@
 
 import assert = require("assert");
 import events = require("events");
-import coroutine = require("lei-coroutine");
 import cache = require("./cache");
 import connection = require("./connection");
 import model = require("./model");
@@ -74,12 +73,13 @@ export class Manager extends events.EventEmitter {
    */
   public close(callback?: Callback<void>): Promise<void> | void {
     const cb = utils.wrapCallback(callback);
-    const self = this;
-    coroutine(function* () {
-      yield self.cache.close();
-      yield self.connection.close();
-      self._models.clear();
-    }).then(() => cb(null)).catch(err => cb(err));
+    (async () => {
+      await this.cache.close();
+      await this.connection.close();
+      this._models.clear();
+    })()
+      .then(() => cb(null))
+      .catch(err => cb(err));
     return cb.promise;
   }
 

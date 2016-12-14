@@ -8,7 +8,6 @@ import assert = require("assert");
 import events = require("events");
 import mysql = require("mysql");
 import utils = require("./utils");
-import coroutine = require("lei-coroutine");
 import { Callback, KVObject } from "./define";
 
 export interface WrappedConnection {
@@ -19,6 +18,14 @@ export interface WrappedConnection {
    * @param callback 回调函数
    */
   query(sql: string, values?: any[], callback?: (err: Error, ret: any) => void): Promise<any>;
+  /**
+   * 值转义
+   */
+  escape(value: any): string;
+  /**
+   * 标志符转义
+   */
+  escapeId(value: string): string;
   /**
    * 开始事务
    * @param callback 回调函数
@@ -64,7 +71,7 @@ function wrapConnection(connection: any): WrappedConnection {
           if (typeof cb === "function") {
             return target[name](...args);
           }
-          return coroutine.cb(target, name, ...args);
+          return target[name](...args);
         };
       default:
         return target[name];

@@ -6,7 +6,6 @@
 
 import fs = require("fs");
 import path = require("path");
-import coroutine = require("lei-coroutine");
 import orm = require("../");
 import mysql = require("mysql");
 import utils = require("lei-utils");
@@ -49,7 +48,7 @@ export function readFile(file: string): Promise<Buffer> {
   });
 }
 
-export const readTestFile = coroutine.wrap<string>(function* readTestFile(file: string) {
-  const data = yield readFile(path.resolve(__dirname, file));
+export async function readTestFile(file: string) {
+  const data = await readFile(path.resolve(__dirname, file));
   return data.toString();
-});
+}
