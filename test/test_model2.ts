@@ -11,7 +11,7 @@ import utils = require("./utils");
 
 const expect = chai.expect;
 
-describe("Model - * by primary and cache", function () {
+describe("Model - get|update|delete by primary and cache", function () {
 
   const prefix = utils.randomString(10) + ":";
   const cache = orm.createCache(utils.getCacheConfig({ prefix }));
@@ -140,7 +140,10 @@ describe("Model - * by primary and cache", function () {
     {
       const ret = yield User.updateByPrimary({ id: 1 }, { name: "张三丰", otherField: "test" });
       console.log(ret);
-      expect(ret.affectedRows).to.equal(1);
+      expect(ret).to.include({
+        id: 1,
+        name: "张三",
+      });
     }
     {
       const ret = yield User.getByPrimary({ id: 1 });
@@ -160,7 +163,11 @@ describe("Model - * by primary and cache", function () {
         otherField: "test",
       });
       console.log(ret);
-      expect(ret.affectedRows).to.equal(1);
+      expect(ret).to.include({
+        user_id: 1,
+        friend_id: 2,
+        remark: "阿四",
+      });
     }
     {
       const ret = yield Friend.getByPrimary({
@@ -181,7 +188,10 @@ describe("Model - * by primary and cache", function () {
     {
       const ret = yield User.deleteByPrimary({ id: 1, otherField: "test" });
       console.log(ret);
-      expect(ret.affectedRows).to.equal(1);
+      expect(ret).to.include({
+        id: 1,
+        name: "张三丰",
+      });
     }
     {
       const ret = yield User.getByPrimary({ id: 1, otherField: "test" });
@@ -195,7 +205,10 @@ describe("Model - * by primary and cache", function () {
         otherField: "test",
       });
       console.log(ret);
-      expect(ret.affectedRows).to.equal(1);
+      expect(ret).to.include({
+        user_id: 1,
+        friend_id: 2,
+      });
     }
     {
       const ret = yield Friend.getByPrimary({

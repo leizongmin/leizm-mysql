@@ -143,3 +143,15 @@ export function isUpdateSQL(sql: string): boolean {
 export function joinMultiString(...strs: string[]): string {
   return strs.map(v => v.trim()).filter(v => v).join(" ");
 }
+
+/**
+ * 判断是否每个键都存在
+ */
+export function everyFieldExists(data: KVObject, fields: string[]): boolean {
+  for (const f of fields) {
+    if (!(f in data)) {
+      return false;
+    }
+  }
+  return true;
+}

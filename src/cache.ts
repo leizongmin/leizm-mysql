@@ -10,6 +10,14 @@ import Redis = require("ioredis");
 import utils = require("./utils");
 import { Callback } from "./define";
 
+const GET_BY_POINTER_SCRIPT = `
+local k = redis.call("get", KEYS[1])
+if (k == false) then
+  return k
+end
+return redis.call("get", k)
+`.trim();
+
 export interface CacheOptions {
   /**
    * Redis 连接信息
@@ -77,7 +85,6 @@ export class Cache extends events.EventEmitter {
   /**
    * 保存到缓存
    * @param list 每个元素为 { key, data }
-   * @param callback 回调函数
    */
   public saveList(list: CacheDataItem[]): Promise<string[]>;
   /**
@@ -88,7 +95,7 @@ export class Cache extends events.EventEmitter {
   public saveList(list: CacheDataItem[], callback: Callback<string[]>): void;
 
   public saveList(list: CacheDataItem[], callback?: Callback<string[]>): Promise<string[]> | void {
-    const cb = utils.wrapCallback<string[]>(callback);
+    const cb = utils.wrapCallback(callback);
     if (list && list.length > 0) {
       const p = this._redis.multi();
       const keys: string[] = [];
@@ -105,6 +112,26 @@ export class Cache extends events.EventEmitter {
   }
 
   /**
+   * 保存到缓存
+   * @param item 数据 { key, data }
+   */
+  public saveItem(item: CacheDataItem): Promise<string>;
+  /**
+   * 保存到缓存
+   * @param item 数据 { key, data }
+   * @param callback 回调函数
+   */
+  public saveItem(item: CacheDataItem, callback: Callback<string>): void;
+
+  public saveItem(item: CacheDataItem, callback?: Callback<string>): Promise<string> | void {
+    const cb = utils.wrapCallback(callback);
+    this.saveList([ item ], (err, list) => {
+      cb(err, list && list[0]);
+    });
+    return cb.promise;
+  }
+
+  /**
    * 查询缓存
    * @param keys key 数组
    */
@@ -117,7 +144,7 @@ export class Cache extends events.EventEmitter {
   public getList(keys: string[], callback: Callback<string[]>): void;
 
   public getList(keys: string[], callback?: Callback<string[]>): Promise<string[]> | void {
-    const cb = utils.wrapCallback<string[]>(callback);
+    const cb = utils.wrapCallback(callback);
     if (keys && keys.length > 0) {
       keys = keys.map(key => this._getKey(key));
       this._redis.mget(keys, cb);
@@ -128,19 +155,39 @@ export class Cache extends events.EventEmitter {
   }
 
   /**
+   * 查询缓存
+   * @param key
+   */
+  public getItem(key: string): Promise<string>;
+  /**
+   * 查询缓存
+   * @param key
+   * @param callback 回调函数
+   */
+  public getItem(key: string, callback: Callback<string>): void;
+
+  public getItem(key: string, callback?: Callback<string>): Promise<string> | void {
+    const cb = utils.wrapCallback(callback);
+    this.getList([ key ], (err, list) => {
+      cb(err, list && list[0]);
+    });
+    return cb.promise;
+  }
+
+  /**
    * 从缓存中缓存
-   * @param keys 每个元素为 { key, data }
+   * @param keys
    */
   public removeList(list: string[]): Promise<string[]>;
   /**
    * 从缓存中缓存
-   * @param keys 每个元素为 { key, data }
+   * @param keys
    * @param callback 回调函数
    */
   public removeList(list: string[], callback: Callback<string[]>): void;
 
   public removeList(list: string[], callback?: Callback<string[]>): Promise<string[]> | void {
-    const cb = utils.wrapCallback<string[]>(callback);
+    const cb = utils.wrapCallback(callback);
     if (list && list.length > 0) {
       const p = this._redis.multi();
       const keys: string[] = [];
@@ -153,6 +200,43 @@ export class Cache extends events.EventEmitter {
     } else {
       process.nextTick(() => cb(null, []));
     }
+    return cb.promise;
+  }
+
+  /**
+   * 删除缓存
+   * @param key
+   */
+  public removeItem(key: string): Promise<string>;
+  /**
+   * 删除缓存
+   * @param key
+   * @param callback 回调函数
+   */
+  public removeItem(key: string, callback: Callback<string>): void;
+
+  public removeItem(key: string, callback?: Callback<string>): Promise<string> | void {
+    const cb = utils.wrapCallback(callback);
+    this.removeList([ key ], (err, list) => {
+      cb(err, list && list[0]);
+    });
+    return cb.promise;
+  }
+
+  /**
+   * 查询缓存(key的内容指向另一个key)
+   * @param key
+   */
+  public getPointerItem(key: string): Promise<string>;
+  /**
+   * 查询缓存(key的内容指向另一个key)
+   * @param key
+   */
+  public getPointerItem(key: string, callback: Callback<string>): void;
+
+  public getPointerItem(key: string, callback?: Callback<string>): Promise<string> | void {
+    const cb = utils.wrapCallback(callback);
+    this._redis.eval(GET_BY_POINTER_SCRIPT, 1, this._getKey(key), cb);
     return cb.promise;
   }
 

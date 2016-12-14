@@ -12,7 +12,7 @@ import schema = require("./schema");
 import query = require("./query");
 import { Callback, KVObject } from "./define";
 
-export type ModelKey = string | string[];
+export type FieldName = string | string[];
 
 export interface ModelBaseOptions extends schema.SchemaOptions {
   /**
@@ -22,11 +22,15 @@ export interface ModelBaseOptions extends schema.SchemaOptions {
   /**
    * 主键
    */
-  primary?: ModelKey;
+  primary?: FieldName;
   /**
    * 主键是否自增
    */
   autoIncrement?: boolean;
+  /**
+   * 唯一键
+   */
+  uniques?: FieldName[];
 }
 
 export interface ModelOptions extends ModelBaseOptions {
@@ -58,6 +62,7 @@ export class Model {
   public readonly tableName: string;
   public readonly primaryKey: string[];
   public readonly primaryKeyAutoIncrement: boolean;
+  public readonly uniqueKeyList: string[][];
   public readonly schema: schema.Schema;
 
   /**
@@ -96,27 +101,54 @@ export class Model {
       this.primaryKeyAutoIncrement = false;
     }
 
+    if (options.uniques) {
+      assert.ok(Array.isArray(options.uniques), `uniques must be an array`);
+      assert.ok(options.uniques.length > 0, `uniques must have less than 1 item`);
+      this.uniqueKeyList = options.uniques.map(item => {
+        assert.ok(typeof item === "string" || Array.isArray(item) );
+        if (Array.isArray(item)) {
+          return item.sort();
+        } else {
+          return [ item ];
+        }
+      });
+    }
+
     this.schema = new schema.Schema(options);
   }
 
   /**
-   * 从一行数据中获取主键标志符
+   * 从一行数据中获取主键缓存名称
    * @param data 键值对数据
    * @param strict 是否严格检查每个键的数据都存在，如果为 true 且键不存在时抛出异常，否则返回 undefined
    */
-  public getPrimaryCacheKey(data: KVObject, strict?: boolean): string | void {
+  public getPrimaryCacheKey(data: KVObject, strict?: boolean): string {
     assert.ok(this.primaryKey, `table "${ this.tableName }" does not have primary key`);
-    let everyKeyExists = true;
+    let isEveryKeyExists = true;
     const key = this.primaryKey.map(name => {
-      everyKeyExists = everyKeyExists && name in data;
+      isEveryKeyExists = isEveryKeyExists && name in data;
       if (strict) {
-        assert.ok(everyKeyExists, `missing primary key "${ name }" in this data row`);
+        assert.ok(isEveryKeyExists, `missing primary key "${ name }" in this data row`);
       }
-      return `${ name }_${ data[name] }`;
+      return `${ name }:${ data[name] }`;
     }).join(":");
-    if (everyKeyExists) {
-      return `${ this.tableName }:r:${ key }`;
+    return isEveryKeyExists ? `${ this.tableName }:r:${ key }` : "";
+  }
+
+  /**
+   * 从一行数据中获取唯一键缓存名称列表
+   * @param data 键值对数据
+   */
+  public getUniqueCacheKeys(data: KVObject): string[] {
+    const list: string[] = [];
+    if (Array.isArray(this.uniqueKeyList)) {
+      this.uniqueKeyList.forEach(fields => {
+        if (utils.everyFieldExists(data, fields)) {
+          list.push(fields.map(f => `${ this.tableName }:u:${ f }:${ data[f] }`).join(":"));
+        }
+      });
     }
+    return list;
   }
 
   /**
@@ -134,83 +166,21 @@ export class Model {
   }
 
   /**
-   * 将结果保存到缓存
+   * 从一行数据中保留唯一键的数据，如果有多组唯一键则仅返回第一个匹配的唯一键
    * @param data 键值对数据
    */
-  public saveCache(data: cache.CacheDataItem, callback?: Callback<string[]>): Promise<string[]> | void;
-  /**
-   * 将结果保存到缓存
-   * @param data 键值对数据数组
-   */
-  public saveCache(data: cache.CacheDataItem[], callback?: Callback<string[]>): Promise<string[]> | void;
-
-  public saveCache(data: cache.CacheDataItem | cache.CacheDataItem[], callback?: Callback<string[]>): Promise<string[]> | void {
-    const cb = utils.wrapCallback(callback);
-    if (!Array.isArray(data)) {
-      data = [ data ];
-    }
-    const list = data.filter(item => {
-      // 过滤无效的结果
-      return item;
-    }).map(item => {
-      return {
-        key: this.getPrimaryCacheKey(item, true),
-        data: this.schema.serialize(item),
-      };
-    }).filter(item => item.key) as cache.CacheDataItem[];
-    this.cache.saveList(list, cb);
-    return cb.promise;
-  }
-
-  /**
-   * 删除缓存中的结果
-   * @param data 键值对数据
-   */
-  public removeCache(data: KVObject, callback?: Callback<string[]>): Promise<string[]> | void;
-  /**
-   * 删除缓存中的结果
-   * @param data 键值对数据数组
-   */
-  public removeCache(data: KVObject[], callback?: Callback<string[]>): Promise<string[]> | void;
-
-  public removeCache(data: KVObject | KVObject[], callback?: Callback<string[]>): Promise<string[]> | void {
-    const cb = utils.wrapCallback(callback);
-    if (!Array.isArray(data)) {
-      data = [ data ];
-    }
-    const list = (data as KVObject[])
-                    .map(item => this.getPrimaryCacheKey(item, false))
-                    .filter(key => key) as string[];
-    this.cache.removeList(list, cb);
-    return cb.promise;
-  }
-
-  /**
-   * 从缓存中查询结果
-   * @param data 键值对数据
-   */
-  public getCache(data: KVObject, callback?: Callback<KVObject[]>): Promise<KVObject[]> | void;
-  /**
-   * 从缓存中查询结果
-   * @param data 键值对数据数组
-   */
-  public getCache(data: KVObject[], callback?: Callback<KVObject[]>): Promise<KVObject[]> | void;
-
-  public getCache(data: KVObject | KVObject[], callback?: Callback<KVObject[]>): Promise<KVObject[]> | void {
-    const cb = utils.wrapCallback(callback);
-    if (!Array.isArray(data)) {
-      data = [ data ];
-    }
-    const list = (data as KVObject[])
-                    .map(item => this.getPrimaryCacheKey(item, false))
-                    .filter(key => key) as string[];
-    this.cache.getList(list, (err, ret) => {
-      if (err) {
-        return cb(err);
+  public keepUniqueFields(data: KVObject): KVObject {
+    assert.ok(this.uniqueKeyList, `table "${ this.tableName }" does not have unique key`);
+    for (const fields of this.uniqueKeyList) {
+      if (utils.everyFieldExists(data, fields)) {
+        const ret = {};
+        for (const f of fields) {
+          ret[f] = data[f];
+        }
+        return ret;
       }
-      cb(null, ret && ret.map(v => this.schema.unserialize(v)));
-    });
-    return cb.promise;
+    }
+    throw new Error(`missing unique key in this data row, must includes one of ${ this.uniqueKeyList.map(keys => keys.join(",")).join(" | ") }`);
   }
 
   /**
@@ -458,35 +428,35 @@ export class Model {
   public getByPrimary(query: KVObject, callback?: Callback<KVObject>): Promise<KVObject> | void {
     const cb = utils.wrapCallback(callback);
     query = this.keepPrimaryFields(query);
+    const key = this.getPrimaryCacheKey(query);
     // 先尝试从缓存中获取
-    this.getCache(query, (err, list) => {
+    this.cache.getItem(key, (err, str) => {
       if (err) {
         return cb(err);
       }
-      const c = list && list[0];
-      if (c) {
-        return cb(err, c);
+      if (str) {
+        return cb(err, this.schema.unserialize(str));
       }
       // 从数据库查询
       this.findOne().where(query).exec((err2, ret) => {
         if (err2) {
           return cb(err2);
         }
-        // 保存到缓存
-        this.saveCache(ret, err3 => cb(err3, ret));
+        // 更新缓存
+        this.updateCache(ret).then(() => cb(null, ret)).catch(cb);
       });
     });
     return cb.promise;
   }
 
   /**
-   * 更新指定主键的数据，并更新缓存
+   * 更新指定主键的数据，并删除缓存
    * @param query 查询条件
    * @param update 更新数据
    */
   public updateByPrimary(query: KVObject, update: KVObject): Promise<KVObject>;
   /**
-   * 更新指定主键的数据，并更新缓存
+   * 更新指定主键的数据，并删除缓存
    * @param query 查询条件
    * @param update 更新数据
    * @param callback 回调函数
@@ -495,14 +465,25 @@ export class Model {
 
   public updateByPrimary(query: KVObject, update: KVObject, callback?: Callback<KVObject>): Promise<KVObject> | void {
     const cb = utils.wrapCallback(callback);
-    this.updateOne(update)
-      .where(this.keepPrimaryFields(query))
-      .exec((err, ret) => {
-        if (err) {
-          return cb(err);
+    query = this.keepPrimaryFields(query);
+    // 先查询出旧的数据
+    this.findOne().where(query).exec((err, data) => {
+      if (err) {
+        return cb(err);
+      }
+      if (!data) {
+        // 如果数据不存在则直接返回
+        return cb(null);
+      }
+      this.updateOne(update).where(query).exec((err2) => {
+        if (err2) {
+          return cb(err2);
         }
-        this.removeCache(query, err2 => cb(err2, ret));
+        // 删除缓存
+        this.removeCache(data).then(() => cb(null, data)).catch(cb);
       });
+      return cb.promise;
+    });
     return cb.promise;
   }
 
@@ -520,15 +501,166 @@ export class Model {
 
   public deleteByPrimary(query: KVObject, callback?: Callback<KVObject>): Promise<KVObject> | void {
     const cb = utils.wrapCallback(callback);
-    this.deleteOne()
-      .where(this.keepPrimaryFields(query))
-      .exec((err, ret) => {
-        if (err) {
-          return cb(err);
+    query = this.keepPrimaryFields(query);
+    this.findOne().where(query).exec((err, data) => {
+      if (err) {
+        return cb(err);
+      }
+      if (!data) {
+        // 如果数据不存在则直接返回
+        return cb(null);
+      }
+      this.deleteOne().where(query).exec((err2, ret) => {
+        if (err2) {
+          return cb(err2);
         }
-        this.removeCache(query, err2 => cb(err2, ret));
+        // 删除缓存
+        this.removeCache(data).then(() => cb(null, data)).catch(cb);
       });
+    });
     return cb.promise;
+  }
+
+  /**
+   * 获取指定唯一键的数据，优先从缓存读取
+   * @param query 键值对数据
+   */
+  public getByUnique(query: KVObject): Promise<KVObject>;
+  /**
+   * 获取指定唯一键的数据，优先从缓存读取
+   * @param query 查询条件
+   * @param callback 回调函数
+   */
+  public getByUnique(query: KVObject, callback: Callback<KVObject>): void;
+
+  public getByUnique(query: KVObject, callback?: Callback<KVObject>): Promise<KVObject> | void {
+    const cb = utils.wrapCallback(callback);
+    query = this.keepUniqueFields(query);
+    const key = this.getUniqueCacheKeys(query)[0] || "";
+    // 先尝试从缓存中获取
+    this.cache.getPointerItem(key, (err, str) => {
+      if (err) {
+        return cb(err);
+      }
+      if (str) {
+        return cb(err, this.schema.unserialize(str));
+      }
+      // 从数据库查询
+      this.findOne().where(query).exec((err2, ret) => {
+        if (err2) {
+          return cb(err2);
+        }
+        // 更新缓存
+        this.updateCache(ret).then(() => cb(null, ret)).catch(cb);
+      });
+    });
+    return cb.promise;
+  }
+
+  /**
+   * 更新指定唯一键的数据，并删除缓存
+   * @param query 查询条件
+   * @param update 更新数据
+   */
+  public updateByUnique(query: KVObject, update: KVObject): Promise<KVObject>;
+  /**
+   * 更新指定唯一键的数据，并删除缓存
+   * @param query 查询条件
+   * @param update 更新数据
+   * @param callback 回调函数
+   */
+  public updateByUnique(query: KVObject, update: KVObject, callback: Callback<KVObject>): Promise<KVObject> | void;
+
+  public updateByUnique(query: KVObject, update: KVObject, callback?: Callback<KVObject>): Promise<KVObject> | void {
+    const cb = utils.wrapCallback(callback);
+    query = this.keepUniqueFields(query);
+    // 先查询出旧的数据
+    this.findOne().where(query).exec((err, data) => {
+      if (err) {
+        return cb(err);
+      }
+      if (!data) {
+        // 如果数据不存在则直接返回
+        return cb(null);
+      }
+      this.updateOne(update).where(query).exec((err2) => {
+        if (err2) {
+          return cb(err2);
+        }
+        // 删除缓存
+        this.removeCache(data).then(() => cb(null, data)).catch(cb);
+      });
+      return cb.promise;
+    });
+    return cb.promise;
+  }
+
+  /**
+   * 删除唯一键的数据，并删除缓存
+   * @param query 查询条件
+   */
+  public deleteByUnique(query: KVObject): Promise<KVObject>;
+  /**
+   * 删除唯一键的数据，并删除缓存
+   * @param query 查询条件
+   * @param callback 回调函数
+   */
+  public deleteByUnique(query: KVObject, callback: Callback<KVObject>): Promise<KVObject> | void;
+
+  public deleteByUnique(query: KVObject, callback?: Callback<KVObject>): Promise<KVObject> | void {
+    const cb = utils.wrapCallback(callback);
+    query = this.keepUniqueFields(query);
+    this.findOne().where(query).exec((err, data) => {
+      if (err) {
+        return cb(err);
+      }
+      if (!data) {
+        // 如果数据不存在则直接返回
+        return cb(null);
+      }
+      this.deleteOne().where(query).exec((err2, ret) => {
+        if (err2) {
+          return cb(err2);
+        }
+        // 删除缓存
+        this.removeCache(data).then(() => cb(null, data)).catch(cb);
+      });
+    });
+    return cb.promise;
+  }
+
+  /**
+   * 更新缓存，包括 primaryKey 和 uniqueKeys
+   */
+  private async updateCache(data: KVObject): Promise<string[]> {
+    if (data) {
+      const primaryKey = this.getPrimaryCacheKey(data);
+      const uniqueKeys = this.getUniqueCacheKeys(data);
+      const allKeys = [ primaryKey ].concat(uniqueKeys);
+      await this.cache.removeList(allKeys.slice());
+      const save: cache.CacheDataItem[] = [];
+      save.push({ key: primaryKey, data: this.schema.serialize(data) });
+      for (const key of uniqueKeys) {
+        save.push({ key, data: primaryKey });
+      }
+      await this.cache.saveList(save);
+      return allKeys;
+    }
+    return [];
+  }
+
+  /**
+   * 删除缓存，包括 primaryKey 和 uniqueKeys
+   */
+  private async removeCache(data: KVObject): Promise<string[]> {
+    if (data) {
+      const primaryKey = this.getPrimaryCacheKey(data);
+      const uniqueKeys = this.getUniqueCacheKeys(data);
+      const allKeys = [ primaryKey ].concat(uniqueKeys);
+      await this.cache.removeList(allKeys.slice());
+      return allKeys;
+    }
+    return [];
   }
 
 }
