@@ -160,10 +160,11 @@ export class Model {
    */
   public getUniqueCacheKeys(data: KVObject): string[] {
     const list: string[] = [];
+    const prefix = `${ this.tableName }:u:`;
     if (Array.isArray(this.uniqueKeyList)) {
       this.uniqueKeyList.forEach(fields => {
         if (utils.everyFieldExists(data, fields)) {
-          list.push(fields.map(f => `${ this.tableName }:u:${ f }:${ data[f] }`).join(":"));
+          list.push(prefix + fields.map(f => `${ f }:${ data[f] }`).join(":"));
         }
       });
     }
