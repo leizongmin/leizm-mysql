@@ -15,7 +15,7 @@ export const randomString = utils.randomString;
 export function getConnectionConfig(config?: mysql.IPoolConfig): mysql.IPoolConfig {
   return Object.assign({
     host: "127.0.0.1",
-    port: 3306,
+    port: 13306,
     user: "root",
     password: "",
     database: "test",
