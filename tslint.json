@@ -15,6 +15,9 @@
     ],
     "object-literal-sort-keys": false,
     "forin": false,
-    "arrow-parens": false
+    "arrow-parens": false,
+    "no-unused-variable": [
+      false
+    ]
   }
 }

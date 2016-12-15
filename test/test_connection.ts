@@ -4,11 +4,8 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import chai = require("chai");
 import orm = require("../");
 import utils = require("./utils");
-
-const expect = chai.expect;
 
 describe("Connection", function () {
 
