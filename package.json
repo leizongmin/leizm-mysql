@@ -1,6 +1,6 @@
 {
   "name": "super-orm",
-  "version": "0.0.16",
+  "version": "0.1.0",
   "description": "基于 Node.js 的 MySQL ORM 模块，支持缓存、多 MySQL 连接",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,6 +14,7 @@
     "test-watch": "npm run compile && export DEBUG='super-orm:*' && export TS_NODE_PROJECT=test && mocha --watch",
     "test-cov": "npm run compile && export TS_NODE_PROJECT=test && istanbul cover _mocha && npm run test-cov-remap",
     "test-cov-remap": "remap-istanbul -i coverage/coverage.json  -t html -o coverage/html-report",
+    "upload-coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "prepublish": "npm run test"
   },
   "repository": {
@@ -44,6 +45,7 @@
     "@types/chai": "^3.4.34",
     "@types/mocha": "^2.2.33",
     "chai": "^3.5.0",
+    "coveralls": "^2.11.15",
     "istanbul": "^0.4.5",
     "mocha": "^3.1.2",
     "remap-istanbul": "^0.7.0",
