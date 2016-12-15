@@ -209,4 +209,60 @@ describe("Model - get|update|delete by unique and cache", function () {
     }
   });
 
+  it("removeAllCache", async function () {
+    // 先创建缓存
+    {
+      const ret = await User.getByPrimary({ id: 1 });
+      console.log(ret);
+      expect(ret).to.have.property("id", 1);
+    }
+    {
+      const ret = await User.getByPrimary({ id: 2 });
+      console.log(ret);
+      expect(ret).to.have.property("id", 2);
+    }
+    {
+      const ret = await User.getByPrimary({ id: 3 });
+      console.log(ret);
+      expect(ret).to.have.property("id", 3);
+    }
+    // 使用别的方法修改内容
+    {
+      const ret = await User.update({ info: "no cache" }).exec();
+      console.log(ret);
+      expect(ret).to.have.property("affectedRows", 3);
+    }
+    // 删除缓存
+    {
+      const ret = await User.removeAllCache("1");
+      console.log(ret);
+      expect(ret).to.be.lengthOf(3);
+    }
+    // 重新查询
+    {
+      const ret = await User.getByPrimary({ id: 1 });
+      console.log(ret);
+      expect(ret).to.include({
+        id: 1,
+        info: "no cache",
+      });
+    }
+    {
+      const ret = await User.getByPrimary({ id: 2 });
+      console.log(ret);
+      expect(ret).to.include({
+        id: 2,
+        info: "no cache",
+      });
+    }
+    {
+      const ret = await User.getByPrimary({ id: 3 });
+      console.log(ret);
+      expect(ret).to.include({
+        id: 3,
+        info: "no cache",
+      });
+    }
+  });
+
 });

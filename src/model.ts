@@ -57,12 +57,21 @@ export interface ModelQueryOptions {
 
 export class Model {
 
+  /** Connection 实例 */
   public readonly connection: connection.Connection;
+  /** Cache 实例 */
   public readonly cache: cache.Cache;
+  /** 表名 */
   public readonly tableName: string;
+  /** 主键 */
   public readonly primaryKey: string[];
+  /** 主键是否自增 */
   public readonly primaryKeyAutoIncrement: boolean;
+  /** 唯一键列表 */
   public readonly uniqueKeyList: string[][];
+  /** 主键和唯一键列表 */
+  public readonly importantFields: string[];
+  /** Schema 实例 */
   public readonly schema: schema.Schema;
 
   /**
@@ -81,6 +90,9 @@ export class Model {
     assert.ok(typeof options.table === "string", `table name must be a string`);
     this.tableName = options.table;
 
+    const importantFields = new Set<string>();
+
+    // 主键
     if (options.primary) {
       assert.ok(typeof options.primary === "string" || Array.isArray(options.primary), `primary must be a string or array`);
       if (Array.isArray(options.primary)) {
@@ -92,8 +104,10 @@ export class Model {
       } else {
         this.primaryKey = [ options.primary ];
       }
+      this.primaryKey.forEach(f => importantFields.add(f));
     }
 
+    // 主键是否自增
     if (options.autoIncrement) {
       assert.equal(this.primaryKey.length, 1, `invalid primary key number when autoIncrement=true`);
       this.primaryKeyAutoIncrement = true;
@@ -101,6 +115,7 @@ export class Model {
       this.primaryKeyAutoIncrement = false;
     }
 
+    // 唯一键列表
     if (options.uniques) {
       assert.ok(Array.isArray(options.uniques), `uniques must be an array`);
       assert.ok(options.uniques.length > 0, `uniques must have less than 1 item`);
@@ -112,7 +127,11 @@ export class Model {
           return [ item ];
         }
       });
+      this.uniqueKeyList.forEach(fields => fields.forEach(f => importantFields.add(f)));
     }
+
+    // 主键和唯一键列表
+    this.importantFields = Array.from(importantFields).sort();
 
     this.schema = new schema.Schema(options);
   }
@@ -443,7 +462,7 @@ export class Model {
           return cb(err2);
         }
         // 更新缓存
-        this.updateCache(ret).then(() => cb(null, ret)).catch(cb);
+        this.updateCacheByDataRow(ret).then(() => cb(null, ret)).catch(cb);
       });
     });
     return cb.promise;
@@ -480,7 +499,7 @@ export class Model {
           return cb(err2);
         }
         // 删除缓存
-        this.removeCache(data).then(() => cb(null, data)).catch(cb);
+        this.removeCacheByDataRow(data).then(() => cb(null, data)).catch(cb);
       });
       return cb.promise;
     });
@@ -515,7 +534,7 @@ export class Model {
           return cb(err2);
         }
         // 删除缓存
-        this.removeCache(data).then(() => cb(null, data)).catch(cb);
+        this.removeCacheByDataRow(data).then(() => cb(null, data)).catch(cb);
       });
     });
     return cb.promise;
@@ -551,7 +570,7 @@ export class Model {
           return cb(err2);
         }
         // 更新缓存
-        this.updateCache(ret).then(() => cb(null, ret)).catch(cb);
+        this.updateCacheByDataRow(ret).then(() => cb(null, ret)).catch(cb);
       });
     });
     return cb.promise;
@@ -588,7 +607,7 @@ export class Model {
           return cb(err2);
         }
         // 删除缓存
-        this.removeCache(data).then(() => cb(null, data)).catch(cb);
+        this.removeCacheByDataRow(data).then(() => cb(null, data)).catch(cb);
       });
       return cb.promise;
     });
@@ -623,20 +642,59 @@ export class Model {
           return cb(err2);
         }
         // 删除缓存
-        this.removeCache(data).then(() => cb(null, data)).catch(cb);
+        this.removeCacheByDataRow(data).then(() => cb(null, data)).catch(cb);
       });
     });
     return cb.promise;
   }
 
   /**
+   * 删除符合指定查询条件的所有缓存
+   * @param query 可以为键值对数据或者 SQL 查询语句
+   */
+  public removeAllCache(query: KVObject | string): Promise<KVObject[]>;
+  /**
+   * 删除符合指定查询条件的所有缓存
+   * @param query 可以为键值对数据或者 SQL 查询语句
+   * @param callback 回调函数
+   */
+  public removeAllCache(query: KVObject | string, callback: Callback<KVObject[]>): void;
+
+  public removeAllCache(query: KVObject | string, callback?: Callback<KVObject[]>): Promise<KVObject[]> | void {
+    const cb = utils.wrapCallback(callback);
+    if (this.importantFields.length > 0) {
+      // 查询出旧的数据
+      const q = this.find().fields(...this.importantFields);
+      if (typeof query === "string") {
+        q.where(query);
+      } else {
+        q.where(query);
+      }
+      q.exec((err, list) => {
+        if (err) {
+          return cb(err);
+        }
+        // 生成所有缓存的 Key
+        let keys: string[] = [];
+        for (const item of list) {
+          const { allKeys } = this.getCacheKeysByDataRow(item);
+          keys = keys.concat(allKeys);
+        }
+        // 删除缓存
+        this.cache.removeList(keys, (err2) => cb(err2, list));
+      });
+    } else {
+      process.nextTick(() => cb(null, []));
+    }
+    return cb.promise;
+  }
+
+  /**
    * 更新缓存，包括 primaryKey 和 uniqueKeys
    */
-  private async updateCache(data: KVObject): Promise<string[]> {
+  private async updateCacheByDataRow(data: KVObject): Promise<string[]> {
     if (data) {
-      const primaryKey = this.getPrimaryCacheKey(data);
-      const uniqueKeys = this.getUniqueCacheKeys(data);
-      const allKeys = [ primaryKey ].concat(uniqueKeys);
+      const { primaryKey, uniqueKeys, allKeys } = this.getCacheKeysByDataRow(data);
       await this.cache.removeList(allKeys.slice());
       const save: cache.CacheDataItem[] = [];
       save.push({ key: primaryKey, data: this.schema.serialize(data) });
@@ -652,15 +710,27 @@ export class Model {
   /**
    * 删除缓存，包括 primaryKey 和 uniqueKeys
    */
-  private async removeCache(data: KVObject): Promise<string[]> {
+  private async removeCacheByDataRow(data: KVObject): Promise<string[]> {
     if (data) {
-      const primaryKey = this.getPrimaryCacheKey(data);
-      const uniqueKeys = this.getUniqueCacheKeys(data);
-      const allKeys = [ primaryKey ].concat(uniqueKeys);
+      const { allKeys } = this.getCacheKeysByDataRow(data);
       await this.cache.removeList(allKeys.slice());
       return allKeys;
     }
     return [];
+  }
+
+  /**
+   * 根据数据行获取其相关的缓存 Key
+   */
+  private getCacheKeysByDataRow(data: KVObject): {
+    primaryKey: string;
+    uniqueKeys: string[];
+    allKeys: string[];
+  } {
+    const primaryKey = this.getPrimaryCacheKey(data);
+    const uniqueKeys = this.getUniqueCacheKeys(data);
+    const allKeys = [ primaryKey ].concat(uniqueKeys);
+    return { primaryKey, uniqueKeys, allKeys };
   }
 
 }
