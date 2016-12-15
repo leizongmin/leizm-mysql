@@ -44,7 +44,7 @@ describe("Connection", function () {
     }
     {
       const c = await conn.getMasterConnection();
-      console.log(c.escape(new Date()));
+      console.log(c.escape(utils.newDate()));
       await c.beginTransaction();
       try {
         const ret = await c.query('INSERT INTO `blog_contents`(`id`,`content`) VALUES (1234, "456")');

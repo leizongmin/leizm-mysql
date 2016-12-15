@@ -58,7 +58,7 @@ describe("Manager", function () {
         name: "超级管理员",
         email: "admin@ucdok.com",
         info: { role: "admin" },
-        created_at: new Date(),
+        created_at: utils.newDate(),
       }).exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);

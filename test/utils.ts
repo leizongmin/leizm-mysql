@@ -52,3 +52,14 @@ export async function readTestFile(file: string) {
   const data = await readFile(path.resolve(__dirname, file));
   return data.toString();
 }
+
+export function newDate(v?: any): Date {
+  const d = (v ? new Date(v) : new Date()).getTime();
+  return new Date(parseInt((d / 1000).toString(), 10) * 1000);
+}
+
+export function sleep(ms: number): Promise<number> {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => resolve(ms), ms);
+  });
+}

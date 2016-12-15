@@ -47,7 +47,7 @@ describe("Model - normal", function () {
         mem: process.memoryUsage(),
         uptime: process.uptime(),
       },
-      created_at: new Date(),
+      created_at: utils.newDate(),
       score: 0,
     };
     {
@@ -65,14 +65,14 @@ describe("Model - normal", function () {
       const ret = await model.insert([{
         blog_id: 2,
         user_id: 1001,
-        created_at: new Date(),
+        created_at: utils.newDate(),
         info: {
           message: "hello, world",
         },
       }, {
         blog_id: 3,
         user_id: 1002,
-        created_at: new Date(),
+        created_at: utils.newDate(),
         info: null,
       }]).exec();
       console.log(ret);
@@ -167,7 +167,7 @@ describe("Model - normal", function () {
       pid: process.pid,
       uptime: process.uptime(),
     };
-    const created_at = new Date();
+    const created_at = utils.newDate();
     const query = {
       user_id: 1001,
     };
@@ -191,10 +191,12 @@ describe("Model - normal", function () {
   });
 
   it("updateOne", async function () {
+    // 等待一段时间以使得  created_at 时间不一样
+    await utils.sleep(1500);
     const info = {
       message: "from updateOne",
     };
-    const created_at = new Date();
+    const created_at = utils.newDate();
     const user_id = 1001;
     {
       const ret = await model.updateOne("`info`=:info, `created_at`=:created_at", {

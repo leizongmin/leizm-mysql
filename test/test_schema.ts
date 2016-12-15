@@ -6,6 +6,7 @@
 
 import chai = require("chai");
 const orm = require("../");
+const utils = require("./utils");
 
 const expect = chai.expect;
 
@@ -29,7 +30,7 @@ describe("Schema", function () {
   });
 
   it("serialize && unserialize", function () {
-    const date = new Date();
+    const date = utils.newDate();
     const data = schema.serialize({
       name: "ABC",
       info: {
