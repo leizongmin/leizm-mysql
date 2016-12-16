@@ -32,23 +32,23 @@ export interface QueryOptionsParams {
   /**
    * 跳过的行数
    */
-  skip: number;
+  skip?: number;
   /**
    * 返回的行数
    */
-  limit: number;
+  limit?: number;
   /**
    * 排序方向
    */
-  orderBy: string;
+  orderBy?: string;
   /**
    * 分组
    */
-  groupBy: string;
+  groupBy?: string;
   /**
    * 返回字段列表
    */
-  fields: string[];
+  fields?: string[];
 }
 
 export class QueryBuilder {
@@ -474,26 +474,20 @@ export class QueryBuilder {
    */
   public options(options: QueryOptionsParams): this {
     assert.ok(options, `options must be an Object`);
-    for (const name in options) {
-      switch (name) {
-      case "skip":
-        this.skip(options.skip);
-        break;
-      case "limit":
-        this.limit(options.limit);
-        break;
-      case "orderBy":
-        this.orderBy(options.orderBy);
-        break;
-      case "groupBy":
-        this.groupBy(options.groupBy);
-        break;
-      case "fields":
-        this.fields(...options.fields);
-        break;
-      default:
-        // do nothing
-      }
+    if (typeof options.skip !== "undefined") {
+      this.skip(options.skip);
+    }
+    if (typeof options.limit !== "undefined") {
+      this.limit(options.limit);
+    }
+    if (typeof options.orderBy !== "undefined") {
+      this.orderBy(options.orderBy);
+    }
+    if (typeof options.groupBy !== "undefined") {
+      this.groupBy(options.groupBy);
+    }
+    if (typeof options.fields !== "undefined") {
+      this.fields(...options.fields);
     }
     return this;
   }
