@@ -206,11 +206,15 @@ export class QueryBuilder {
     assert.ok(condition, `missing condition`);
     assert.ok(t === "string" || t === "object", `condition must be a string or object`);
     if (typeof condition === "string") {
+      // 检查 condition 不能为空
+      assert.ok(condition.trim(), `condition cannot be empty`);
       this._data.conditions.push(this.format(condition, values || []));
     } else {
       if (this._schema) {
         condition = this._schema.formatInput(condition);
       }
+      // 检查 condition 不能为空
+      assert.ok(Object.keys(condition).length > 0, `condition cannot be empty`);
       for (const name in condition) {
         this._data.conditions.push(`${ utils.sqlEscapeId(name) }=${ utils.sqlEscape(condition[name]) }`);
       }

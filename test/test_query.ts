@@ -295,4 +295,21 @@ describe("QueryBuilder", function () {
     }
   });
 
+  it("where(condition) cannot be empty", function () {
+    {
+      const query = orm.createQueryBuilder({ table: "test1" });
+      expect(() => {
+        const sql = query.select("name", "age").where({}).build();
+        console.log(sql);
+      }).to.throw("condition cannot be empty");
+    }
+    {
+      const query = orm.createQueryBuilder({ table: "test1" });
+      expect(() => {
+        const sql = query.select("name", "age").where("   ").build();
+        console.log(sql);
+      }).to.throw("condition cannot be empty");
+    }
+  });
+
 });
