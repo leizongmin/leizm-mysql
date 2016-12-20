@@ -295,20 +295,34 @@ describe("QueryBuilder", function () {
     }
   });
 
-  it("where(condition) cannot be empty", function () {
+  it("where(condition): modify condition cannot be empty", function () {
+    // SELECT 操作可以为空
+    {
+      const query = orm.createQueryBuilder({ table: "test1" });
+      const sql = query.select("name", "age").where({}).build();
+      console.log(sql);
+      expect(sql).to.equal("SELECT `name`, `age` FROM `test1`");
+    }
+    {
+      const query = orm.createQueryBuilder({ table: "test1" });
+      const sql = query.select("name", "age").where("   ").build();
+      console.log(sql);
+      expect(sql).to.equal("SELECT `name`, `age` FROM `test1`");
+    }
+    // 其他操作不能为空
     {
       const query = orm.createQueryBuilder({ table: "test1" });
       expect(() => {
-        const sql = query.select("name", "age").where({}).build();
+        const sql = query.update({ a: 123 }).where({}).build();
         console.log(sql);
-      }).to.throw("condition cannot be empty");
+      }).to.throw("modify condition cannot be empty");
     }
     {
       const query = orm.createQueryBuilder({ table: "test1" });
       expect(() => {
-        const sql = query.select("name", "age").where("   ").build();
+        const sql = query.delete().where("   ").build();
         console.log(sql);
-      }).to.throw("condition cannot be empty");
+      }).to.throw("modify condition cannot be empty");
     }
   });
 

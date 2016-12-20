@@ -206,15 +206,19 @@ export class QueryBuilder {
     assert.ok(condition, `missing condition`);
     assert.ok(t === "string" || t === "object", `condition must be a string or object`);
     if (typeof condition === "string") {
-      // 检查 condition 不能为空
-      assert.ok(condition.trim(), `condition cannot be empty`);
+      if (this._data.type !== "SELECT") {
+        // 如果是更改操作，检查 condition 不能为空
+        assert.ok(condition.trim(), `modify condition cannot be empty`);
+      }
       this._data.conditions.push(this.format(condition, values || []));
     } else {
       if (this._schema) {
         condition = this._schema.formatInput(condition);
       }
-      // 检查 condition 不能为空
-      assert.ok(Object.keys(condition).length > 0, `condition cannot be empty`);
+      if (this._data.type !== "SELECT") {
+        // 如果是更改操作，检查 condition 不能为空
+        assert.ok(Object.keys(condition).length > 0, `modify condition cannot be empty`);
+      }
       for (const name in condition) {
         this._data.conditions.push(`${ utils.sqlEscapeId(name) }=${ utils.sqlEscape(condition[name]) }`);
       }
@@ -524,6 +528,7 @@ export class QueryBuilder {
   public build(): string {
     const d = this._data;
     const t = this._tableNameEscaped;
+    d.conditions = d.conditions.map(v => v.trim()).filter(v => v);
     const where = d.conditions.length > 0 ? `WHERE ${ d.conditions.join(" AND ") }` : "";
     const limit = d.limit;
     let sql: string;
