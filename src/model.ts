@@ -209,6 +209,7 @@ export class Model {
   public query(options: ModelQueryOptions = {}): query.QueryBuilder {
     return new query.QueryBuilder({
       table: this.tableName,
+      schema: this.schema,
       exec: (sql, callback) => {
         const cb = utils.wrapCallback(callback);
         this.connection.query(sql, (err, ret) => {
@@ -304,7 +305,6 @@ export class Model {
       }
       return this.query({ format: false }).update(update);
     }
-    update = this.schema.formatInput(update);
     return this.query({ format: false }).update(update);
   }
 
@@ -341,7 +341,6 @@ export class Model {
       }
       return this.query({ format: false }).update(update).limit(1);
     }
-    update = this.schema.formatInput(update);
     return this.query({ format: false }).update(update);
   }
 
@@ -374,15 +373,10 @@ export class Model {
 
   public insert(data: KVObject | KVObject[]): query.QueryBuilder {
     assert.equal(arguments.length, 1, `expected 1  argument for insert() but got ${ arguments.length }`);
-    // 格式化输入
-    if (Array.isArray(data)) {
-      data = this.schema.formatInputList(data);
-    } else {
-      data = [ this.schema.formatInput(data) ];
-    }
+    const list: KVObject[] = Array.isArray(data) ? data : [ data];
     // 检查是否包含主键（仅当主键不是自增时）
     if (!this.primaryKeyAutoIncrement) {
-      for (const item of (data as KVObject[])) {
+      for (const item of list) {
         for (const key of this.primaryKey) {
           if (typeof item[key] === "undefined") {
             throw new Error(`missing primary key "${ key }"`);
@@ -390,7 +384,7 @@ export class Model {
         }
       }
     }
-    return this.query({ format: false }).insert(data);
+    return this.query({ format: false }).insert(list);
   }
 
   /**

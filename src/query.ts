@@ -7,12 +7,17 @@
 import assert = require("assert");
 import utils = require("./utils");
 import { Callback, KVObject } from "./define";
+import { Schema } from "./schema";
 
 export interface QueryBuilderOptions {
   /**
    * 表名
    */
   table: string;
+  /**
+   * 可选的 Schema
+   */
+  schema?: Schema;
   /**
    * 执行查询
    */
@@ -74,6 +79,7 @@ export class QueryBuilder {
     limitRows: number;
     limit: string;
   };
+  private _schema: Schema;
 
   /**
    * 创建 QueryBuilder
@@ -91,6 +97,10 @@ export class QueryBuilder {
       this._execCallback = options.exec;
     } else {
       this._execCallback = null;
+    }
+
+    if (options.schema) {
+      this._schema = options.schema;
     }
 
     this._data = {
@@ -198,6 +208,9 @@ export class QueryBuilder {
     if (typeof condition === "string") {
       this._data.conditions.push(this.format(condition, values || []));
     } else {
+      if (this._schema) {
+        condition = this._schema.formatInput(condition);
+      }
       for (const name in condition) {
         this._data.conditions.push(`${ utils.sqlEscapeId(name) }=${ utils.sqlEscape(condition[name]) }`);
       }
@@ -311,6 +324,9 @@ export class QueryBuilder {
     if (typeof update === "string") {
       this._data.update.push(this.format(update, values || []));
     } else {
+      if (this._schema) {
+        update = this._schema.formatInput(update);
+      }
       this._data.update.push(utils.sqlUpdateString(update));
     }
     return this;
@@ -337,10 +353,16 @@ export class QueryBuilder {
     } else {
       data = [ data ];
     }
-    const originFields = Object.keys(data[0]);
+
+    let list: KVObject[] = (data as KVObject[]);
+    if (this._schema) {
+      list = list.map(item => this._schema.formatInput(item));
+    }
+
+    const originFields = Object.keys(list[0]);
     const fields = originFields.map(name => utils.sqlEscapeId(name));
     const values: string[] = [];
-    for (const item of (data as KVObject[])) {
+    for (const item of list) {
       assert.ok(item && typeof item === "object", `every item of data array must be an object`);
       const line: string[] = [];
       for (const field of originFields) {
