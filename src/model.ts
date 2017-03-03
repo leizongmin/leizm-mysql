@@ -687,7 +687,7 @@ export class Model {
   /**
    * 更新缓存，包括 primaryKey 和 uniqueKeys
    */
-  private async updateCacheByDataRow(data: Record<string, any>): Promise<string[]> {
+  public async updateCacheByDataRow(data: Record<string, any>): Promise<string[]> {
     if (data) {
       const { primaryKey, uniqueKeys, allKeys } = this.getCacheKeysByDataRow(data);
       await this.cache.removeList(allKeys.slice());
@@ -705,7 +705,7 @@ export class Model {
   /**
    * 删除缓存，包括 primaryKey 和 uniqueKeys
    */
-  private async removeCacheByDataRow(data: Record<string, any>): Promise<string[]> {
+  public async removeCacheByDataRow(data: Record<string, any>): Promise<string[]> {
     if (data) {
       const { allKeys } = this.getCacheKeysByDataRow(data);
       await this.cache.removeList(allKeys.slice());
@@ -717,7 +717,7 @@ export class Model {
   /**
    * 根据数据行获取其相关的缓存 Key
    */
-  private getCacheKeysByDataRow(data: Record<string, any>): {
+  public getCacheKeysByDataRow(data: Record<string, any>): {
     primaryKey: string;
     uniqueKeys: string[];
     allKeys: string[];
