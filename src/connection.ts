@@ -4,11 +4,11 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import assert = require("assert");
-import events = require("events");
-import mysql = require("mysql");
-import utils = require("./utils");
-import { Callback } from "./define";
+import assert = require('assert');
+import events = require('events');
+import mysql = require('mysql');
+import utils = require('./utils');
+import { Callback } from './define';
 
 export interface WrappedConnection {
   /**
@@ -62,13 +62,13 @@ function wrapConnection(connection: any): WrappedConnection {
   return new Proxy(connection, {
     get(target, name) {
       switch (name) {
-      case "query":
-      case "beginTransaction":
-      case "commit":
-      case "rollback":
+      case 'query':
+      case 'beginTransaction':
+      case 'commit':
+      case 'rollback':
         return (...args: any[]) => {
           const cb = args[args.length - 1];
-          if (typeof cb === "function") {
+          if (typeof cb === 'function') {
             return target[name](...args);
           }
           return target[name](...args);
@@ -110,16 +110,16 @@ export class Connection extends events.EventEmitter {
     this._options = Object.assign<any, ConnectionOptions>({}, options);
 
     this._poolCluster = mysql.createPoolCluster();
-    this._poolCluster.add("MASTER", options.connections[0]);
+    this._poolCluster.add('MASTER', options.connections[0]);
     options.connections.slice(1).forEach((config, index) => {
       this._poolCluster.add(`SLAVE${ index }`, config);
     });
-    this._poolMaster = this._poolCluster.of("MASTER");
-    this._poolSlave = this._poolCluster.of("SLAVE*");
+    this._poolMaster = this._poolCluster.of('MASTER');
+    this._poolSlave = this._poolCluster.of('SLAVE*');
 
-    this._poolCluster.on("error", err => this.emit("error", err));
-    this._poolCluster.on("connection", connection => this.emit("connection", connection));
-    this._poolCluster.on("enqueue", () => this.emit("enqueue"));
+    this._poolCluster.on('error', err => this.emit('error', err));
+    this._poolCluster.on('connection', connection => this.emit('connection', connection));
+    this._poolCluster.on('enqueue', () => this.emit('enqueue'));
   }
 
   /**
@@ -307,7 +307,7 @@ export class Connection extends events.EventEmitter {
 
   private _query(pool: mysql.IPool | mysql.IPoolCluster, sql: string, callback?: Callback<any>): Promise<any> | void {
     const cb = utils.wrapCallback<any>(callback);
-    utils.connectionDebug("query sql: %s", sql);
+    utils.connectionDebug('query sql: %s', sql);
     pool.getConnection((err, connection) => {
       if (err) {
         return cb(err);

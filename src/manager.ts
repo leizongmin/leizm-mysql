@@ -4,13 +4,13 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import assert = require("assert");
-import events = require("events");
-import cache = require("./cache");
-import connection = require("./connection");
-import model = require("./model");
-import utils = require("./utils");
-import { Callback } from "./define";
+import assert = require('assert');
+import events = require('events');
+import cache = require('./cache');
+import connection = require('./connection');
+import model = require('./model');
+import utils = require('./utils');
+import { Callback } from './define';
 
 export interface ManagerOptions extends cache.CacheOptions, connection.ConnectionOptions {}
 
@@ -38,7 +38,7 @@ export class Manager extends events.EventEmitter {
    * @param options 选项
    */
   public registerModel(name: string, options: model.ModelBaseOptions) {
-    assert.equal(typeof name, "string", `model name must be a string`);
+    assert.equal(typeof name, 'string', `model name must be a string`);
     assert.ok(name, `model name cannot be empty`);
     assert.ok(options, `please provide options`);
     const m = new model.Model(Object.assign({

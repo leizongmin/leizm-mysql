@@ -18,6 +18,14 @@
     "arrow-parens": false,
     "no-unused-variable": [
       false
-    ]
+    ],
+    "quotemark": [true, "single"],
+    "ordered-imports": [
+      false
+    ],
+    "only-arrow-functions": [
+      false
+    ],
+    "no-string-literal": false
   }
 }

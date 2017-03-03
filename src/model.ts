@@ -4,13 +4,13 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import assert = require("assert");
-import utils = require("./utils");
-import connection = require("./connection");
-import cache = require("./cache");
-import schema = require("./schema");
-import query = require("./query");
-import { Callback } from "./define";
+import assert = require('assert');
+import utils = require('./utils');
+import connection = require('./connection');
+import cache = require('./cache');
+import schema = require('./schema');
+import query = require('./query');
+import { Callback } from './define';
 
 export type FieldName = string | string[];
 
@@ -87,17 +87,17 @@ export class Model {
     this.cache = options.cache;
 
     assert.ok(options.table, `must provide table name`);
-    assert.ok(typeof options.table === "string", `table name must be a string`);
+    assert.ok(typeof options.table === 'string', `table name must be a string`);
     this.tableName = options.table;
 
     const importantFields = new Set<string>();
 
     // 主键
     if (options.primary) {
-      assert.ok(typeof options.primary === "string" || Array.isArray(options.primary), `primary must be a string or array`);
+      assert.ok(typeof options.primary === 'string' || Array.isArray(options.primary), `primary must be a string or array`);
       if (Array.isArray(options.primary)) {
         options.primary.forEach(name => {
-          assert.ok(typeof name === "string", `every item of primary must be a string`);
+          assert.ok(typeof name === 'string', `every item of primary must be a string`);
         });
         // 包装 key 是按顺序排列的
         this.primaryKey = options.primary.slice().sort();
@@ -120,7 +120,7 @@ export class Model {
       assert.ok(Array.isArray(options.uniques), `uniques must be an array`);
       assert.ok(options.uniques.length > 0, `uniques must have less than 1 item`);
       this.uniqueKeyList = options.uniques.map(item => {
-        assert.ok(typeof item === "string" || Array.isArray(item) );
+        assert.ok(typeof item === 'string' || Array.isArray(item) );
         if (Array.isArray(item)) {
           return item.sort();
         } else {
@@ -150,8 +150,8 @@ export class Model {
         assert.ok(isEveryKeyExists, `missing primary key "${ name }" in this data row`);
       }
       return `${ name }:${ data[name] }`;
-    }).join(":");
-    return isEveryKeyExists ? `${ this.tableName }:r:${ key }` : "";
+    }).join(':');
+    return isEveryKeyExists ? `${ this.tableName }:r:${ key }` : '';
   }
 
   /**
@@ -164,7 +164,7 @@ export class Model {
     if (Array.isArray(this.uniqueKeyList)) {
       this.uniqueKeyList.forEach(fields => {
         if (utils.everyFieldExists(data, fields)) {
-          list.push(prefix + fields.map(f => `${ f }:${ data[f] }`).join(":"));
+          list.push(prefix + fields.map(f => `${ f }:${ data[f] }`).join(':'));
         }
       });
     }
@@ -200,7 +200,7 @@ export class Model {
         return ret;
       }
     }
-    throw new Error(`missing unique key in this data row, must includes one of ${ this.uniqueKeyList.map(keys => keys.join(",")).join(" | ") }`);
+    throw new Error(`missing unique key in this data row, must includes one of ${ this.uniqueKeyList.map(keys => keys.join(',')).join(' | ') }`);
   }
 
   /**
@@ -237,7 +237,7 @@ export class Model {
    */
   public find(): query.QueryBuilder {
     assert.equal(arguments.length, 0, `expected 0 argument for find() but got ${ arguments.length }`);
-    return this.query({ format: true }).select("*");
+    return this.query({ format: true }).select('*');
   }
 
   /**
@@ -253,7 +253,7 @@ export class Model {
         }
         callback(null, ret[0]);
       },
-    }).select("*").limit(1);
+    }).select('*').limit(1);
   }
 
   /**
@@ -269,7 +269,7 @@ export class Model {
         }
         callback(null, ret[0].c);
       },
-    }).count("c").limit(1);
+    }).count('c').limit(1);
   }
 
   /**
@@ -297,9 +297,9 @@ export class Model {
 
   public update(update: Record<string, any> | string, values?: Record<string, any> | any[]): query.QueryBuilder {
     assert.ok(arguments.length === 1 || arguments.length === 2, `expected 1 or 2 argument for update() but got ${ arguments.length }`);
-    assert.ok(typeof values !== "function", `update() does not expected a callback function, maybe this is what you want: update(data).exec(callback)`);
+    assert.ok(typeof values !== 'function', `update() does not expected a callback function, maybe this is what you want: update(data).exec(callback)`);
     // 格式化输入
-    if (typeof update === "string") {
+    if (typeof update === 'string') {
       if (values) {
         return this.query({ format: false }).update(update, values);
       }
@@ -333,9 +333,9 @@ export class Model {
 
   public updateOne(update: Record<string, any> | string, values?: Record<string, any> | any[]): query.QueryBuilder {
     assert.ok(arguments.length === 1 || arguments.length === 2, `expected 1 or 2 argument for updateOne() but got ${ arguments.length }`);
-    assert.ok(typeof values !== "function", `updateOne() does not expected a callback function, maybe this is what you want: updateOne(data).exec(callback)`);
+    assert.ok(typeof values !== 'function', `updateOne() does not expected a callback function, maybe this is what you want: updateOne(data).exec(callback)`);
     // 格式化输入
-    if (typeof update === "string") {
+    if (typeof update === 'string') {
       if (values) {
         return this.query({ format: false }).update(update, values).limit(1);
       }
@@ -378,7 +378,7 @@ export class Model {
     if (!this.primaryKeyAutoIncrement) {
       for (const item of list) {
         for (const key of this.primaryKey) {
-          if (typeof item[key] === "undefined") {
+          if (typeof item[key] === 'undefined') {
             throw new Error(`missing primary key "${ key }"`);
           }
         }
@@ -395,7 +395,7 @@ export class Model {
     assert.equal(arguments.length, 1, `expected 1  argument for incr() but got ${ arguments.length }`);
     const q = this.query({ format: false }).update();
     for (const name in data) {
-      q.set("?? = ?? + (?)", [ name, name, data[name] ]);
+      q.set('?? = ?? + (?)', [ name, name, data[name] ]);
     }
     return q;
   }
@@ -420,7 +420,7 @@ export class Model {
 
   public sql(sql: string, values?: Record<string, any> | any[]): query.QueryBuilder {
     assert.ok(arguments.length === 1 || arguments.length === 2, `expected 1 or 2 argument for sql() but got ${ arguments.length }`);
-    assert.ok(typeof values !== "function", `sql() does not expected a callback function, maybe this is what you want: sql(str).exec(callback)`);
+    assert.ok(typeof values !== 'function', `sql() does not expected a callback function, maybe this is what you want: sql(str).exec(callback)`);
     if (values) {
       return this.query({ format: !utils.isUpdateSQL(sql) }).sql(sql, values);
     }
@@ -550,7 +550,7 @@ export class Model {
   public getByUnique(query: Record<string, any>, callback?: Callback<Record<string, any>>): Promise<Record<string, any>> | void {
     const cb = utils.wrapCallback(callback);
     query = this.keepUniqueFields(query);
-    const key = this.getUniqueCacheKeys(query)[0] || "";
+    const key = this.getUniqueCacheKeys(query)[0] || '';
     // 先尝试从缓存中获取
     this.cache.getPointerItem(key, (err, str) => {
       if (err) {
@@ -660,7 +660,7 @@ export class Model {
     if (this.importantFields.length > 0) {
       // 查询出旧的数据
       const q = this.find().fields(...this.importantFields);
-      if (typeof query === "string") {
+      if (typeof query === 'string') {
         q.where(query);
       } else {
         q.where(query);
