@@ -5,12 +5,11 @@
  */
 
 import assert = require("assert");
-import { KVObject } from "./define";
 
 /**
  * 获取默认的 field 配置信息
  */
-function getDefaultFieldInfo(): KVObject {
+function getDefaultFieldInfo(): Record<string, any> {
   return {};
 }
 
@@ -18,7 +17,7 @@ function getDefaultFieldInfo(): KVObject {
  * 获取指定 type 的 field 配置信息
  * @param type 类型
  */
-function getFieldInfoByType(type: string): KVObject {
+function getFieldInfoByType(type: string): Record<string, any> {
   switch (type.toLowerCase()) {
   case "json":
     return { input: jsonInputFormatter, output: jsonOutputFormatter };
@@ -169,7 +168,7 @@ export class Schema {
    * 格式化输入数据
    * @param data 输入的键值对数据
    */
-  public formatInput(data: KVObject): KVObject {
+  public formatInput(data: Record<string, any>): Record<string, any> {
     const ret = {};
     for (const name in data) {
       const field = this._fields[name];
@@ -190,7 +189,7 @@ export class Schema {
    * 格式化输入数据数组
    * @param list 输入的键值对数据数组
    */
-  public formatInputList(list: KVObject[]): KVObject[] {
+  public formatInputList(list: Array<Record<string, any>>): Array<Record<string, any>> {
     return list.map(item => this.formatInput(item));
   }
 
@@ -198,7 +197,7 @@ export class Schema {
    * 格式化输出数据
    * @param data 输入的键值对数据
    */
-  public formatOutput(data: KVObject): KVObject {
+  public formatOutput(data: Record<string, any>): Record<string, any> {
     const ret = {};
     for (const name in data) {
       const field = this._fields[name];
@@ -217,7 +216,7 @@ export class Schema {
    * 格式化输出数据数组
    * @param list 输入的键值对数据数组
    */
-  public formatOutputList(list: KVObject[]): KVObject[] {
+  public formatOutputList(list: Array<Record<string, any>>): Array<Record<string, any>> {
     return list.map(item => this.formatOutput(item));
   }
 
@@ -225,7 +224,7 @@ export class Schema {
    * 序列化
    * @param data 要序列化的键值对数据
    */
-  public serialize(data: KVObject): string {
+  public serialize(data: Record<string, any>): string {
     data = Object.assign({}, data);
     for (const name in data) {
       const field = this._fields[name];
@@ -241,7 +240,7 @@ export class Schema {
    * 反序列化
    * @param data 要反序列化的数据
    */
-  public unserialize(data: string): KVObject {
+  public unserialize(data: string): Record<string, any> {
     const ret = JSON.parse(data);
     for (const name in ret) {
       const field = this._fields[name];

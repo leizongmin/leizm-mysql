@@ -5,13 +5,6 @@
  */
 
 /**
- * 键值对对象
- */
-export interface KVObject {
-  [key: string]: any;
-}
-
-/**
  * 回调函数
  */
 export interface Callback<T> {

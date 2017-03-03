@@ -8,7 +8,7 @@ import assert = require("assert");
 import events = require("events");
 import mysql = require("mysql");
 import utils = require("./utils");
-import { Callback, KVObject } from "./define";
+import { Callback } from "./define";
 
 export interface WrappedConnection {
   /**
@@ -259,9 +259,9 @@ export class Connection extends events.EventEmitter {
   /**
    * 以键值对参数形式格式化查询
    */
-  public format(sql: string, values: KVObject): string;
+  public format(sql: string, values: Record<string, any>): string;
 
-  public format(sql: string, values: any[] | KVObject): string {
+  public format(sql: string, values: any[] | Record<string, any>): string {
     if (Array.isArray(values)) {
       return utils.sqlFormat(sql, values);
     }

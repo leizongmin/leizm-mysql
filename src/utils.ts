@@ -7,7 +7,7 @@
 import createDebug = require("debug");
 import mysql = require("mysql");
 import utils = require("lei-utils");
-import { Callback, KVObject } from "./define";
+import { Callback } from "./define";
 
 declare module "mysql" {
   function escapeId(value: string): string;
@@ -53,7 +53,7 @@ export function wrapCallback<T>(callback?: Callback<T>): Callback<T> {
  * @param values 参数对象
  * @param disable$ 是否没有 $ 开头的 key
  */
-export function sqlFormatObject(sql: string, values: KVObject, disable$?: boolean): string {
+export function sqlFormatObject(sql: string, values: Record<string, any>, disable$?: boolean): string {
   values = values || {};
   return sql.replace(/:((:)?[\w$]+)/g, (txt, key) => {
     const isId = key[0] === ":";
@@ -105,7 +105,7 @@ export function isCacheInstance(cache: any): boolean {
  * 返回根据对象生成的 SQL UPDATE 语句
  * @param data 键值对对象
  */
-export function sqlUpdateString(data: KVObject): string {
+export function sqlUpdateString(data: Record<string, any>): string {
   return Object.keys(data)
           .map(name => `${ sqlEscapeId(name) }=${ sqlEscape(data[name]) }`)
           .join(", ");
@@ -147,7 +147,7 @@ export function joinMultiString(...strs: string[]): string {
 /**
  * 判断是否每个键都存在
  */
-export function everyFieldExists(data: KVObject, fields: string[]): boolean {
+export function everyFieldExists(data: Record<string, any>, fields: string[]): boolean {
   for (const f of fields) {
     if (!(f in data)) {
       return false;
