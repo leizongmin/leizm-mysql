@@ -4,12 +4,15 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import orm = require("../");
-import utils = require("./utils");
+import chai = require('chai');
+import orm = require('../');
+import utils = require('./utils');
 
-describe("Connection", function () {
+const expect = chai.expect;
 
-  it("getConnection() support promise", async function () {
+describe('Connection', function () {
+
+  it('getConnection() support promise', async function () {
 
     const conn = orm.createConnection({
       connections: [ utils.getConnectionConfig() ],
@@ -19,17 +22,17 @@ describe("Connection", function () {
     //   console.log(ret);
     // }
     {
-      const ret = await conn.query("DROP TABLE IF EXISTS `blog_contents`");
+      const ret = await conn.query('DROP TABLE IF EXISTS `blog_contents`');
       console.log(ret);
     }
     {
-      const sql = await utils.readTestFile("blog_contents.sql");
+      const sql = await utils.readTestFile('blog_contents.sql');
       const ret = await conn.query(sql);
       console.log(ret);
     }
     {
-      const sql = conn.format("SELECT * FROM ::table WHERE id=:id", {
-        table: "blog_contents",
+      const sql = conn.format('SELECT * FROM ::table WHERE id=:id', {
+        table: 'blog_contents',
         id: 2,
       });
       console.log(sql);
@@ -37,7 +40,7 @@ describe("Connection", function () {
       console.log(ret);
     }
     {
-      const sql = conn.format("SELECT * FROM ?? WHERE id=?", [ "blog_contents", 2 ]);
+      const sql = conn.format('SELECT * FROM ?? WHERE id=?', [ 'blog_contents', 2 ]);
       console.log(sql);
       const ret = await conn.query(sql);
       console.log(ret);
@@ -68,8 +71,20 @@ describe("Connection", function () {
       }
       c.release();
     }
+    {
+      let eventIsEmitted = false;
+      let emittedSql = '';
+      conn.once('query', function (e: { sql: string }) {
+        console.log(e);
+        eventIsEmitted = true;
+        emittedSql = e.sql;
+      });
+      const ret = await conn.query('SHOW TABLES');
+      console.log(ret, eventIsEmitted, emittedSql);
+      expect(eventIsEmitted).to.equal(true);
+      expect(emittedSql).to.equal('SHOW TABLES');
+    }
     await conn.close();
-
   });
 
 });

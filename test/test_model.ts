@@ -4,33 +4,33 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import chai = require("chai");
-import orm = require("../");
-import utils = require("./utils");
+import chai = require('chai');
+import orm = require('../');
+import utils = require('./utils');
 
 const expect = chai.expect;
 
-describe("Model - normal", function () {
+describe('Model - normal', function () {
 
-  const prefix = utils.randomString(10) + ":";
+  const prefix = utils.randomString(10) + ':';
   const cache = orm.createCache(utils.getCacheConfig({ prefix }));
   const connection = orm.createConnection({ connections: [ utils.getConnectionConfig() ]});
   const model = orm.createModel({
     cache, connection,
-    table: "user_blogs",
-    primary: [ "blog_id", "user_id" ],
+    table: 'user_blogs',
+    primary: [ 'blog_id', 'user_id' ],
     fields: {
       blog_id: true,
       user_id: true,
-      info: "json",
-      created_at: "date",
+      info: 'json',
+      created_at: 'date',
       score: true,
     },
   });
 
   before(async function () {
-    const sql = await utils.readTestFile("user_blogs.sql");
-    await connection.query("DROP TABLE IF EXISTS `user_blogs`");
+    const sql = await utils.readTestFile('user_blogs.sql');
+    await connection.query('DROP TABLE IF EXISTS `user_blogs`');
     await connection.query(sql);
   });
 
@@ -39,7 +39,7 @@ describe("Model - normal", function () {
     await cache.close();
   });
 
-  it("insert", async function () {
+  it('insert', async function () {
     const data = {
       blog_id: 1,
       user_id: 1001,
@@ -67,7 +67,7 @@ describe("Model - normal", function () {
         user_id: 1001,
         created_at: utils.newDate(),
         info: {
-          message: "hello, world",
+          message: 'hello, world',
         },
       }, {
         blog_id: 3,
@@ -80,14 +80,14 @@ describe("Model - normal", function () {
     }
   });
 
-  it("find", async function () {
+  it('find', async function () {
     {
       const list = await model.find().where({ user_id: 1001 }).exec();
       console.log(list);
       expect(list).to.have.lengthOf(2);
     }
     {
-      const list = await model.find().orderBy("`blog_id` DESC").exec();
+      const list = await model.find().orderBy('`blog_id` DESC').exec();
       console.log(list);
       expect(list).to.have.lengthOf(3);
       const list2 = list.slice();
@@ -97,7 +97,7 @@ describe("Model - normal", function () {
     }
   });
 
-  it("findOne", async function () {
+  it('findOne', async function () {
     {
       const ret = await model.findOne().where({ user_id: 1001 }).exec();
       console.log(ret);
@@ -105,7 +105,7 @@ describe("Model - normal", function () {
     }
   });
 
-  it("count", async function () {
+  it('count', async function () {
     {
       const count = await model.count().exec();
       console.log(count);
@@ -117,25 +117,25 @@ describe("Model - normal", function () {
       expect(count).to.equal(2);
     }
     {
-      const count = await model.count().where("`user_id`!=1001").exec();
+      const count = await model.count().where('`user_id`!=1001').exec();
       console.log(count);
       expect(count).to.equal(1);
     }
   });
 
-  it("sql", async function () {
+  it('sql', async function () {
     {
-      const ret = await model.sql("SELECT COUNT(*) AS `count` FROM :$table").exec();
+      const ret = await model.sql('SELECT COUNT(*) AS `count` FROM :$table').exec();
       console.log(ret);
       expect(ret).to.deep.equal([{ count: 3 }]);
     }
     {
-      const ret = await model.sql("SHOW TABLES").exec();
+      const ret = await model.sql('SHOW TABLES').exec();
       console.log(ret);
     }
   });
 
-  it("update #1", async function () {
+  it('update #1', async function () {
     const data = {
       info: {
         mem: process.memoryUsage(),
@@ -162,7 +162,7 @@ describe("Model - normal", function () {
     }
   });
 
-  it("update #2", async function () {
+  it('update #2', async function () {
     const info = {
       pid: process.pid,
       uptime: process.uptime(),
@@ -172,7 +172,7 @@ describe("Model - normal", function () {
       user_id: 1001,
     };
     {
-      const ret = await model.update("`info`=?, `created_at`=?", [ JSON.stringify(info), created_at ])
+      const ret = await model.update('`info`=?, `created_at`=?', [ JSON.stringify(info), created_at ])
                           .where(query).exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(2);
@@ -190,19 +190,19 @@ describe("Model - normal", function () {
     }
   });
 
-  it("updateOne", async function () {
+  it('updateOne', async function () {
     // 等待一段时间以使得  created_at 时间不一样
     await utils.sleep(1500);
     const info = {
-      message: "from updateOne",
+      message: 'from updateOne',
     };
     const created_at = utils.newDate();
     const user_id = 1001;
     {
-      const ret = await model.updateOne("`info`=:info, `created_at`=:created_at", {
+      const ret = await model.updateOne('`info`=:info, `created_at`=:created_at', {
         info: JSON.stringify(info),
         created_at,
-      }).where({ user_id }).orderBy("`id` ASC").exec();
+      }).where({ user_id }).orderBy('`id` ASC').exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
       expect(ret.changedRows).to.equal(1);
@@ -220,7 +220,7 @@ describe("Model - normal", function () {
     }
   });
 
-  it("incr", async function () {
+  it('incr', async function () {
     {
       const ret = await model.incr({ score: 5 }).where({ blog_id: 3 }).exec();
       console.log(ret);
@@ -234,7 +234,7 @@ describe("Model - normal", function () {
     }
   });
 
-  it("deleteOne", async function () {
+  it('deleteOne', async function () {
     {
       const ret = await model.deleteOne().where({ user_id: 1001 }).exec();
       console.log(ret);
@@ -246,7 +246,7 @@ describe("Model - normal", function () {
     }
   });
 
-  it("delete", async function () {
+  it('delete', async function () {
     {
       const ret = await model.delete().exec();
       console.log(ret);
@@ -258,7 +258,7 @@ describe("Model - normal", function () {
     }
   });
 
-  it("insert undeifned value", async function () {
+  it('insert undeifned value', async function () {
     {
       const ret = await model.insert({
         blog_id: 2001,

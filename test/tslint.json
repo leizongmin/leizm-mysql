@@ -16,10 +16,18 @@
     "object-literal-sort-keys": false,
     "forin": false,
     "arrow-parens": false,
-    "no-console": [
+    "no-unused-variable": [
+      false
+    ],
+    "quotemark": [true, "single"],
+    "ordered-imports": [
       false
     ],
     "only-arrow-functions": [
+      false
+    ],
+    "no-string-literal": false,
+    "no-console": [
       false
     ]
   }

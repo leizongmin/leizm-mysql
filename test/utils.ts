@@ -4,34 +4,34 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import fs = require("fs");
-import path = require("path");
-import orm = require("../");
-import mysql = require("mysql");
-import utils = require("lei-utils");
+import fs = require('fs');
+import path = require('path');
+import orm = require('../');
+import mysql = require('mysql');
+import utils = require('lei-utils');
 
 export const randomString = utils.randomString;
 
 export function getConnectionConfig(config?: mysql.IPoolConfig): mysql.IPoolConfig {
   return Object.assign({
-    host: "127.0.0.1",
+    host: '127.0.0.1',
     port: 3306,
-    user: "root",
-    password: "",
-    database: "test",
+    user: 'root',
+    password: '',
+    database: 'test',
     connectionLimit: 2,
-    charset: "utf8mb4",
+    charset: 'utf8mb4',
   }, config || {});
 }
 
 export function getCacheConfig(config?: any): orm.ManagerOptions {
   return Object.assign<any, orm.ManagerOptions>({
     redis: {
-      host: "127.0.0.1",
+      host: '127.0.0.1',
       port: 6379,
       db: 15,
     },
-    prefix: "TEST:",
+    prefix: 'TEST:',
     ttl: 30,
   }, config || {});
 }

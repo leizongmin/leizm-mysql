@@ -308,6 +308,7 @@ export class Connection extends events.EventEmitter {
   private _query(pool: mysql.IPool | mysql.IPoolCluster, sql: string, callback?: Callback<any>): Promise<any> | void {
     const cb = utils.wrapCallback<any>(callback);
     utils.connectionDebug('query sql: %s', sql);
+    this.emit('query', { sql });
     pool.getConnection((err, connection) => {
       if (err) {
         return cb(err);
