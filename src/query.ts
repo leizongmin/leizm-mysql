@@ -170,7 +170,6 @@ export class QueryBuilder {
   public where(condition: string, values: Record<string, any> | any[]): this;
 
   public where(condition: Record<string, any> | string, values?: Record<string, any> | any[]): this {
-    this._data.conditions = [];
     if (typeof condition === 'string') {
       if (values) {
         return this.and(condition, values);
@@ -241,6 +240,7 @@ export class QueryBuilder {
    * @param fields 要查询的字段
    */
   public fields(...fields: string[]): this {
+    assert.ok(!(this._data.fields && this._data.fields !== '*'), `cannot change fields after it has been set`);
     this._data.fields = fields.map(name => {
       assert.ok(name && typeof name === 'string', `field name must be a string`);
       return name === '*' ? name : utils.sqlEscapeId(name);
@@ -253,6 +253,7 @@ export class QueryBuilder {
    * @param name 存储结果的字段名
    */
   public count(name: string): this {
+    assert.ok(this._data.type === '', `cannot change query type after it was set to "${ this._data.type }"`);
     this._data.type = 'SELECT';
     this._data.fields = 'COUNT(*) AS ' + utils.sqlEscapeId(name);
     return this;

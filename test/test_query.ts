@@ -38,6 +38,16 @@ describe('QueryBuilder', function () {
     }
     {
       const query = orm.createQueryBuilder({ table: 'test1' });
+      const sql = query.select('name', 'age').where({
+        a: 123,
+      }).where({
+        b: 456,
+      }).build();
+      console.log(sql);
+      expect(sql).to.equal('SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456');
+    }
+    {
+      const query = orm.createQueryBuilder({ table: 'test1' });
       const sql = query.select('name', 'age').where('`a`=? AND `b`=?', [ 123, 456 ]).build();
       console.log(sql);
       expect(sql).to.equal('SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456');
