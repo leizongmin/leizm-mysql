@@ -11,6 +11,10 @@
     "strictNullChecks": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "suppressImplicitAnyIndexErrors": true
+    "suppressImplicitAnyIndexErrors": true,
+    "typeRoots": [
+      "../typings",
+      "../node_modules/@types"
+    ]
   }
 }

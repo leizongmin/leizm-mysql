@@ -88,6 +88,11 @@ export interface ConnectionOptions {
    * 和   https://www.npmjs.com/package/mysql#pool-options
    */
   connections: mysql.IPoolConfig[];
+
+  /**
+   * 是否自动删除 Emoji 字符，默认 true
+   */
+  stripEmoji?: boolean;
 }
 
 export class Connection extends events.EventEmitter {
@@ -108,6 +113,9 @@ export class Connection extends events.EventEmitter {
     assert.ok(options.connections.length >= 1, `connections must includes at least one item`);
 
     this._options = Object.assign<any, ConnectionOptions>({}, options);
+    if (!('stripEmoji' in this._options)) {
+      this._options.stripEmoji = true;
+    }
 
     this._poolCluster = mysql.createPoolCluster();
     this._poolCluster.add('MASTER', options.connections[0]);
@@ -312,6 +320,9 @@ export class Connection extends events.EventEmitter {
     pool.getConnection((err, connection) => {
       if (err) {
         return cb(err);
+      }
+      if (this._options.stripEmoji) {
+        sql = utils.stripEmoji(sql);
       }
       connection.query(sql, (err2, ret) => {
         connection.release();

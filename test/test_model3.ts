@@ -49,22 +49,22 @@ describe('Model - get|update|delete by unique and cache', function () {
       phone: '1230001',
       first_name: 'Zhang',
       last_name: 'San',
-      info: { ChineseName: '张三' },
+      info: { ChineseName: '张🍎三' },
     }, {
       phone: '1230002',
       first_name: 'Li',
       last_name: 'Si',
-      info: { ChineseName: '李四' },
+      info: { ChineseName: '😄李四' },
     }, {
       phone: '1230003',
       first_name: 'Wang',
       last_name: 'Wu',
-      info: { ChineseName: '王五' },
+      info: { ChineseName: '王🍌五' },
     }, {
       phone: '',
       first_name: 'zhao',
       last_name: 'Liu',
-      info: { ChineseName: '赵六' },
+      info: { ChineseName: '赵✈️六' },
     }]).exec();
     console.log(ret);
     expect(ret.affectedRows).to.equal(4);

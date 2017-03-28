@@ -9,6 +9,9 @@ import mysql = require('mysql');
 import utils = require('lei-utils');
 import { Callback } from './define';
 
+// TODO: 不知为何无法正确识别 d.ts 文件
+const emojiRegex = require('emoji-regex');
+
 declare module 'mysql' {
   function escapeId(value: string): string;
 }
@@ -154,4 +157,11 @@ export function everyFieldExists(data: Record<string, any>, fields: string[]): b
     }
   }
   return true;
+}
+
+/**
+ * 删除emoji字符
+ */
+export function stripEmoji(text: string): string {
+  return text.replace(emojiRegex(), '');
 }
