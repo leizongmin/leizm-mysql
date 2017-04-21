@@ -10,6 +10,13 @@ import mysql = require('mysql');
 import utils = require('./utils');
 import { Callback } from './define';
 
+export interface QueryError extends mysql.IError {
+  /**
+   * 当前执行的 SQL 语句
+   */
+  sql?: string;
+}
+
 export interface WrappedConnection {
   /**
    * 执行查询
@@ -324,8 +331,12 @@ export class Connection extends events.EventEmitter {
       if (this._options.stripEmoji) {
         sql = utils.stripEmoji(sql);
       }
-      connection.query(sql, (err2, ret) => {
+      connection.query(sql, (err2: QueryError | null, ret) => {
         connection.release();
+        // 如果查询出错，在 Error 对象中附加当前正在查询的 SQL 语句
+        if (err2) {
+          err2.sql = sql;
+        }
         cb(err2, ret);
       });
     });
