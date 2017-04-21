@@ -234,6 +234,22 @@ describe('QueryBuilder', function () {
         query.update().build();
       }).throw('update data connot be empty');
     }
+    {
+      const query = orm.createQueryBuilder({ table: 'test1' });
+      expect(() => {
+        query.update({}).where({
+          a: 123,
+        }).limit(456).build();
+      }).throw('update data connot be empty');
+    }
+    {
+      const query = orm.createQueryBuilder({ table: 'test1' });
+      const sql = query.update({}).set({ a: 456 }).where({
+        a: 123,
+      }).limit(456).build();
+      console.log(sql);
+      expect(sql).to.equal('UPDATE `test1` SET `a`=456 WHERE `a`=123 LIMIT 456');
+    }
   });
   it('delete', function () {
     {

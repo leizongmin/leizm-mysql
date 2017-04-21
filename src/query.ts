@@ -336,7 +336,10 @@ export class QueryBuilder {
       if (this._schema) {
         update = this._schema.formatInput(update);
       }
-      this._data.update.push(utils.sqlUpdateString(update));
+      const sql = utils.sqlUpdateString(update);
+      if (sql) {
+        this._data.update.push(sql);
+      }
     }
     return this;
   }
