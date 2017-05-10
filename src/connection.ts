@@ -324,11 +324,11 @@ export class Connection extends events.EventEmitter {
     const cb = utils.wrapCallback<any>(callback);
     utils.connectionDebug('query sql: %s', sql);
     pool.getConnection((err, connection) => {
-      const cc = connection.config || {};
-      this.emit('query', { sql, connection, name: `${ cc.host }:${ cc.port }` });
       if (err) {
         return cb(err);
       }
+      const cc = connection.config || {};
+      this.emit('query', { sql, connection, name: `${ cc.host }:${ cc.port }` });
       if (this._options.stripEmoji) {
         sql = utils.stripEmoji(sql);
       }
