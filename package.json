@@ -1,6 +1,6 @@
 {
   "name": "@gz/orm",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "基于 Node.js 的 MySQL ORM 模块，支持缓存、多 MySQL 连接",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
