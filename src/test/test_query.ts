@@ -10,13 +10,13 @@ import * as orm from "../lib";
 describe("QueryBuilder", function() {
   it("select", function() {
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query.select("name", "age").build();
       console.log(sql);
       expect(sql).to.equal("SELECT `name`, `age` FROM `test1`");
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select("name", "age")
         .where({
@@ -30,7 +30,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select("name", "age")
         .where("`a`=:a AND `b`=:b", {
@@ -44,7 +44,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select("name", "age")
         .where({
@@ -60,7 +60,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select("name", "age")
         .where("`a`=? AND `b`=?", [123, 456])
@@ -71,7 +71,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select("name", "age")
         .where({
@@ -86,7 +86,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select("name", "age")
         .where({
@@ -101,7 +101,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select("name", "age")
         .where({
@@ -117,7 +117,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select("name", "age")
         .where({
@@ -134,7 +134,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select("name", "age")
         .where({
@@ -151,7 +151,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select("name", "age")
         .where({
@@ -172,7 +172,7 @@ describe("QueryBuilder", function() {
   });
   it("groupBy", function() {
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select("name", "age")
         .where({
@@ -188,7 +188,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select("name", "age")
         .where({
@@ -206,7 +206,7 @@ describe("QueryBuilder", function() {
   });
   it("count", function() {
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .count("c")
         .where({
@@ -220,7 +220,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .count("c")
         .where({
@@ -237,7 +237,7 @@ describe("QueryBuilder", function() {
   });
   it("insert", function() {
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .insert({
           a: 123,
@@ -248,7 +248,7 @@ describe("QueryBuilder", function() {
       expect(sql).to.equal("INSERT INTO `test1` (`a`, `b`) VALUES (123, 456)");
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .insert([
           {
@@ -269,7 +269,7 @@ describe("QueryBuilder", function() {
   });
   it("update", function() {
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .update({
           a: 123,
@@ -280,7 +280,7 @@ describe("QueryBuilder", function() {
       expect(sql).to.equal("UPDATE `test1` SET `a`=123, `b`=456");
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .update({
           a: 123,
@@ -292,7 +292,7 @@ describe("QueryBuilder", function() {
       expect(sql).to.equal("UPDATE `test1` SET `a`=123, `b`=456 LIMIT 12");
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .update({
           a: 123,
@@ -309,7 +309,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .update({
           a: 123
@@ -328,7 +328,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .update()
         .set({
@@ -346,19 +346,19 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       expect(() => {
         query.set({ a: 1 }).build();
       }).throw("query type must be UPDATE, please call .update() before");
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       expect(() => {
         query.update().build();
       }).throw("update data connot be empty");
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       expect(() => {
         query
           .update({})
@@ -370,7 +370,7 @@ describe("QueryBuilder", function() {
       }).throw("update data connot be empty");
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .update({})
         .set({ a: 456 })
@@ -387,13 +387,13 @@ describe("QueryBuilder", function() {
   });
   it("delete", function() {
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query.delete().build();
       console.log(sql);
       expect(sql).to.equal("DELETE FROM `test1`");
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .delete()
         .where("`a`=2")
@@ -402,7 +402,7 @@ describe("QueryBuilder", function() {
       expect(sql).to.equal("DELETE FROM `test1` WHERE `a`=2");
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .delete()
         .where("`a`=2")
@@ -414,7 +414,7 @@ describe("QueryBuilder", function() {
   });
   it("sql", function() {
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .sql(
           'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`'
@@ -426,7 +426,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .sql(
           'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` :$limit'
@@ -439,7 +439,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .sql(
           'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` :$limit'
@@ -453,7 +453,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .sql(
           'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` :$orderBy :$limit'
@@ -468,7 +468,7 @@ describe("QueryBuilder", function() {
       );
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .sql("SELECT :$fields FROM `test1`")
         .fields("a", "b", "c")
@@ -483,7 +483,7 @@ describe("QueryBuilder", function() {
 
   it("options", function() {
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select()
         .options({
@@ -504,7 +504,7 @@ describe("QueryBuilder", function() {
   it("where(condition): modify condition cannot be empty", function() {
     // SELECT 操作可以为空
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select("name", "age")
         .where({})
@@ -513,7 +513,7 @@ describe("QueryBuilder", function() {
       expect(sql).to.equal("SELECT `name`, `age` FROM `test1`");
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       const sql = query
         .select("name", "age")
         .where("   ")
@@ -523,7 +523,7 @@ describe("QueryBuilder", function() {
     }
     // 其他操作不能为空
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       expect(() => {
         const sql = query
           .update({ a: 123 })
@@ -533,7 +533,7 @@ describe("QueryBuilder", function() {
       }).to.throw("modify condition cannot be empty");
     }
     {
-      const query = orm.createQueryBuilder({ table: "test1" });
+      const query = new orm.QueryBuilder({ table: "test1" });
       expect(() => {
         const sql = query
           .delete()

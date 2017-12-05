@@ -10,7 +10,7 @@ import * as utils from "./utils";
 
 describe("Cache", function() {
   it("cache.saveList()", async function() {
-    const cache = orm.createCache(utils.getCacheConfig());
+    const cache = new orm.Cache(utils.getCacheConfig());
     {
       const ret = await cache.saveList([
         {
@@ -40,7 +40,7 @@ describe("Cache", function() {
   });
 
   it("cache.getList() & cache.removeList()", async function() {
-    const cache = orm.createCache(utils.getCacheConfig());
+    const cache = new orm.Cache(utils.getCacheConfig());
     {
       const ret = await cache.saveList([
         {

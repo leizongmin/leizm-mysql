@@ -10,7 +10,7 @@ import * as utils from "./utils";
 
 describe("Manager", function() {
   const prefix = utils.randomString(10) + ":";
-  const manager = orm.createManager(
+  const manager = new orm.Manager(
     utils.getCacheConfig({
       connections: [utils.getConnectionConfig()],
       prefix

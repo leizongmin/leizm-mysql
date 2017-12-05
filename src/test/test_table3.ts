@@ -10,11 +10,11 @@ import * as utils from "./utils";
 
 describe("Table - get|update|delete by unique and cache", function() {
   const prefix = utils.randomString(10) + ":";
-  const cache = orm.createCache(utils.getCacheConfig({ prefix }));
-  const connection = orm.createConnection({
+  const cache = new orm.Cache(utils.getCacheConfig({ prefix }));
+  const connection = new orm.Connection({
     connections: [utils.getConnectionConfig()]
   });
-  const User = orm.createTable({
+  const User = new orm.Table({
     cache,
     connection,
     table: "users2",

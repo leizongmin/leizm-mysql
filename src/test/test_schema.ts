@@ -9,7 +9,7 @@ import * as orm from "../lib";
 import * as utils from "./utils";
 
 describe("Schema", function() {
-  const schema = orm.createSchema({
+  const schema = new orm.Schema({
     fields: {
       name: true,
       info: "json",
@@ -255,7 +255,7 @@ describe("Schema", function() {
 
   it("not support type", function() {
     expect(function() {
-      orm.createSchema({
+      new orm.Schema({
         fields: {
           info: "xxxx"
         }

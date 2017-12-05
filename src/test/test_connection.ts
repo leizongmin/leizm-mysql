@@ -11,7 +11,7 @@ import * as utils from "./utils";
 describe("Connection", function() {
   it("getConnection() support promise", async function() {
     const connConfig = utils.getConnectionConfig();
-    const conn = orm.createConnection({
+    const conn = new orm.Connection({
       connections: [connConfig]
     });
     // {
