@@ -13,8 +13,8 @@ import * as utils from "lei-utils";
 export const randomString = utils.randomString;
 
 export function getConnectionConfig(
-  config?: mysql.IPoolConfig
-): mysql.IPoolConfig {
+  config?: mysql.PoolConfig
+): mysql.PoolConfig {
   return Object.assign(
     {
       host: "127.0.0.1",

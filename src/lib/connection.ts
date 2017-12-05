@@ -10,7 +10,7 @@ import * as mysql from "mysql";
 import * as utils from "./utils";
 import { Callback } from "./define";
 
-export interface QueryError extends mysql.IError {
+export interface QueryError extends mysql.MysqlError {
   /**
    * 当前执行的 SQL 语句
    */
@@ -98,7 +98,7 @@ export interface ConnectionOptions {
    * 参考 https://www.npmjs.com/package/mysql#connection-options
    * 和   https://www.npmjs.com/package/mysql#pool-options
    */
-  connections: mysql.IPoolConfig[];
+  connections: mysql.PoolConfig[];
 
   /**
    * 是否自动删除 Emoji 字符，默认 true
@@ -108,9 +108,9 @@ export interface ConnectionOptions {
 
 export class Connection extends events.EventEmitter {
   private _options: ConnectionOptions;
-  private _poolCluster: mysql.IPoolCluster;
-  private _poolMaster: mysql.IPool;
-  private _poolSlave: mysql.IPool;
+  private _poolCluster: mysql.PoolCluster;
+  private _poolMaster: mysql.Pool;
+  private _poolSlave: mysql.Pool;
 
   /**
    * 创建 Connection
@@ -311,7 +311,7 @@ export class Connection extends events.EventEmitter {
    * @param pool 连接池
    */
   private _getConnection(
-    pool: mysql.IPool | mysql.IPoolCluster
+    pool: mysql.Pool | mysql.PoolCluster
   ): Promise<WrappedConnection>;
   /**
    * 获取一个原始连接（增加 Promise 支持）
@@ -319,12 +319,12 @@ export class Connection extends events.EventEmitter {
    * @param callback 回调函数
    */
   private _getConnection(
-    pool: mysql.IPool | mysql.IPoolCluster,
+    pool: mysql.Pool | mysql.PoolCluster,
     callback: Callback<WrappedConnection>
   ): void;
 
   private _getConnection(
-    pool: mysql.IPool | mysql.IPoolCluster,
+    pool: mysql.Pool | mysql.PoolCluster,
     callback?: Callback<WrappedConnection>
   ): Promise<WrappedConnection> | void {
     const cb = utils.wrapCallback<WrappedConnection>(callback);
@@ -343,7 +343,7 @@ export class Connection extends events.EventEmitter {
    * @param sql  SQL 查询语句
    */
   private _query(
-    pool: mysql.IPool | mysql.IPoolCluster,
+    pool: mysql.Pool | mysql.PoolCluster,
     sql: string
   ): Promise<any>;
   /**
@@ -353,13 +353,13 @@ export class Connection extends events.EventEmitter {
    * @param callback 回调函数
    */
   private _query(
-    pool: mysql.IPool | mysql.IPoolCluster,
+    pool: mysql.Pool | mysql.PoolCluster,
     sql: string,
     callback?: Callback<any>
   ): void;
 
   private _query(
-    pool: mysql.IPool | mysql.IPoolCluster,
+    pool: mysql.Pool | mysql.PoolCluster,
     sql: string,
     callback?: Callback<any>
   ): Promise<any> | void {

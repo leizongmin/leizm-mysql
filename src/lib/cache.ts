@@ -154,7 +154,7 @@ export class Cache extends events.EventEmitter {
     const cb = utils.wrapCallback(callback);
     if (keys && keys.length > 0) {
       keys = keys.map(key => this._getKey(key));
-      this._redis.mget(keys, cb);
+      (this._redis.mget as any)(...keys, cb);
     } else {
       process.nextTick(() => cb(null, []));
     }
@@ -262,14 +262,14 @@ export class Cache extends events.EventEmitter {
   /**
    * 关闭连接
    */
-  public close(): Promise<void>;
+  public close(): Promise<string>;
   /**
    * 关闭连接
    * @param callback 回调函数
    */
-  public close(callback: Callback<void>): void;
+  public close(callback: Callback<string>): void;
 
-  public close(callback?: Callback<void>): Promise<void> | void {
+  public close(callback?: Callback<string>): Promise<string> | void {
     const cb = utils.wrapCallback(callback);
     this._redis.quit(cb);
     return cb.promise;

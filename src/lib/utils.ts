@@ -12,10 +12,6 @@ import { Callback } from "./define";
 // TODO: 不知为何无法正确识别 d.ts 文件
 const emojiRegex = require("emoji-regex");
 
-declare module "mysql" {
-  function escapeId(value: string): string;
-}
-
 export * from "lei-utils";
 
 /**
