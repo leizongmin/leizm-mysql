@@ -4,35 +4,35 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import createDebug = require('debug');
-import mysql = require('mysql');
-import utils = require('lei-utils');
-import { Callback } from './define';
+import createDebug = require("debug");
+import mysql = require("mysql");
+import utils = require("lei-utils");
+import { Callback } from "./define";
 
 // TODO: 不知为何无法正确识别 d.ts 文件
-const emojiRegex = require('emoji-regex');
+const emojiRegex = require("emoji-regex");
 
-declare module 'mysql' {
+declare module "mysql" {
   function escapeId(value: string): string;
 }
 
-export * from 'lei-utils';
+export * from "lei-utils";
 
 /**
  * 根据指定名称生成 debug 函数
  * @param name 名称
  */
 export function debug(name: string): createDebug.IDebugger {
-  return createDebug('super-orm:' + name);
+  return createDebug("super-orm:" + name);
 }
 
-export const modelDebug = debug('model');
-export const schemaDebug = debug('schema');
-export const connectionDebug = debug('connection');
-export const managerDebug = debug('manager');
-export const cacheDebug = debug('cache');
-export const queryDebug = debug('query');
-export const otherDebug = debug('other');
+export const modelDebug = debug("model");
+export const schemaDebug = debug("schema");
+export const connectionDebug = debug("connection");
+export const managerDebug = debug("manager");
+export const cacheDebug = debug("cache");
+export const queryDebug = debug("query");
+export const otherDebug = debug("other");
 
 export const sqlEscape = mysql.escape;
 export const sqlEscapeId = mysql.escapeId;
@@ -56,10 +56,14 @@ export function wrapCallback<T>(callback?: Callback<T>): Callback<T> {
  * @param values 参数对象
  * @param disable$ 是否没有 $ 开头的 key
  */
-export function sqlFormatObject(sql: string, values: Record<string, any>, disable$?: boolean): string {
+export function sqlFormatObject(
+  sql: string,
+  values: Record<string, any>,
+  disable$?: boolean
+): string {
   values = values || {};
   return sql.replace(/:((:)?[\w$]+)/g, (txt, key) => {
-    const isId = key[0] === ':';
+    const isId = key[0] === ":";
     if (isId) {
       key = key.slice(1);
     }
@@ -81,16 +85,19 @@ export function sqlFormatObject(sql: string, values: Record<string, any>, disabl
  * @param conn 任意对象
  */
 export function isConnectionInstance(conn: any): boolean {
-  return conn && conn._poolCluster &&
-         typeof conn.getConnection === 'function' &&
-         typeof conn.getMasterConnection === 'function' &&
-         typeof conn.getSlaveConnection === 'function' &&
-         typeof conn.query === 'function' &&
-         typeof conn.queryMaster === 'function' &&
-         typeof conn.querySlave === 'function' &&
-         typeof conn.escape === 'function' &&
-         typeof conn.escapeId === 'function' &&
-         typeof conn.format === 'function';
+  return (
+    conn &&
+    conn._poolCluster &&
+    typeof conn.getConnection === "function" &&
+    typeof conn.getMasterConnection === "function" &&
+    typeof conn.getSlaveConnection === "function" &&
+    typeof conn.query === "function" &&
+    typeof conn.queryMaster === "function" &&
+    typeof conn.querySlave === "function" &&
+    typeof conn.escape === "function" &&
+    typeof conn.escapeId === "function" &&
+    typeof conn.format === "function"
+  );
 }
 
 /**
@@ -98,10 +105,13 @@ export function isConnectionInstance(conn: any): boolean {
  * @param cache 任意对象
  */
 export function isCacheInstance(cache: any): boolean {
-  return cache && cache._redis &&
-         typeof cache.saveList === 'function' &&
-         typeof cache.removeList === 'function' &&
-         typeof cache.getList === 'function';
+  return (
+    cache &&
+    cache._redis &&
+    typeof cache.saveList === "function" &&
+    typeof cache.removeList === "function" &&
+    typeof cache.getList === "function"
+  );
 }
 
 /**
@@ -110,8 +120,8 @@ export function isCacheInstance(cache: any): boolean {
  */
 export function sqlUpdateString(data: Record<string, any>): string {
   return Object.keys(data)
-          .map(name => `${ sqlEscapeId(name) }=${ sqlEscape(data[name]) }`)
-          .join(', ');
+    .map(name => `${sqlEscapeId(name)}=${sqlEscape(data[name])}`)
+    .join(", ");
 }
 
 /**
@@ -124,11 +134,11 @@ export function sqlLimitString(skip: number, limit: number): string {
   limit = Number(limit);
   if (limit > 0) {
     if (skip > 0) {
-      return `LIMIT ${ skip },${ limit }`;
+      return `LIMIT ${skip},${limit}`;
     }
-    return `LIMIT ${ limit }`;
+    return `LIMIT ${limit}`;
   }
-  return `LIMIT ${ skip },18446744073709551615`;
+  return `LIMIT ${skip},18446744073709551615`;
 }
 
 /**
@@ -136,7 +146,7 @@ export function sqlLimitString(skip: number, limit: number): string {
  * @param sql SQL 语句
  */
 export function isUpdateSQL(sql: string): boolean {
-  return !(/^SELECT\s/.test(sql));
+  return !/^SELECT\s/.test(sql);
 }
 
 /**
@@ -144,13 +154,19 @@ export function isUpdateSQL(sql: string): boolean {
  * @param strs 文本数组
  */
 export function joinMultiString(...strs: string[]): string {
-  return strs.map(v => v.trim()).filter(v => v).join(' ');
+  return strs
+    .map(v => v.trim())
+    .filter(v => v)
+    .join(" ");
 }
 
 /**
  * 判断是否每个键都存在
  */
-export function everyFieldExists(data: Record<string, any>, fields: string[]): boolean {
+export function everyFieldExists(
+  data: Record<string, any>,
+  fields: string[]
+): boolean {
   for (const f of fields) {
     if (!(f in data)) {
       return false;
@@ -163,5 +179,5 @@ export function everyFieldExists(data: Record<string, any>, fields: string[]): b
  * 删除emoji字符
  */
 export function stripEmoji(text: string): string {
-  return text.replace(emojiRegex(), '');
+  return text.replace(emojiRegex(), "");
 }

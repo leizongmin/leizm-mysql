@@ -4,11 +4,11 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import assert = require('assert');
-import events = require('events');
-import Redis = require('ioredis');
-import utils = require('./utils');
-import { Callback } from './define';
+import assert = require("assert");
+import events = require("events");
+import Redis = require("ioredis");
+import utils = require("./utils");
+import { Callback } from "./define";
 
 const GET_BY_POINTER_SCRIPT = `
 local k = redis.call("get", KEYS[1])
@@ -46,7 +46,6 @@ export interface CacheDataItem {
 }
 
 export class Cache extends events.EventEmitter {
-
   private _redis: Redis.Redis;
   private _ttl: number;
   private _prefix: string;
@@ -63,15 +62,15 @@ export class Cache extends events.EventEmitter {
     options = Object.assign<any, CacheOptions>({}, options);
 
     this._redis = new Redis(options.redis);
-    this._redis.on('error', (err: Error) => {
-      this.emit('error', err);
+    this._redis.on("error", (err: Error) => {
+      this.emit("error", err);
     });
 
     assert.ok(options.ttl, `missing ttl parameter`);
     assert.ok(options.ttl > 0, `parameter ttl must > 0`);
     this._ttl = Number(options.ttl);
 
-    this._prefix = options.prefix || '';
+    this._prefix = options.prefix || "";
   }
 
   /**
@@ -93,7 +92,10 @@ export class Cache extends events.EventEmitter {
    */
   public saveList(list: CacheDataItem[], callback: Callback<string[]>): void;
 
-  public saveList(list: CacheDataItem[], callback?: Callback<string[]>): Promise<string[]> | void {
+  public saveList(
+    list: CacheDataItem[],
+    callback?: Callback<string[]>
+  ): Promise<string[]> | void {
     const cb = utils.wrapCallback(callback);
     if (list && list.length > 0) {
       const p = this._redis.multi();
@@ -122,9 +124,12 @@ export class Cache extends events.EventEmitter {
    */
   public saveItem(item: CacheDataItem, callback: Callback<string>): void;
 
-  public saveItem(item: CacheDataItem, callback?: Callback<string>): Promise<string> | void {
+  public saveItem(
+    item: CacheDataItem,
+    callback?: Callback<string>
+  ): Promise<string> | void {
     const cb = utils.wrapCallback(callback);
-    this.saveList([ item ], (err, list) => {
+    this.saveList([item], (err, list) => {
       cb(err, list && list[0]);
     });
     return cb.promise;
@@ -142,7 +147,10 @@ export class Cache extends events.EventEmitter {
    */
   public getList(keys: string[], callback: Callback<string[]>): void;
 
-  public getList(keys: string[], callback?: Callback<string[]>): Promise<string[]> | void {
+  public getList(
+    keys: string[],
+    callback?: Callback<string[]>
+  ): Promise<string[]> | void {
     const cb = utils.wrapCallback(callback);
     if (keys && keys.length > 0) {
       keys = keys.map(key => this._getKey(key));
@@ -165,9 +173,12 @@ export class Cache extends events.EventEmitter {
    */
   public getItem(key: string, callback: Callback<string>): void;
 
-  public getItem(key: string, callback?: Callback<string>): Promise<string> | void {
+  public getItem(
+    key: string,
+    callback?: Callback<string>
+  ): Promise<string> | void {
     const cb = utils.wrapCallback(callback);
-    this.getList([ key ], (err, list) => {
+    this.getList([key], (err, list) => {
       cb(err, list && list[0]);
     });
     return cb.promise;
@@ -185,7 +196,10 @@ export class Cache extends events.EventEmitter {
    */
   public removeList(list: string[], callback: Callback<string[]>): void;
 
-  public removeList(list: string[], callback?: Callback<string[]>): Promise<string[]> | void {
+  public removeList(
+    list: string[],
+    callback?: Callback<string[]>
+  ): Promise<string[]> | void {
     const cb = utils.wrapCallback(callback);
     if (list && list.length > 0) {
       const p = this._redis.multi();
@@ -214,9 +228,12 @@ export class Cache extends events.EventEmitter {
    */
   public removeItem(key: string, callback: Callback<string>): void;
 
-  public removeItem(key: string, callback?: Callback<string>): Promise<string> | void {
+  public removeItem(
+    key: string,
+    callback?: Callback<string>
+  ): Promise<string> | void {
     const cb = utils.wrapCallback(callback);
-    this.removeList([ key ], (err, list) => {
+    this.removeList([key], (err, list) => {
       cb(err, list && list[0]);
     });
     return cb.promise;
@@ -233,7 +250,10 @@ export class Cache extends events.EventEmitter {
    */
   public getPointerItem(key: string, callback: Callback<string>): void;
 
-  public getPointerItem(key: string, callback?: Callback<string>): Promise<string> | void {
+  public getPointerItem(
+    key: string,
+    callback?: Callback<string>
+  ): Promise<string> | void {
     const cb = utils.wrapCallback(callback);
     this._redis.eval(GET_BY_POINTER_SCRIPT, 1, this._getKey(key), cb);
     return cb.promise;
@@ -262,5 +282,4 @@ export class Cache extends events.EventEmitter {
   private _getKey(key: string): string {
     return this._prefix + key;
   }
-
 }

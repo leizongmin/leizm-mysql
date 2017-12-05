@@ -4,51 +4,53 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import chai = require('chai');
-import orm = require('../lib');
-import utils = require('./utils');
+import chai = require("chai");
+import orm = require("../lib");
+import utils = require("./utils");
 
 const expect = chai.expect;
 
-describe('Model - normal', function () {
-
-  const prefix = utils.randomString(10) + ':';
+describe("Model - normal", function() {
+  const prefix = utils.randomString(10) + ":";
   const cache = orm.createCache(utils.getCacheConfig({ prefix }));
-  const connection = orm.createConnection({ connections: [ utils.getConnectionConfig() ]});
+  const connection = orm.createConnection({
+    connections: [utils.getConnectionConfig()]
+  });
   const model = orm.createModel({
-    cache, connection,
-    table: 'user_blogs',
-    primary: [ 'blog_id', 'user_id' ],
+    cache,
+    connection,
+    table: "user_blogs",
+    primary: ["blog_id", "user_id"],
     fields: {
       blog_id: true,
       user_id: true,
-      info: 'json',
-      created_at: 'date',
-      score: true,
-    },
+      info: "json",
+      created_at: "date",
+      score: true
+    }
   });
 
-  before(async function () {
-    const sql = await utils.readTestFile('user_blogs.sql');
-    await connection.query('DROP TABLE IF EXISTS `user_blogs`');
+  before(async function() {
+    const sql = await utils.readTestFile("user_blogs.sql");
+    await connection.query("DROP TABLE IF EXISTS `user_blogs`");
     await connection.query(sql);
   });
 
-  after(async function () {
+  after(async function() {
     await connection.close();
     await cache.close();
   });
 
-  it('insert', async function () {
+  it("insert", async function() {
     const data = {
       blog_id: 1,
       user_id: 1001,
       info: {
         mem: process.memoryUsage(),
-        uptime: process.uptime(),
+        uptime: process.uptime()
       },
       created_at: utils.newDate(),
-      score: 0,
+      score: 0
     };
     {
       const ret = await model.insert(data).exec();
@@ -56,38 +58,52 @@ describe('Model - normal', function () {
       expect(ret.affectedRows).to.equal(1);
     }
     {
-      const ret = await model.findOne().where(model.keepPrimaryFields(data)).exec();
+      const ret = await model
+        .findOne()
+        .where(model.keepPrimaryFields(data))
+        .exec();
       console.log(ret);
       expect(ret).to.deep.equal(data);
     }
     // 批量插入
     {
-      const ret = await model.insert([{
-        blog_id: 2,
-        user_id: 1001,
-        created_at: utils.newDate(),
-        info: {
-          message: 'hello, world',
-        },
-      }, {
-        blog_id: 3,
-        user_id: 1002,
-        created_at: utils.newDate(),
-        info: null,
-      }]).exec();
+      const ret = await model
+        .insert([
+          {
+            blog_id: 2,
+            user_id: 1001,
+            created_at: utils.newDate(),
+            info: {
+              message: "hello, world"
+            }
+          },
+          {
+            blog_id: 3,
+            user_id: 1002,
+            created_at: utils.newDate(),
+            info: null
+          }
+        ])
+        .exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(2);
     }
   });
 
-  it('find', async function () {
+  it("find", async function() {
     {
-      const list = await model.find().where({ user_id: 1001 }).exec();
+      const list = await model
+        .find()
+        .where({ user_id: 1001 })
+        .exec();
       console.log(list);
       expect(list).to.have.lengthOf(2);
     }
     {
-      const list = await model.find().orderBy('`blog_id` DESC').exec();
+      const list = await model
+        .find()
+        .orderBy("`blog_id` DESC")
+        .exec();
       console.log(list);
       expect(list).to.have.lengthOf(3);
       const list2 = list.slice();
@@ -97,64 +113,81 @@ describe('Model - normal', function () {
     }
   });
 
-  it('findOne', async function () {
+  it("findOne", async function() {
     {
-      const ret = await model.findOne().where({ user_id: 1001 }).exec();
+      const ret = await model
+        .findOne()
+        .where({ user_id: 1001 })
+        .exec();
       console.log(ret);
       expect(ret.user_id).to.equal(1001);
     }
   });
 
-  it('count', async function () {
+  it("count", async function() {
     {
       const count = await model.count().exec();
       console.log(count);
       expect(count).to.equal(3);
     }
     {
-      const count = await model.count().where({ user_id: 1001 }).exec();
+      const count = await model
+        .count()
+        .where({ user_id: 1001 })
+        .exec();
       console.log(count);
       expect(count).to.equal(2);
     }
     {
-      const count = await model.count().where('`user_id`!=1001').exec();
+      const count = await model
+        .count()
+        .where("`user_id`!=1001")
+        .exec();
       console.log(count);
       expect(count).to.equal(1);
     }
   });
 
-  it('sql', async function () {
+  it("sql", async function() {
     {
-      const ret = await model.sql('SELECT COUNT(*) AS `count` FROM :$table').exec();
+      const ret = await model
+        .sql("SELECT COUNT(*) AS `count` FROM :$table")
+        .exec();
       console.log(ret);
       expect(ret).to.deep.equal([{ count: 3 }]);
     }
     {
-      const ret = await model.sql('SHOW TABLES').exec();
+      const ret = await model.sql("SHOW TABLES").exec();
       console.log(ret);
     }
   });
 
-  it('update #1', async function () {
+  it("update #1", async function() {
     const data = {
       info: {
         mem: process.memoryUsage(),
         uptime: process.uptime(),
-        time: Date.now(),
-      },
+        time: Date.now()
+      }
     };
     const query = {
       blog_id: 1,
-      user_id: 1001,
+      user_id: 1001
     };
     {
-      const ret = await model.update(data).where(query).exec();
+      const ret = await model
+        .update(data)
+        .where(query)
+        .exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
       expect(ret.changedRows).to.equal(1);
     }
     {
-      const ret = await model.findOne().where(query).exec();
+      const ret = await model
+        .findOne()
+        .where(query)
+        .exec();
       console.log(ret);
       expect(ret.info).to.deep.equal(data.info);
       expect(ret.blog_id).to.equal(query.blog_id);
@@ -162,47 +195,56 @@ describe('Model - normal', function () {
     }
   });
 
-  it('update #2', async function () {
+  it("update #2", async function() {
     const info = {
       pid: process.pid,
-      uptime: process.uptime(),
+      uptime: process.uptime()
     };
     const created_at = utils.newDate();
     const query = {
-      user_id: 1001,
+      user_id: 1001
     };
     {
-      const ret = await model.update('`info`=?, `created_at`=?', [ JSON.stringify(info), created_at ])
-                          .where(query).exec();
+      const ret = await model
+        .update("`info`=?, `created_at`=?", [JSON.stringify(info), created_at])
+        .where(query)
+        .exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(2);
       expect(ret.changedRows).to.equal(2);
     }
     {
-      const ret = await model.find().where(query).exec();
+      const ret = await model
+        .find()
+        .where(query)
+        .exec();
       console.log(ret);
       expect(ret).to.have.lengthOf(2);
       for (const item of ret) {
         expect(item.info).to.deep.equal(info);
         expect(item.user_id).to.equal(query.user_id);
-        expect(item.blog_id).to.be.oneOf([ 1, 2 ]);
+        expect(item.blog_id).to.be.oneOf([1, 2]);
       }
     }
   });
 
-  it('updateOne', async function () {
+  it("updateOne", async function() {
     // 等待一段时间以使得  created_at 时间不一样
     await utils.sleep(1500);
     const info = {
-      message: 'from updateOne',
+      message: "from updateOne"
     };
     const created_at = utils.newDate();
     const user_id = 1001;
     {
-      const ret = await model.updateOne('`info`=:info, `created_at`=:created_at', {
-        info: JSON.stringify(info),
-        created_at,
-      }).where({ user_id }).orderBy('`id` ASC').exec();
+      const ret = await model
+        .updateOne("`info`=:info, `created_at`=:created_at", {
+          info: JSON.stringify(info),
+          created_at
+        })
+        .where({ user_id })
+        .orderBy("`id` ASC")
+        .exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
       expect(ret.changedRows).to.equal(1);
@@ -211,7 +253,10 @@ describe('Model - normal', function () {
       const ret = await model.find().exec();
       console.log(ret);
       for (const item of ret) {
-        if (item.user_id === user_id && item.created_at.getTime() === created_at.getTime()) {
+        if (
+          item.user_id === user_id &&
+          item.created_at.getTime() === created_at.getTime()
+        ) {
           expect(item.info).to.deep.equal(info);
         } else {
           expect(item.info).to.not.deep.equal(info);
@@ -220,23 +265,32 @@ describe('Model - normal', function () {
     }
   });
 
-  it('incr', async function () {
+  it("incr", async function() {
     {
-      const ret = await model.incr({ score: 5 }).where({ blog_id: 3 }).exec();
+      const ret = await model
+        .incr({ score: 5 })
+        .where({ blog_id: 3 })
+        .exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
       expect(ret.changedRows).to.equal(1);
     }
     {
-      const ret = await model.findOne().where({ blog_id: 3 }).exec();
+      const ret = await model
+        .findOne()
+        .where({ blog_id: 3 })
+        .exec();
       console.log(ret);
       expect(ret.score).to.equal(5);
     }
   });
 
-  it('deleteOne', async function () {
+  it("deleteOne", async function() {
     {
-      const ret = await model.deleteOne().where({ user_id: 1001 }).exec();
+      const ret = await model
+        .deleteOne()
+        .where({ user_id: 1001 })
+        .exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
     }
@@ -246,7 +300,7 @@ describe('Model - normal', function () {
     }
   });
 
-  it('delete', async function () {
+  it("delete", async function() {
     {
       const ret = await model.delete().exec();
       console.log(ret);
@@ -258,28 +312,32 @@ describe('Model - normal', function () {
     }
   });
 
-  it('insert undeifned value', async function () {
+  it("insert undeifned value", async function() {
     {
-      const ret = await model.insert({
-        blog_id: 2001,
-        user_id: 3,
-        created_at: undefined,
-        info: undefined,
-        score: undefined,
-      }).exec();
+      const ret = await model
+        .insert({
+          blog_id: 2001,
+          user_id: 3,
+          created_at: undefined,
+          info: undefined,
+          score: undefined
+        })
+        .exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
     }
     {
-      const ret = await model.findOne().where({ blog_id: 2001 }).exec();
+      const ret = await model
+        .findOne()
+        .where({ blog_id: 2001 })
+        .exec();
       console.log(ret);
       expect(ret).to.include({
         blog_id: 2001,
         user_id: 3,
-        score: 0,
+        score: 0
       });
       expect(ret.info).to.deep.equal({});
     }
   });
-
 });

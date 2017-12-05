@@ -4,11 +4,11 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import assert = require('assert');
-import events = require('events');
-import mysql = require('mysql');
-import utils = require('./utils');
-import { Callback } from './define';
+import assert = require("assert");
+import events = require("events");
+import mysql = require("mysql");
+import utils = require("./utils");
+import { Callback } from "./define";
 
 export interface QueryError extends mysql.IError {
   /**
@@ -24,7 +24,11 @@ export interface WrappedConnection {
    * @param values 模板变量
    * @param callback 回调函数
    */
-  query(sql: string, values?: any[], callback?: (err: Error, ret: any) => void): Promise<any>;
+  query(
+    sql: string,
+    values?: any[],
+    callback?: (err: Error, ret: any) => void
+  ): Promise<any>;
   /**
    * 值转义
    */
@@ -69,21 +73,21 @@ function wrapConnection(connection: any): WrappedConnection {
   return new Proxy(connection, {
     get(target, name) {
       switch (name) {
-      case 'query':
-      case 'beginTransaction':
-      case 'commit':
-      case 'rollback':
-        return (...args: any[]) => {
-          const cb = args[args.length - 1];
-          if (typeof cb === 'function') {
+        case "query":
+        case "beginTransaction":
+        case "commit":
+        case "rollback":
+          return (...args: any[]) => {
+            const cb = args[args.length - 1];
+            if (typeof cb === "function") {
+              return target[name](...args);
+            }
             return target[name](...args);
-          }
-          return target[name](...args);
-        };
-      default:
-        return target[name];
+          };
+        default:
+          return target[name];
       }
-    },
+    }
   });
 }
 
@@ -103,7 +107,6 @@ export interface ConnectionOptions {
 }
 
 export class Connection extends events.EventEmitter {
-
   private _options: ConnectionOptions;
   private _poolCluster: mysql.IPoolCluster;
   private _poolMaster: mysql.IPool;
@@ -116,25 +119,33 @@ export class Connection extends events.EventEmitter {
     super();
 
     assert.ok(options, `missing options`);
-    assert.ok(Array.isArray(options.connections), `connections must be an array`);
-    assert.ok(options.connections.length >= 1, `connections must includes at least one item`);
+    assert.ok(
+      Array.isArray(options.connections),
+      `connections must be an array`
+    );
+    assert.ok(
+      options.connections.length >= 1,
+      `connections must includes at least one item`
+    );
 
     this._options = Object.assign<any, ConnectionOptions>({}, options);
-    if (!('stripEmoji' in this._options)) {
+    if (!("stripEmoji" in this._options)) {
       this._options.stripEmoji = true;
     }
 
     this._poolCluster = mysql.createPoolCluster();
-    this._poolCluster.add('MASTER', options.connections[0]);
+    this._poolCluster.add("MASTER", options.connections[0]);
     options.connections.slice(1).forEach((config, index) => {
-      this._poolCluster.add(`SLAVE${ index }`, config);
+      this._poolCluster.add(`SLAVE${index}`, config);
     });
-    this._poolMaster = this._poolCluster.of('MASTER');
-    this._poolSlave = this._poolCluster.of('SLAVE*');
+    this._poolMaster = this._poolCluster.of("MASTER");
+    this._poolSlave = this._poolCluster.of("SLAVE*");
 
-    this._poolCluster.on('error', err => this.emit('error', err));
-    this._poolCluster.on('connection', connection => this.emit('connection', connection));
-    this._poolCluster.on('enqueue', () => this.emit('enqueue'));
+    this._poolCluster.on("error", err => this.emit("error", err));
+    this._poolCluster.on("connection", connection =>
+      this.emit("connection", connection)
+    );
+    this._poolCluster.on("enqueue", () => this.emit("enqueue"));
   }
 
   /**
@@ -164,7 +175,9 @@ export class Connection extends events.EventEmitter {
    */
   public getConnection(callback: Callback<WrappedConnection>): void;
 
-  public getConnection(callback?: Callback<WrappedConnection>): Promise<WrappedConnection> | void {
+  public getConnection(
+    callback?: Callback<WrappedConnection>
+  ): Promise<WrappedConnection> | void {
     const cb = utils.wrapCallback(callback);
     return this._getConnection(this._poolCluster, cb);
   }
@@ -179,7 +192,9 @@ export class Connection extends events.EventEmitter {
    */
   public getMasterConnection(callback: Callback<WrappedConnection>): void;
 
-  public getMasterConnection(callback?: Callback<WrappedConnection>): Promise<WrappedConnection> | void {
+  public getMasterConnection(
+    callback?: Callback<WrappedConnection>
+  ): Promise<WrappedConnection> | void {
     const cb = utils.wrapCallback(callback);
     return this._getConnection(this._poolCluster, cb);
   }
@@ -194,7 +209,9 @@ export class Connection extends events.EventEmitter {
    */
   public getSlaveConnection(callback: Callback<WrappedConnection>): void;
 
-  public getSlaveConnection(callback?: Callback<WrappedConnection>): Promise<WrappedConnection> | void {
+  public getSlaveConnection(
+    callback?: Callback<WrappedConnection>
+  ): Promise<WrappedConnection> | void {
     const cb = utils.wrapCallback(callback);
     return this._getConnection(this._poolCluster, cb);
   }
@@ -231,7 +248,10 @@ export class Connection extends events.EventEmitter {
    */
   public queryMaster(sql: string, callback: Callback<any>): void;
 
-  public queryMaster(sql: string, callback?: Callback<any>): Promise<any> | void {
+  public queryMaster(
+    sql: string,
+    callback?: Callback<any>
+  ): Promise<any> | void {
     const cb = utils.wrapCallback(callback);
     return this._query(this._poolMaster, sql, cb);
   }
@@ -248,7 +268,10 @@ export class Connection extends events.EventEmitter {
    */
   public querySlave(sql: string, callback: Callback<any>): void;
 
-  public querySlave(sql: string, callback?: Callback<any>): Promise<any> | void {
+  public querySlave(
+    sql: string,
+    callback?: Callback<any>
+  ): Promise<any> | void {
     const cb = utils.wrapCallback(callback);
     return this._query(this._poolSlave, sql, cb);
   }
@@ -287,15 +310,23 @@ export class Connection extends events.EventEmitter {
    * 获取一个原始连接（增加 Promise 支持）
    * @param pool 连接池
    */
-  private _getConnection(pool: mysql.IPool | mysql.IPoolCluster): Promise<WrappedConnection>;
+  private _getConnection(
+    pool: mysql.IPool | mysql.IPoolCluster
+  ): Promise<WrappedConnection>;
   /**
    * 获取一个原始连接（增加 Promise 支持）
    * @param pool 连接池
    * @param callback 回调函数
    */
-  private _getConnection(pool: mysql.IPool | mysql.IPoolCluster, callback: Callback<WrappedConnection>): void;
+  private _getConnection(
+    pool: mysql.IPool | mysql.IPoolCluster,
+    callback: Callback<WrappedConnection>
+  ): void;
 
-  private _getConnection(pool: mysql.IPool | mysql.IPoolCluster, callback?: Callback<WrappedConnection>): Promise<WrappedConnection> | void {
+  private _getConnection(
+    pool: mysql.IPool | mysql.IPoolCluster,
+    callback?: Callback<WrappedConnection>
+  ): Promise<WrappedConnection> | void {
     const cb = utils.wrapCallback<WrappedConnection>(callback);
     pool.getConnection((err, connection) => {
       if (err) {
@@ -311,24 +342,35 @@ export class Connection extends events.EventEmitter {
    * @param pool 连接池
    * @param sql  SQL 查询语句
    */
-  private _query(pool: mysql.IPool | mysql.IPoolCluster, sql: string): Promise<any>;
+  private _query(
+    pool: mysql.IPool | mysql.IPoolCluster,
+    sql: string
+  ): Promise<any>;
   /**
    * 执行 SQL 查询
    * @param pool 连接池
    * @param sql  SQL 查询语句
    * @param callback 回调函数
    */
-  private _query(pool: mysql.IPool | mysql.IPoolCluster, sql: string, callback?: Callback<any>): void;
+  private _query(
+    pool: mysql.IPool | mysql.IPoolCluster,
+    sql: string,
+    callback?: Callback<any>
+  ): void;
 
-  private _query(pool: mysql.IPool | mysql.IPoolCluster, sql: string, callback?: Callback<any>): Promise<any> | void {
+  private _query(
+    pool: mysql.IPool | mysql.IPoolCluster,
+    sql: string,
+    callback?: Callback<any>
+  ): Promise<any> | void {
     const cb = utils.wrapCallback<any>(callback);
-    utils.connectionDebug('query sql: %s', sql);
+    utils.connectionDebug("query sql: %s", sql);
     pool.getConnection((err, connection) => {
       if (err) {
         return cb(err);
       }
       const cc = connection.config || {};
-      this.emit('query', { sql, connection, name: `${ cc.host }:${ cc.port }` });
+      this.emit("query", { sql, connection, name: `${cc.host}:${cc.port}` });
       if (this._options.stripEmoji) {
         sql = utils.stripEmoji(sql);
       }
@@ -343,5 +385,4 @@ export class Connection extends events.EventEmitter {
     });
     return cb.promise;
   }
-
 }

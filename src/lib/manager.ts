@@ -4,18 +4,19 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import assert = require('assert');
-import events = require('events');
-import cache = require('./cache');
-import connection = require('./connection');
-import model = require('./model');
-import utils = require('./utils');
-import { Callback } from './define';
+import assert = require("assert");
+import events = require("events");
+import cache = require("./cache");
+import connection = require("./connection");
+import model = require("./model");
+import utils = require("./utils");
+import { Callback } from "./define";
 
-export interface ManagerOptions extends cache.CacheOptions, connection.ConnectionOptions {}
+export interface ManagerOptions
+  extends cache.CacheOptions,
+    connection.ConnectionOptions {}
 
 export class Manager extends events.EventEmitter {
-
   public readonly cache: cache.Cache;
   public readonly connection: connection.Connection;
   private readonly _models: Map<string, model.Model>;
@@ -38,13 +39,18 @@ export class Manager extends events.EventEmitter {
    * @param options 选项
    */
   public registerModel(name: string, options: model.ModelBaseOptions) {
-    assert.equal(typeof name, 'string', `model name must be a string`);
+    assert.equal(typeof name, "string", `model name must be a string`);
     assert.ok(name, `model name cannot be empty`);
     assert.ok(options, `please provide options`);
-    const m = new model.Model(Object.assign({
-      connection: this.connection,
-      cache: this.cache,
-    }, options));
+    const m = new model.Model(
+      Object.assign(
+        {
+          connection: this.connection,
+          cache: this.cache
+        },
+        options
+      )
+    );
     this._models.set(name, m);
   }
 
@@ -62,7 +68,7 @@ export class Manager extends events.EventEmitter {
    */
   public model(name: string): model.Model {
     if (!this._models.has(name)) {
-      throw new Error(`model "${ name }" does not exists`);
+      throw new Error(`model "${name}" does not exists`);
     }
     return this._models.get(name) as model.Model;
   }
@@ -82,5 +88,4 @@ export class Manager extends events.EventEmitter {
       .catch(err => cb(err));
     return cb.promise;
   }
-
 }

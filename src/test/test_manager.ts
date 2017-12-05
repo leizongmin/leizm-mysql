@@ -4,80 +4,83 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import chai = require('chai');
-import orm = require('../lib');
-import utils = require('./utils');
+import chai = require("chai");
+import orm = require("../lib");
+import utils = require("./utils");
 
 const expect = chai.expect;
 
-describe('Manager', function () {
-
-  const prefix = utils.randomString(10) + ':';
-  const manager = orm.createManager(utils.getCacheConfig({
-    connections: [ utils.getConnectionConfig() ],
-    prefix,
-  }));
+describe("Manager", function() {
+  const prefix = utils.randomString(10) + ":";
+  const manager = orm.createManager(
+    utils.getCacheConfig({
+      connections: [utils.getConnectionConfig()],
+      prefix
+    })
+  );
   console.log(manager);
 
-  before(async function () {
-    const sql = await utils.readTestFile('admins.sql');
-    await manager.connection.query('DROP TABLE IF EXISTS `admins`');
+  before(async function() {
+    const sql = await utils.readTestFile("admins.sql");
+    await manager.connection.query("DROP TABLE IF EXISTS `admins`");
     await manager.connection.query(sql);
   });
 
-  after(async function () {
+  after(async function() {
     await manager.close();
   });
 
-  it('registerModel', async function () {
+  it("registerModel", async function() {
     await 0;
-    manager.registerModel('Admin', {
-      table: 'admins',
-      primary: 'id',
+    manager.registerModel("Admin", {
+      table: "admins",
+      primary: "id",
       autoIncrement: true,
       fields: {
         id: true,
         name: true,
         email: true,
-        info: 'json',
-        created_at: 'date',
-      },
+        info: "json",
+        created_at: "date"
+      }
     });
   });
 
-  it('hasModel', async function () {
+  it("hasModel", async function() {
     await 0;
-    expect(manager.hasModel('Admin')).to.be.true;
-    expect(manager.hasModel('admin')).to.be.false;
-    expect(manager.hasModel('friend')).to.be.false;
+    expect(manager.hasModel("Admin")).to.be.true;
+    expect(manager.hasModel("admin")).to.be.false;
+    expect(manager.hasModel("friend")).to.be.false;
   });
 
-  it('model', async function () {
+  it("model", async function() {
     {
-      const ret = await manager.model('Admin').insert({
-        name: '超级管理员',
-        email: 'admin@ucdok.com',
-        info: { role: 'admin' },
-        created_at: utils.newDate(),
-      }).exec();
+      const ret = await manager
+        .model("Admin")
+        .insert({
+          name: "超级管理员",
+          email: "admin@ucdok.com",
+          info: { role: "admin" },
+          created_at: utils.newDate()
+        })
+        .exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
       expect(ret.insertId).to.equal(1);
     }
     {
-      const ret = await manager.model('Admin').getByPrimary({ id: 1 });
+      const ret = await manager.model("Admin").getByPrimary({ id: 1 });
       console.log(ret);
       expect(ret).to.include({
         id: 1,
-        name: '超级管理员',
-        email: 'admin@ucdok.com',
+        name: "超级管理员",
+        email: "admin@ucdok.com"
       });
     }
     {
-      expect(function () {
-        manager.model('Haha');
+      expect(function() {
+        manager.model("Haha");
       }).to.throw('model "Haha" does not exists');
     }
   });
-
 });

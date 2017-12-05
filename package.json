@@ -13,7 +13,7 @@
     "test-cov": "npm run compile && export TS_NODE_PROJECT=test && istanbul cover _mocha && npm run test-cov-remap",
     "test-cov-remap": "remap-istanbul -i coverage/coverage.json  -t html -o coverage/html-report",
     "upload-coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "lint": "tslint --fix src/**/*.ts",
+    "lint": "prettier --write 'src/**/*.ts'",
     "prepublish": "npm run test"
   },
   "repository": {
@@ -46,10 +46,10 @@
     "ioredis": "^2.4.2",
     "istanbul": "^0.4.5",
     "mocha": "^3.5.3",
+    "prettier": "^1.8.2",
     "remap-istanbul": "^0.8.0",
     "source-map-support": "^0.4.18",
     "ts-node": "^1.7.3",
-    "tslint": "^4.5.1",
     "typescript": "^2.6.2"
   }
 }
