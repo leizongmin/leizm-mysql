@@ -6,7 +6,7 @@
 
 import fs = require('fs');
 import path = require('path');
-import orm = require('../');
+import orm = require('../lib');
 import mysql = require('mysql');
 import utils = require('lei-utils');
 
@@ -49,7 +49,7 @@ export function readFile(file: string): Promise<Buffer> {
 }
 
 export async function readTestFile(file: string) {
-  const data = await readFile(path.resolve(__dirname, file));
+  const data = await readFile(path.resolve(__dirname, '../../test', file));
   return data.toString();
 }
 

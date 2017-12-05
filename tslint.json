@@ -26,6 +26,7 @@
     "only-arrow-functions": [
       false
     ],
-    "no-string-literal": false
+    "no-string-literal": false,
+    "no-console": false
   }
 }

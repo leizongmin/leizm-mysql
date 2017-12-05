@@ -2,20 +2,18 @@
   "name": "@gz/orm",
   "version": "1.2.5",
   "description": "基于 Node.js 的 MySQL ORM 模块，支持缓存、多 MySQL 连接",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
   "files": [
-    "dist"
+    "dist/lib"
   ],
   "scripts": {
-    "compile": "tsc -p src",
-    "test": "npm run lint && npm run compile && export DEBUG='super-orm:*' && export TS_NODE_PROJECT=test && mocha",
-    "test-fast": "export DEBUG='super-orm:*' && export TS_NODE_PROJECT=test && mocha",
-    "test-watch": "npm run compile && export DEBUG='super-orm:*' && export TS_NODE_PROJECT=test && mocha --watch",
+    "compile": "rm -rf dist && tsc",
+    "test": "export DEBUG='super-orm:*' && mocha src/test/*.ts",
     "test-cov": "npm run compile && export TS_NODE_PROJECT=test && istanbul cover _mocha && npm run test-cov-remap",
     "test-cov-remap": "remap-istanbul -i coverage/coverage.json  -t html -o coverage/html-report",
     "upload-coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "lint": "tslint --fix src/**/*.ts test/**/*.ts",
+    "lint": "tslint --fix src/**/*.ts",
     "prepublish": "npm run test"
   },
   "repository": {
@@ -33,26 +31,25 @@
     "@types/debug": "0.0.29",
     "@types/ioredis": "0.0.21",
     "@types/mysql": "0.0.30",
-    "debug": "^2.3.2",
-    "emoji-regex": "^6.4.1",
+    "emoji-regex": "^6.5.1",
     "ioredis": "^2.4.0",
-    "lei-utils": "^3.1.0",
-    "mysql": "^2.12.0"
+    "lei-utils": "^3.1.1",
+    "mysql": "^2.15.0"
   },
   "devDependencies": {
-    "@types/chai": "^3.4.34",
-    "@types/mocha": "^2.2.33",
-    "@types/node": "^6.0.52",
+    "@types/chai": "^3.5.2",
+    "@types/mocha": "^2.2.44",
+    "@types/node": "^6.0.92",
     "chai": "^3.5.0",
-    "coveralls": "^2.11.15",
-    "debug": "^2.4.4",
+    "coveralls": "^2.13.3",
+    "debug": "^2.6.9",
     "ioredis": "^2.4.2",
     "istanbul": "^0.4.5",
-    "mocha": "^3.2.0",
+    "mocha": "^3.5.3",
     "remap-istanbul": "^0.8.0",
-    "source-map-support": "^0.4.6",
+    "source-map-support": "^0.4.18",
     "ts-node": "^1.7.3",
     "tslint": "^4.5.1",
-    "typescript": "^2.2.2"
+    "typescript": "^2.6.2"
   }
 }

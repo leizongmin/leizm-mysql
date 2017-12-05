@@ -21,7 +21,7 @@ export interface QueryBuilderOptions {
   /**
    * 执行查询
    */
-  exec: QueryBuilderExecFunction;
+  exec?: QueryBuilderExecFunction;
 }
 
 export interface QueryBuilderExecFunction {
@@ -58,10 +58,10 @@ export interface QueryOptionsParams {
 
 export class QueryBuilder {
 
-  private _tableName: string;
-  private _tableNameEscaped: string;
-  private _execCallback: QueryBuilderExecFunction | null;
-  private _data: {
+  protected readonly _tableName: string;
+  protected readonly _tableNameEscaped: string;
+  protected readonly _execCallback: QueryBuilderExecFunction | null;
+  protected readonly _data: {
     fields: string;
     conditions: string[];
     type: string;
@@ -79,7 +79,7 @@ export class QueryBuilder {
     limitRows: number;
     limit: string;
   };
-  private _schema: Schema;
+  protected readonly _schema: Schema;
 
   /**
    * 创建 QueryBuilder

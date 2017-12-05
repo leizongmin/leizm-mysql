@@ -5,8 +5,8 @@
  */
 
 import chai = require('chai');
-const orm = require('../');
-const utils = require('./utils');
+import orm = require('../lib');
+import utils = require('./utils');
 
 const expect = chai.expect;
 

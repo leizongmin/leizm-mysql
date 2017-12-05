@@ -60,11 +60,11 @@ export class Manager extends events.EventEmitter {
    * 获取 model
    * @param name Model 名称
    */
-  public model(name: string): model.Model | undefined {
+  public model(name: string): model.Model {
     if (!this._models.has(name)) {
       throw new Error(`model "${ name }" does not exists`);
     }
-    return this._models.get(name);
+    return this._models.get(name) as model.Model;
   }
 
   /**
