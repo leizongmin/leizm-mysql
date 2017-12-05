@@ -4,11 +4,9 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import * as chai from "chai";
+import { expect } from "chai";
 import * as orm from "../lib";
 import * as utils from "./utils";
-
-const expect = chai.expect;
 
 describe("Schema", function() {
   const schema = orm.createSchema({
