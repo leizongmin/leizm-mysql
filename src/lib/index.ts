@@ -4,12 +4,13 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import connection = require("./connection");
-import model = require("./model");
-import query = require("./query");
-import schema = require("./schema");
-import manager = require("./manager");
-import cache = require("./cache");
+import * as connection from "./connection";
+import * as model from "./model";
+import * as query from "./query";
+import * as schema from "./schema";
+import * as manager from "./manager";
+import * as cache from "./cache";
+import * as utils from "./utils";
 
 export * from "./connection";
 export * from "./model";
@@ -18,7 +19,7 @@ export * from "./schema";
 export * from "./manager";
 export * from "./cache";
 export * from "./define";
-export const utils = require("./utils");
+export { utils };
 
 /**
  * 创建 Connection

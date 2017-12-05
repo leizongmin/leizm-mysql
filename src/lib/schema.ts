@@ -4,7 +4,7 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import assert = require("assert");
+import * as assert from "assert";
 
 /**
  * 获取默认的 field 配置信息

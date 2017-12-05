@@ -4,12 +4,12 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import assert = require("assert");
-import utils = require("./utils");
-import connection = require("./connection");
-import cache = require("./cache");
-import schema = require("./schema");
-import query = require("./query");
+import * as assert from "assert";
+import * as utils from "./utils";
+import * as connection from "./connection";
+import * as cache from "./cache";
+import * as schema from "./schema";
+import * as query from "./query";
 import { Callback } from "./define";
 
 export type FieldName = string | string[];

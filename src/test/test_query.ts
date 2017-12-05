@@ -4,8 +4,8 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import chai = require("chai");
-import orm = require("../lib");
+import * as chai from "chai";
+import * as orm from "../lib";
 
 const expect = chai.expect;
 

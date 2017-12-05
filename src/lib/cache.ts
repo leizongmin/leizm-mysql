@@ -4,10 +4,10 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import assert = require("assert");
-import events = require("events");
-import Redis = require("ioredis");
-import utils = require("./utils");
+import * as assert from "assert";
+import * as events from "events";
+import * as Redis from "ioredis";
+import * as utils from "./utils";
 import { Callback } from "./define";
 
 const GET_BY_POINTER_SCRIPT = `

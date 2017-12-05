@@ -4,8 +4,8 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import assert = require("assert");
-import utils = require("./utils");
+import * as assert from "assert";
+import * as utils from "./utils";
 import { Callback } from "./define";
 import { Schema } from "./schema";
 

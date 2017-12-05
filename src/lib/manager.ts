@@ -4,12 +4,12 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import assert = require("assert");
-import events = require("events");
-import cache = require("./cache");
-import connection = require("./connection");
-import model = require("./model");
-import utils = require("./utils");
+import * as assert from "assert";
+import * as events from "events";
+import * as cache from "./cache";
+import * as connection from "./connection";
+import * as model from "./model";
+import * as utils from "./utils";
 import { Callback } from "./define";
 
 export interface ManagerOptions

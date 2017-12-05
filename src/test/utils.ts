@@ -4,11 +4,11 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import fs = require("fs");
-import path = require("path");
-import orm = require("../lib");
-import mysql = require("mysql");
-import utils = require("lei-utils");
+import * as fs from "fs";
+import * as path from "path";
+import * as orm from "../lib";
+import * as mysql from "mysql";
+import * as utils from "lei-utils";
 
 export const randomString = utils.randomString;
 

@@ -4,10 +4,10 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import assert = require("assert");
-import events = require("events");
-import mysql = require("mysql");
-import utils = require("./utils");
+import * as assert from "assert";
+import * as events from "events";
+import * as mysql from "mysql";
+import * as utils from "./utils";
 import { Callback } from "./define";
 
 export interface QueryError extends mysql.IError {

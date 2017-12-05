@@ -4,9 +4,9 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import createDebug = require("debug");
-import mysql = require("mysql");
-import utils = require("lei-utils");
+import * as createDebug from "debug";
+import * as mysql from "mysql";
+import * as utils from "lei-utils";
 import { Callback } from "./define";
 
 // TODO: 不知为何无法正确识别 d.ts 文件
