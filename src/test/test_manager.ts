@@ -30,7 +30,7 @@ describe("Manager", function() {
 
   it("registerTable", async function() {
     await 0;
-    manager.registerTable("Admin", {
+    manager.registerTable({
       table: "admins",
       primary: "id",
       autoIncrement: true,
@@ -46,7 +46,7 @@ describe("Manager", function() {
 
   it("hasTable", async function() {
     await 0;
-    expect(manager.hasTable("Admin")).to.be.true;
+    expect(manager.hasTable("admins")).to.be.true;
     expect(manager.hasTable("admin")).to.be.false;
     expect(manager.hasTable("friend")).to.be.false;
   });
@@ -54,7 +54,7 @@ describe("Manager", function() {
   it("table", async function() {
     {
       const ret = await manager
-        .table("Admin")
+        .table("admins")
         .insert({
           name: "超级管理员",
           email: "admin@ucdok.com",
@@ -67,7 +67,7 @@ describe("Manager", function() {
       expect(ret.insertId).to.equal(1);
     }
     {
-      const ret = await manager.table("Admin").getByPrimary({ id: 1 });
+      const ret = await manager.table("admins").getByPrimary({ id: 1 });
       console.log(ret);
       expect(ret).to.include({
         id: 1,

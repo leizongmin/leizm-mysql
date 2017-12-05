@@ -38,9 +38,9 @@ export class Manager extends events.EventEmitter {
    * @param name Table 名称
    * @param options 选项
    */
-  public registerTable(name: string, options: table.TableBaseOptions) {
-    assert.equal(typeof name, "string", `table name must be a string`);
-    assert.ok(name, `table name cannot be empty`);
+  public registerTable(options: table.TableBaseOptions) {
+    assert.equal(typeof options.table, "string", `table name must be a string`);
+    assert.ok(options.table, `table name cannot be empty`);
     assert.ok(options, `please provide options`);
     const m = new table.Table(
       Object.assign(
@@ -51,7 +51,7 @@ export class Manager extends events.EventEmitter {
         options
       )
     );
-    this._tables.set(name, m);
+    this._tables.set(options.table, m);
   }
 
   /**
