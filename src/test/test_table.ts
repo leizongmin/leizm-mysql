@@ -5,16 +5,16 @@
  */
 
 import { expect } from "chai";
-import * as orm from "../lib";
+import * as mysql from "../lib";
 import * as utils from "./utils";
 
 describe("Table - normal", function() {
   const prefix = utils.randomString(10) + ":";
-  const cache = new orm.Cache(utils.getCacheConfig({ prefix }));
-  const connection = new orm.Connection({
+  const cache = new mysql.Cache(utils.getCacheConfig({ prefix }));
+  const connection = new mysql.Connection({
     connections: [utils.getConnectionConfig()]
   });
-  const table = new orm.Table({
+  const table = new mysql.Table({
     cache,
     connection,
     table: "user_blogs",

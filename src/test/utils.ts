@@ -6,8 +6,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import * as orm from "../lib";
-import * as mysql from "mysql";
+import * as mysql from "../lib";
 import * as utils from "lei-utils";
 
 export const randomString = utils.randomString;
@@ -29,8 +28,8 @@ export function getConnectionConfig(
   );
 }
 
-export function getCacheConfig(config?: any): orm.ManagerOptions {
-  return Object.assign<any, orm.ManagerOptions>(
+export function getCacheConfig(config?: any): mysql.ManagerOptions {
+  return Object.assign<any, mysql.ManagerOptions>(
     {
       redis: {
         host: "127.0.0.1",

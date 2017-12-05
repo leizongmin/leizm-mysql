@@ -5,16 +5,16 @@
  */
 
 import { expect } from "chai";
-import * as orm from "../lib";
+import * as mysql from "../lib";
 import * as utils from "./utils";
 
 describe("Table - get|update|delete by primary and cache", function() {
   const prefix = utils.randomString(10) + ":";
-  const cache = new orm.Cache(utils.getCacheConfig({ prefix }));
-  const connection = new orm.Connection({
+  const cache = new mysql.Cache(utils.getCacheConfig({ prefix }));
+  const connection = new mysql.Connection({
     connections: [utils.getConnectionConfig()]
   });
-  const User = new orm.Table({
+  const User = new mysql.Table({
     cache,
     connection,
     table: "users",
@@ -29,7 +29,7 @@ describe("Table - get|update|delete by primary and cache", function() {
       score: true
     }
   });
-  const Friend = new orm.Table({
+  const Friend = new mysql.Table({
     cache,
     connection,
     table: "friends",

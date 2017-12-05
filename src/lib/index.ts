@@ -20,3 +20,5 @@ export * from "./manager";
 export * from "./cache";
 export * from "./define";
 export { utils };
+
+export { Pool, PoolConfig, PoolCluster, MysqlError } from "mysql";

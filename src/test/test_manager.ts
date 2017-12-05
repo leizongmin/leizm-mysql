@@ -5,12 +5,12 @@
  */
 
 import { expect } from "chai";
-import * as orm from "../lib";
+import * as mysql from "../lib";
 import * as utils from "./utils";
 
 describe("Manager", function() {
   const prefix = utils.randomString(10) + ":";
-  const manager = new orm.Manager(
+  const manager = new mysql.Manager(
     utils.getCacheConfig({
       connections: [utils.getConnectionConfig()],
       prefix

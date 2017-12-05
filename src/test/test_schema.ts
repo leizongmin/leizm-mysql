@@ -5,11 +5,11 @@
  */
 
 import { expect } from "chai";
-import * as orm from "../lib";
+import * as mysql from "../lib";
 import * as utils from "./utils";
 
 describe("Schema", function() {
-  const schema = new orm.Schema({
+  const schema = new mysql.Schema({
     fields: {
       name: true,
       info: "json",
@@ -255,7 +255,7 @@ describe("Schema", function() {
 
   it("not support type", function() {
     expect(function() {
-      new orm.Schema({
+      new mysql.Schema({
         fields: {
           info: "xxxx"
         }

@@ -5,12 +5,12 @@
  */
 
 import { expect } from "chai";
-import * as orm from "../lib";
+import * as mysql from "../lib";
 import * as utils from "./utils";
 
 describe("Cache", function() {
   it("cache.saveList()", async function() {
-    const cache = new orm.Cache(utils.getCacheConfig());
+    const cache = new mysql.Cache(utils.getCacheConfig());
     {
       const ret = await cache.saveList([
         {
@@ -40,7 +40,7 @@ describe("Cache", function() {
   });
 
   it("cache.getList() & cache.removeList()", async function() {
-    const cache = new orm.Cache(utils.getCacheConfig());
+    const cache = new mysql.Cache(utils.getCacheConfig());
     {
       const ret = await cache.saveList([
         {

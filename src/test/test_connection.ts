@@ -5,13 +5,13 @@
  */
 
 import { expect } from "chai";
-import * as orm from "../lib";
+import * as mysql from "../lib";
 import * as utils from "./utils";
 
 describe("Connection", function() {
   it("getConnection() support promise", async function() {
     const connConfig = utils.getConnectionConfig();
-    const conn = new orm.Connection({
+    const conn = new mysql.Connection({
       connections: [connConfig]
     });
     // {
