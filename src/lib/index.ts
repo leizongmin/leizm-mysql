@@ -5,7 +5,7 @@
  */
 
 import * as connection from "./connection";
-import * as model from "./model";
+import * as table from "./table";
 import * as query from "./query";
 import * as schema from "./schema";
 import * as manager from "./manager";
@@ -13,7 +13,7 @@ import * as cache from "./cache";
 import * as utils from "./utils";
 
 export * from "./connection";
-export * from "./model";
+export * from "./table";
 export * from "./query";
 export * from "./schema";
 export * from "./manager";
@@ -31,10 +31,10 @@ export function createConnection(
 }
 
 /**
- * 创建 Model
+ * 创建 Table
  */
-export function createModel(options: model.ModelOptions): model.Model {
-  return new model.Model(options);
+export function createTable(options: table.TableOptions): table.Table {
+  return new table.Table(options);
 }
 
 /**

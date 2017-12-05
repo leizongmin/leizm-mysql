@@ -8,13 +8,13 @@ import { expect } from "chai";
 import * as orm from "../lib";
 import * as utils from "./utils";
 
-describe("Model - get|update|delete by primary and cache", function() {
+describe("Table - get|update|delete by primary and cache", function() {
   const prefix = utils.randomString(10) + ":";
   const cache = orm.createCache(utils.getCacheConfig({ prefix }));
   const connection = orm.createConnection({
     connections: [utils.getConnectionConfig()]
   });
-  const User = orm.createModel({
+  const User = orm.createTable({
     cache,
     connection,
     table: "users",
@@ -29,7 +29,7 @@ describe("Model - get|update|delete by primary and cache", function() {
       score: true
     }
   });
-  const Friend = orm.createModel({
+  const Friend = orm.createTable({
     cache,
     connection,
     table: "friends",

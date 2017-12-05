@@ -8,13 +8,13 @@ import { expect } from "chai";
 import * as orm from "../lib";
 import * as utils from "./utils";
 
-describe("Model - normal", function() {
+describe("Table - normal", function() {
   const prefix = utils.randomString(10) + ":";
   const cache = orm.createCache(utils.getCacheConfig({ prefix }));
   const connection = orm.createConnection({
     connections: [utils.getConnectionConfig()]
   });
-  const model = orm.createModel({
+  const table = orm.createTable({
     cache,
     connection,
     table: "user_blogs",
@@ -51,21 +51,21 @@ describe("Model - normal", function() {
       score: 0
     };
     {
-      const ret = await model.insert(data).exec();
+      const ret = await table.insert(data).exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(1);
     }
     {
-      const ret = await model
+      const ret = await table
         .findOne()
-        .where(model.keepPrimaryFields(data))
+        .where(table.keepPrimaryFields(data))
         .exec();
       console.log(ret);
       expect(ret).to.deep.equal(data);
     }
     // 批量插入
     {
-      const ret = await model
+      const ret = await table
         .insert([
           {
             blog_id: 2,
@@ -90,7 +90,7 @@ describe("Model - normal", function() {
 
   it("find", async function() {
     {
-      const list = await model
+      const list = await table
         .find()
         .where({ user_id: 1001 })
         .exec();
@@ -98,7 +98,7 @@ describe("Model - normal", function() {
       expect(list).to.have.lengthOf(2);
     }
     {
-      const list = await model
+      const list = await table
         .find()
         .orderBy("`blog_id` DESC")
         .exec();
@@ -113,7 +113,7 @@ describe("Model - normal", function() {
 
   it("findOne", async function() {
     {
-      const ret = await model
+      const ret = await table
         .findOne()
         .where({ user_id: 1001 })
         .exec();
@@ -124,12 +124,12 @@ describe("Model - normal", function() {
 
   it("count", async function() {
     {
-      const count = await model.count().exec();
+      const count = await table.count().exec();
       console.log(count);
       expect(count).to.equal(3);
     }
     {
-      const count = await model
+      const count = await table
         .count()
         .where({ user_id: 1001 })
         .exec();
@@ -137,7 +137,7 @@ describe("Model - normal", function() {
       expect(count).to.equal(2);
     }
     {
-      const count = await model
+      const count = await table
         .count()
         .where("`user_id`!=1001")
         .exec();
@@ -148,14 +148,14 @@ describe("Model - normal", function() {
 
   it("sql", async function() {
     {
-      const ret = await model
+      const ret = await table
         .sql("SELECT COUNT(*) AS `count` FROM :$table")
         .exec();
       console.log(ret);
       expect(ret).to.deep.equal([{ count: 3 }]);
     }
     {
-      const ret = await model.sql("SHOW TABLES").exec();
+      const ret = await table.sql("SHOW TABLES").exec();
       console.log(ret);
     }
   });
@@ -173,7 +173,7 @@ describe("Model - normal", function() {
       user_id: 1001
     };
     {
-      const ret = await model
+      const ret = await table
         .update(data)
         .where(query)
         .exec();
@@ -182,7 +182,7 @@ describe("Model - normal", function() {
       expect(ret.changedRows).to.equal(1);
     }
     {
-      const ret = await model
+      const ret = await table
         .findOne()
         .where(query)
         .exec();
@@ -203,7 +203,7 @@ describe("Model - normal", function() {
       user_id: 1001
     };
     {
-      const ret = await model
+      const ret = await table
         .update("`info`=?, `created_at`=?", [JSON.stringify(info), created_at])
         .where(query)
         .exec();
@@ -212,7 +212,7 @@ describe("Model - normal", function() {
       expect(ret.changedRows).to.equal(2);
     }
     {
-      const ret = await model
+      const ret = await table
         .find()
         .where(query)
         .exec();
@@ -235,7 +235,7 @@ describe("Model - normal", function() {
     const created_at = utils.newDate();
     const user_id = 1001;
     {
-      const ret = await model
+      const ret = await table
         .updateOne("`info`=:info, `created_at`=:created_at", {
           info: JSON.stringify(info),
           created_at
@@ -248,7 +248,7 @@ describe("Model - normal", function() {
       expect(ret.changedRows).to.equal(1);
     }
     {
-      const ret = await model.find().exec();
+      const ret = await table.find().exec();
       console.log(ret);
       for (const item of ret) {
         if (
@@ -265,7 +265,7 @@ describe("Model - normal", function() {
 
   it("incr", async function() {
     {
-      const ret = await model
+      const ret = await table
         .incr({ score: 5 })
         .where({ blog_id: 3 })
         .exec();
@@ -274,7 +274,7 @@ describe("Model - normal", function() {
       expect(ret.changedRows).to.equal(1);
     }
     {
-      const ret = await model
+      const ret = await table
         .findOne()
         .where({ blog_id: 3 })
         .exec();
@@ -285,7 +285,7 @@ describe("Model - normal", function() {
 
   it("deleteOne", async function() {
     {
-      const ret = await model
+      const ret = await table
         .deleteOne()
         .where({ user_id: 1001 })
         .exec();
@@ -293,26 +293,26 @@ describe("Model - normal", function() {
       expect(ret.affectedRows).to.equal(1);
     }
     {
-      const count = await model.count().exec();
+      const count = await table.count().exec();
       expect(count).to.equal(2);
     }
   });
 
   it("delete", async function() {
     {
-      const ret = await model.delete().exec();
+      const ret = await table.delete().exec();
       console.log(ret);
       expect(ret.affectedRows).to.equal(2);
     }
     {
-      const count = await model.count().exec();
+      const count = await table.count().exec();
       expect(count).to.equal(0);
     }
   });
 
   it("insert undeifned value", async function() {
     {
-      const ret = await model
+      const ret = await table
         .insert({
           blog_id: 2001,
           user_id: 3,
@@ -325,7 +325,7 @@ describe("Model - normal", function() {
       expect(ret.affectedRows).to.equal(1);
     }
     {
-      const ret = await model
+      const ret = await table
         .findOne()
         .where({ blog_id: 2001 })
         .exec();

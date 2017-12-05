@@ -22,7 +22,7 @@ export function debug(name: string): createDebug.IDebugger {
   return createDebug("@leizm/mysql:" + name);
 }
 
-export const modelDebug = debug("model");
+export const tableDebug = debug("table");
 export const schemaDebug = debug("schema");
 export const connectionDebug = debug("connection");
 export const managerDebug = debug("manager");

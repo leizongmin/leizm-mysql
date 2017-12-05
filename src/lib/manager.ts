@@ -8,7 +8,7 @@ import * as assert from "assert";
 import * as events from "events";
 import * as cache from "./cache";
 import * as connection from "./connection";
-import * as model from "./model";
+import * as table from "./table";
 import * as utils from "./utils";
 import { Callback } from "./define";
 
@@ -19,7 +19,7 @@ export interface ManagerOptions
 export class Manager extends events.EventEmitter {
   public readonly cache: cache.Cache;
   public readonly connection: connection.Connection;
-  private readonly _models: Map<string, model.Model>;
+  private readonly _tables: Map<string, table.Table>;
 
   /**
    * 创建 Manager
@@ -30,19 +30,19 @@ export class Manager extends events.EventEmitter {
     this.cache = new cache.Cache(options);
     this.connection = new connection.Connection(options);
 
-    this._models = new Map();
+    this._tables = new Map();
   }
 
   /**
-   * 注册 model
-   * @param name Model 名称
+   * 注册 table
+   * @param name Table 名称
    * @param options 选项
    */
-  public registerModel(name: string, options: model.ModelBaseOptions) {
-    assert.equal(typeof name, "string", `model name must be a string`);
-    assert.ok(name, `model name cannot be empty`);
+  public registerTable(name: string, options: table.TableBaseOptions) {
+    assert.equal(typeof name, "string", `table name must be a string`);
+    assert.ok(name, `table name cannot be empty`);
     assert.ok(options, `please provide options`);
-    const m = new model.Model(
+    const m = new table.Table(
       Object.assign(
         {
           connection: this.connection,
@@ -51,26 +51,26 @@ export class Manager extends events.EventEmitter {
         options
       )
     );
-    this._models.set(name, m);
+    this._tables.set(name, m);
   }
 
   /**
-   * 判断 model 是否存在
-   * @param name Model 名称
+   * 判断 table 是否存在
+   * @param name Table 名称
    */
-  public hasModel(name: string): boolean {
-    return this._models.has(name);
+  public hasTable(name: string): boolean {
+    return this._tables.has(name);
   }
 
   /**
-   * 获取 model
-   * @param name Model 名称
+   * 获取 table
+   * @param name Table 名称
    */
-  public model(name: string): model.Model {
-    if (!this._models.has(name)) {
-      throw new Error(`model "${name}" does not exists`);
+  public table(name: string): table.Table {
+    if (!this._tables.has(name)) {
+      throw new Error(`table "${name}" does not exists`);
     }
-    return this._models.get(name) as model.Model;
+    return this._tables.get(name) as table.Table;
   }
 
   /**
@@ -82,7 +82,7 @@ export class Manager extends events.EventEmitter {
     (async () => {
       await this.cache.close();
       await this.connection.close();
-      this._models.clear();
+      this._tables.clear();
     })()
       .then(() => cb(null))
       .catch(err => cb(err));

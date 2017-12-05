@@ -14,7 +14,7 @@ import { Callback } from "./define";
 
 export type FieldName = string | string[];
 
-export interface ModelBaseOptions extends schema.SchemaOptions {
+export interface TableBaseOptions extends schema.SchemaOptions {
   /**
    * 表名
    */
@@ -33,7 +33,7 @@ export interface ModelBaseOptions extends schema.SchemaOptions {
   uniques?: FieldName[];
 }
 
-export interface ModelOptions extends ModelBaseOptions {
+export interface TableOptions extends TableBaseOptions {
   /**
    * Connection 实例
    */
@@ -44,7 +44,7 @@ export interface ModelOptions extends ModelBaseOptions {
   cache: cache.Cache;
 }
 
-export interface ModelQueryOptions {
+export interface TableQueryOptions {
   /**
    * 是否自动格式化查询结果
    */
@@ -55,7 +55,7 @@ export interface ModelQueryOptions {
   callback?: (err: Error | null, ret: any, callback: Callback<any>) => void;
 }
 
-export class Model {
+export class Table {
   /** Connection 实例 */
   public readonly connection: connection.Connection;
   /** Cache 实例 */
@@ -74,9 +74,9 @@ export class Model {
   public readonly schema: schema.Schema;
 
   /**
-   * 创建 Model
+   * 创建 Table
    */
-  constructor(options: ModelOptions) {
+  constructor(options: TableOptions) {
     assert.ok(options, `missing options`);
 
     assert.ok(
@@ -247,7 +247,7 @@ export class Model {
   /**
    * 创建 Query
    */
-  public query(options: ModelQueryOptions = {}): query.QueryBuilder {
+  public query(options: TableQueryOptions = {}): query.QueryBuilder {
     return new query.QueryBuilder({
       table: this.tableName,
       schema: this.schema,

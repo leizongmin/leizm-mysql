@@ -28,9 +28,9 @@ describe("Manager", function() {
     await manager.close();
   });
 
-  it("registerModel", async function() {
+  it("registerTable", async function() {
     await 0;
-    manager.registerModel("Admin", {
+    manager.registerTable("Admin", {
       table: "admins",
       primary: "id",
       autoIncrement: true,
@@ -44,17 +44,17 @@ describe("Manager", function() {
     });
   });
 
-  it("hasModel", async function() {
+  it("hasTable", async function() {
     await 0;
-    expect(manager.hasModel("Admin")).to.be.true;
-    expect(manager.hasModel("admin")).to.be.false;
-    expect(manager.hasModel("friend")).to.be.false;
+    expect(manager.hasTable("Admin")).to.be.true;
+    expect(manager.hasTable("admin")).to.be.false;
+    expect(manager.hasTable("friend")).to.be.false;
   });
 
-  it("model", async function() {
+  it("table", async function() {
     {
       const ret = await manager
-        .model("Admin")
+        .table("Admin")
         .insert({
           name: "超级管理员",
           email: "admin@ucdok.com",
@@ -67,7 +67,7 @@ describe("Manager", function() {
       expect(ret.insertId).to.equal(1);
     }
     {
-      const ret = await manager.model("Admin").getByPrimary({ id: 1 });
+      const ret = await manager.table("Admin").getByPrimary({ id: 1 });
       console.log(ret);
       expect(ret).to.include({
         id: 1,
@@ -77,8 +77,8 @@ describe("Manager", function() {
     }
     {
       expect(function() {
-        manager.model("Haha");
-      }).to.throw('model "Haha" does not exists');
+        manager.table("Haha");
+      }).to.throw('table "Haha" does not exists');
     }
   });
 });
