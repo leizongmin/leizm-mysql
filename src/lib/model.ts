@@ -211,7 +211,7 @@ export class Model {
       this.primaryKey,
       `table "${this.tableName}" does not have primary key`
     );
-    const ret = {};
+    const ret: Record<string, any> = {};
     for (const name of this.primaryKey) {
       assert.ok(name in data, `missing primary key "${name}" in this data row`);
       ret[name] = data[name];
@@ -230,7 +230,7 @@ export class Model {
     );
     for (const fields of this.uniqueKeyList) {
       if (utils.everyFieldExists(data, fields)) {
-        const ret = {};
+        const ret: Record<string, any> = {};
         for (const f of fields) {
           ret[f] = data[f];
         }

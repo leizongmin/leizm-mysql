@@ -182,7 +182,7 @@ export class Schema {
    * @param data 输入的键值对数据
    */
   public formatInput(data: Record<string, any>): Record<string, any> {
-    const ret = {};
+    const ret: Record<string, any> = {};
     for (const name in data) {
       const field = this._fields[name];
       // 自动去掉不存在的字段和值为 undefined 的字段
@@ -213,7 +213,7 @@ export class Schema {
    * @param data 输入的键值对数据
    */
   public formatOutput(data: Record<string, any>): Record<string, any> {
-    const ret = {};
+    const ret: Record<string, any> = {};
     for (const name in data) {
       const field = this._fields[name];
       const fieldInfo = field as SchemaField;
