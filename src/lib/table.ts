@@ -46,6 +46,10 @@ export interface TableOptions extends TableBaseOptions {
 
 export interface TableQueryOptions {
   /**
+   * 是否只使用 master 连接执行查询
+   */
+  master?: boolean;
+  /**
    * 是否自动格式化查询结果
    */
   format?: boolean;
@@ -258,8 +262,8 @@ export class Table {
           }
           callback(err, ret);
         };
-        this.connection
-          .query(sql)
+        const method = options.master ? "queryMaster" : "query";
+        this.connection[method](sql)
           .then(ret => {
             // 格式化输出
             if (ret && options.format) {
@@ -279,25 +283,20 @@ export class Table {
   /**
    * 查询数据
    */
-  public find(): query.QueryBuilder {
-    assert.equal(
-      arguments.length,
-      0,
-      `expected 0 argument for find() but got ${arguments.length}`
-    );
-    return this.query({ format: true }).select("*");
+  public find(
+    options: Pick<TableQueryOptions, "master"> = {}
+  ): query.QueryBuilder {
+    return this.query({ ...options, format: true }).select("*");
   }
 
   /**
    * 查询一行数据
    */
-  public findOne(): query.QueryBuilder {
-    assert.equal(
-      arguments.length,
-      0,
-      `expected 0 argument for findOne() but got ${arguments.length}`
-    );
+  public findOne(
+    options: Pick<TableQueryOptions, "master"> = {}
+  ): query.QueryBuilder {
     return this.query({
+      ...options,
       format: true,
       callback(err, ret, callback) {
         if (err) {
@@ -313,13 +312,11 @@ export class Table {
   /**
    * 查询数量
    */
-  public count(): query.QueryBuilder {
-    assert.equal(
-      arguments.length,
-      0,
-      `expected 0 argument for count() but got ${arguments.length}`
-    );
+  public count(
+    options: Pick<TableQueryOptions, "master"> = {}
+  ): query.QueryBuilder {
     return this.query({
+      ...options,
       format: false,
       callback(err, ret, callback) {
         if (err) {
@@ -428,11 +425,6 @@ export class Table {
    * 删除数据
    */
   public delete(): query.QueryBuilder {
-    assert.equal(
-      arguments.length,
-      0,
-      `expected 0 argument for delete() but got ${arguments.length}`
-    );
     return this.query({ format: false }).delete();
   }
 
@@ -440,11 +432,6 @@ export class Table {
    * 删除一行数据
    */
   public deleteOne(): query.QueryBuilder {
-    assert.equal(
-      arguments.length,
-      0,
-      `expected 0 argument for deleteOne() but got ${arguments.length}`
-    );
     return this.query({ format: false })
       .delete()
       .limit(1);
@@ -506,32 +493,45 @@ export class Table {
    * 执行 SQL 查询
    * @param sql SQL 语句
    */
-  public sql(sql: string): query.QueryBuilder;
+  public sql(sql: string, options?: TableQueryOptions): query.QueryBuilder;
   /**
    * 执行 SQL 查询
    * @param sql SQL 语句模板
    * @param values 模板参数，如 { a: 123 }
    */
-  public sql(sql: string, values: Record<string, any>): query.QueryBuilder;
+  public sql(
+    sql: string,
+    values: Record<string, any>,
+    options?: TableQueryOptions
+  ): query.QueryBuilder;
   /**
    * 执行 SQL 查询
    * @param sql SQL 语句模板
    * @param values 模板参数，如 [ 123 ]
    */
-  public sql(sql: string, values: any[]): query.QueryBuilder;
+  public sql(
+    sql: string,
+    values: any[],
+    options?: TableQueryOptions
+  ): query.QueryBuilder;
 
   public sql(
     sql: string,
-    values?: Record<string, any> | any[]
+    values?: Record<string, any> | any[],
+    options?: TableQueryOptions
   ): query.QueryBuilder {
     assert.ok(
       arguments.length === 1 || arguments.length === 2,
       `expected 1 or 2 argument for sql() but got ${arguments.length}`
     );
+    options = options || {};
     if (values) {
-      return this.query({ format: !utils.isUpdateSQL(sql) }).sql(sql, values);
+      return this.query({ ...options, format: !utils.isUpdateSQL(sql) }).sql(
+        sql,
+        values
+      );
     }
-    return this.query({ format: !utils.isUpdateSQL(sql) }).sql(sql);
+    return this.query({ ...options, format: !utils.isUpdateSQL(sql) }).sql(sql);
   }
 
   /**
@@ -580,6 +580,13 @@ export class Table {
       .exec();
     // 删除缓存
     await this.removeCacheByDataRow(data);
+    // 设置新缓存
+    const newData = await this.find({ master: true })
+      .where(query)
+      .exec();
+    if (newData) {
+      await this.updateCacheByDataRow(newData);
+    }
     return data;
   }
 
@@ -652,6 +659,13 @@ export class Table {
       .exec();
     // 删除缓存
     await this.removeCacheByDataRow(data);
+    // 设置新缓存
+    const newData = await this.find({ master: true })
+      .where(query)
+      .exec();
+    if (newData) {
+      await this.updateCacheByDataRow(newData);
+    }
     return data;
   }
 
