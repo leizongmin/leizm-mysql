@@ -21,7 +21,7 @@ $ tnpm install @gz/orm --save
 ```javascript
 'use strict';
 
-const { Manager } = require('super-orm');
+const { Manager } = require('@leizm/mysql');
 
 const manager = new Manager({
   // Redis 连接，用于缓存

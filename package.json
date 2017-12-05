@@ -1,7 +1,7 @@
 {
-  "name": "@gz/orm",
-  "version": "1.2.5",
-  "description": "基于 Node.js 的 MySQL ORM 模块，支持缓存、多 MySQL 连接",
+  "name": "@leizm/mysql",
+  "version": "1.0.0",
+  "description": "基于 Node.js/TypeScript 的 MySQL 连接管理器",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "files": [
@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "compile": "rm -rf dist && tsc",
-    "test": "export DEBUG='super-orm:*' && mocha src/test/*.ts",
+    "test": "export DEBUG='@leizm/mysql:*' && mocha src/test/*.ts",
     "test-cov": "npm run compile && export TS_NODE_PROJECT=test && istanbul cover _mocha && npm run test-cov-remap",
     "test-cov-remap": "remap-istanbul -i coverage/coverage.json  -t html -o coverage/html-report",
     "upload-coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@code.aliyun.com:gz/module-orm.git"
+    "url": "git@github.com:leizongmin/leizm-mysql.git"
   },
   "keywords": [
     "ORM",
@@ -26,7 +26,7 @@
   ],
   "author": "Zongmin Lei <leizongmin@gmail.com>",
   "license": "MIT",
-  "homepage": "https://code.aliyun.com/gz/module-orm",
+  "homepage": "https://github.com/leizongmin/leizm-mysql",
   "dependencies": {
     "@types/debug": "0.0.30",
     "@types/ioredis": "^3.2.1",

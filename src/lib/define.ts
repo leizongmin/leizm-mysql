@@ -1,5 +1,5 @@
 /**
- * super-orm
+ * @leizm/mysql
  *
  * @author Zongmin Lei <leizongmin@gmail.com>
  */

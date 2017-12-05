@@ -1,5 +1,5 @@
 /**
- * super-orm
+ * @leizm/mysql
  *
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
@@ -19,7 +19,7 @@ export * from "lei-utils";
  * @param name 名称
  */
 export function debug(name: string): createDebug.IDebugger {
-  return createDebug("super-orm:" + name);
+  return createDebug("@leizm/mysql:" + name);
 }
 
 export const modelDebug = debug("model");

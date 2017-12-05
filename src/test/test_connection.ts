@@ -1,5 +1,5 @@
 /**
- * super-orm tests
+ * @leizm/mysql tests
  *
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
