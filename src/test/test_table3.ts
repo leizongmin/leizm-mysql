@@ -120,7 +120,7 @@ describe("Table - get|update|delete by unique and cache", function() {
         phone: "1230003",
         first_name: "Wang",
         last_name: "Wu",
-        info: { ChineseName: "王五" }
+        info: "user info changed"
       });
     }
     {
@@ -155,7 +155,7 @@ describe("Table - get|update|delete by unique and cache", function() {
         phone: "",
         first_name: "zhao",
         last_name: "Liu",
-        info: { ChineseName: "赵六" }
+        info: "I am Zhao Liu"
       });
     }
     {

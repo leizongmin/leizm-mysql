@@ -581,13 +581,13 @@ export class Table {
     // 删除缓存
     await this.removeCacheByDataRow(data);
     // 设置新缓存
-    const newData = await this.find({ master: true })
+    const newData = await this.findOne({ master: true })
       .where(query)
       .exec();
     if (newData) {
       await this.updateCacheByDataRow(newData);
     }
-    return data;
+    return newData;
   }
 
   /**
@@ -660,13 +660,13 @@ export class Table {
     // 删除缓存
     await this.removeCacheByDataRow(data);
     // 设置新缓存
-    const newData = await this.find({ master: true })
+    const newData = await this.findOne({ master: true })
       .where(query)
       .exec();
     if (newData) {
       await this.updateCacheByDataRow(newData);
     }
-    return data;
+    return newData;
   }
 
   /**

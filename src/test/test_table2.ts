@@ -158,7 +158,7 @@ describe("Table - get|update|delete by primary and cache", function() {
       console.log(ret);
       expect(ret).to.include({
         id: 1,
-        name: "张三"
+        name: "张三丰"
       });
     }
     {
@@ -185,7 +185,7 @@ describe("Table - get|update|delete by primary and cache", function() {
       expect(ret).to.include({
         user_id: 1,
         friend_id: 2,
-        remark: "阿四"
+        remark: "小四"
       });
     }
     {
