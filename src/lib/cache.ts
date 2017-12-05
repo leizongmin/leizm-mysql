@@ -84,19 +84,7 @@ export class Cache extends events.EventEmitter {
    * 保存到缓存
    * @param list 每个元素为 { key, data }
    */
-  public saveList(list: CacheDataItem[]): Promise<string[]>;
-  /**
-   * 保存到缓存
-   * @param list 每个元素为 { key, data }
-   * @param callback 回调函数
-   */
-  public saveList(list: CacheDataItem[], callback: Callback<string[]>): void;
-
-  public saveList(
-    list: CacheDataItem[],
-    callback?: Callback<string[]>
-  ): Promise<string[]> | void {
-    const cb = utils.wrapCallback(callback);
+  public async saveList(list: CacheDataItem[]): Promise<string[]> {
     if (list && list.length > 0) {
       const p = this._redis.multi();
       const keys: string[] = [];
@@ -105,102 +93,47 @@ export class Cache extends events.EventEmitter {
         keys.push(key);
         p.setex(key, this._ttl, item.data);
       }
-      p.exec(err => cb(err, keys));
-    } else {
-      process.nextTick(() => cb(null, []));
+      await p.exec();
+      return keys;
     }
-    return cb.promise;
+    return [];
   }
 
   /**
    * 保存到缓存
    * @param item 数据 { key, data }
    */
-  public saveItem(item: CacheDataItem): Promise<string>;
-  /**
-   * 保存到缓存
-   * @param item 数据 { key, data }
-   * @param callback 回调函数
-   */
-  public saveItem(item: CacheDataItem, callback: Callback<string>): void;
-
-  public saveItem(
-    item: CacheDataItem,
-    callback?: Callback<string>
-  ): Promise<string> | void {
-    const cb = utils.wrapCallback(callback);
-    this.saveList([item], (err, list) => {
-      cb(err, list && list[0]);
-    });
-    return cb.promise;
+  public async saveItem(item: CacheDataItem): Promise<string> {
+    const keys = await this.saveList([item]);
+    return keys[0];
   }
 
   /**
    * 查询缓存
    * @param keys key 数组
    */
-  public getList(keys: string[]): Promise<string[]>;
-  /**
-   * 查询缓存
-   * @param keys key 数组
-   * @param callback 回调函数
-   */
-  public getList(keys: string[], callback: Callback<string[]>): void;
-
-  public getList(
-    keys: string[],
-    callback?: Callback<string[]>
-  ): Promise<string[]> | void {
-    const cb = utils.wrapCallback(callback);
+  public async getList(keys: string[]): Promise<string[]> {
     if (keys && keys.length > 0) {
       keys = keys.map(key => this._getKey(key));
-      (this._redis.mget as any)(...keys, cb);
-    } else {
-      process.nextTick(() => cb(null, []));
+      return await this._redis.mget(keys[0], ...keys.slice(1));
     }
-    return cb.promise;
+    return [];
   }
 
   /**
    * 查询缓存
    * @param key
    */
-  public getItem(key: string): Promise<string>;
-  /**
-   * 查询缓存
-   * @param key
-   * @param callback 回调函数
-   */
-  public getItem(key: string, callback: Callback<string>): void;
-
-  public getItem(
-    key: string,
-    callback?: Callback<string>
-  ): Promise<string> | void {
-    const cb = utils.wrapCallback(callback);
-    this.getList([key], (err, list) => {
-      cb(err, list && list[0]);
-    });
-    return cb.promise;
+  public async getItem(key: string): Promise<string> {
+    const list = await this.getList([key]);
+    return list[0];
   }
 
   /**
    * 从缓存中缓存
    * @param keys
    */
-  public removeList(list: string[]): Promise<string[]>;
-  /**
-   * 从缓存中缓存
-   * @param keys
-   * @param callback 回调函数
-   */
-  public removeList(list: string[], callback: Callback<string[]>): void;
-
-  public removeList(
-    list: string[],
-    callback?: Callback<string[]>
-  ): Promise<string[]> | void {
-    const cb = utils.wrapCallback(callback);
+  public async removeList(list: string[]): Promise<string[]> {
     if (list && list.length > 0) {
       const p = this._redis.multi();
       const keys: string[] = [];
@@ -209,70 +142,34 @@ export class Cache extends events.EventEmitter {
         keys.push(key);
         p.del(key);
       }
-      p.exec(err => cb(err, keys));
-    } else {
-      process.nextTick(() => cb(null, []));
+      await p.exec();
+      return keys;
     }
-    return cb.promise;
+    return [];
   }
 
   /**
    * 删除缓存
    * @param key
    */
-  public removeItem(key: string): Promise<string>;
-  /**
-   * 删除缓存
-   * @param key
-   * @param callback 回调函数
-   */
-  public removeItem(key: string, callback: Callback<string>): void;
-
-  public removeItem(
-    key: string,
-    callback?: Callback<string>
-  ): Promise<string> | void {
-    const cb = utils.wrapCallback(callback);
-    this.removeList([key], (err, list) => {
-      cb(err, list && list[0]);
-    });
-    return cb.promise;
+  public async removeItem(key: string): Promise<string> {
+    const list = await this.removeList([key]);
+    return list[0];
   }
 
   /**
    * 查询缓存(key的内容指向另一个key)
    * @param key
    */
-  public getPointerItem(key: string): Promise<string>;
-  /**
-   * 查询缓存(key的内容指向另一个key)
-   * @param key
-   */
-  public getPointerItem(key: string, callback: Callback<string>): void;
-
-  public getPointerItem(
-    key: string,
-    callback?: Callback<string>
-  ): Promise<string> | void {
-    const cb = utils.wrapCallback(callback);
-    this._redis.eval(GET_BY_POINTER_SCRIPT, 1, this._getKey(key), cb);
-    return cb.promise;
+  public getPointerItem(key: string): Promise<string> {
+    return this._redis.eval(GET_BY_POINTER_SCRIPT, 1, this._getKey(key));
   }
 
   /**
    * 关闭连接
    */
-  public close(): Promise<string>;
-  /**
-   * 关闭连接
-   * @param callback 回调函数
-   */
-  public close(callback: Callback<string>): void;
-
-  public close(callback?: Callback<string>): Promise<string> | void {
-    const cb = utils.wrapCallback(callback);
-    this._redis.quit(cb);
-    return cb.promise;
+  public close(): Promise<string> {
+    return this._redis.quit();
   }
 
   /**

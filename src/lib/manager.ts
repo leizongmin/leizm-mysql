@@ -75,17 +75,10 @@ export class Manager extends events.EventEmitter {
 
   /**
    * 关闭
-   * @param callback 回调函数
    */
-  public close(callback?: Callback<void>): Promise<void> | void {
-    const cb = utils.wrapCallback(callback);
-    (async () => {
-      await this.cache.close();
-      await this.connection.close();
-      this._tables.clear();
-    })()
-      .then(() => cb(null))
-      .catch(err => cb(err));
-    return cb.promise;
+  public async close(): Promise<void> {
+    await this.cache.close();
+    await this.connection.close();
+    this._tables.clear();
   }
 }

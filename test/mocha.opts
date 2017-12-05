@@ -3,4 +3,5 @@
 --bail
 --recursive
 --timeout 10000
+--exit
 src/test/**/*.ts

@@ -252,23 +252,26 @@ export class Table {
       table: this.tableName,
       schema: this.schema,
       exec: (sql, callback) => {
-        const cb = utils.wrapCallback(callback);
-        this.connection.query(sql, (err, ret) => {
-          // 格式化输出
-          if (ret && options.format) {
-            if (Array.isArray(ret)) {
-              ret = this.schema.formatOutputList(ret);
-            } else {
-              ret = this.schema.formatOutput(ret);
+        const cb = (err: Error | null, ret?: any) => {
+          if (options.callback) {
+            return options.callback(err, ret, callback);
+          }
+          callback(err, ret);
+        };
+        this.connection
+          .query(sql)
+          .then(ret => {
+            // 格式化输出
+            if (ret && options.format) {
+              if (Array.isArray(ret)) {
+                ret = this.schema.formatOutputList(ret);
+              } else {
+                ret = this.schema.formatOutput(ret);
+              }
             }
-          }
-          if (!options.callback) {
-            return cb(err, ret);
-          }
-          // 处理回调结果
-          options.callback(err, ret, cb);
-        });
-        return cb.promise;
+            cb(null, ret);
+          })
+          .catch(err => cb(err));
       }
     });
   }
@@ -363,10 +366,6 @@ export class Table {
       arguments.length === 1 || arguments.length === 2,
       `expected 1 or 2 argument for update() but got ${arguments.length}`
     );
-    assert.ok(
-      typeof values !== "function",
-      `update() does not expected a callback function, maybe this is what you want: update(data).exec(callback)`
-    );
     // 格式化输入
     if (typeof update === "string") {
       if (values) {
@@ -410,10 +409,6 @@ export class Table {
     assert.ok(
       arguments.length === 1 || arguments.length === 2,
       `expected 1 or 2 argument for updateOne() but got ${arguments.length}`
-    );
-    assert.ok(
-      typeof values !== "function",
-      `updateOne() does not expected a callback function, maybe this is what you want: updateOne(data).exec(callback)`
     );
     // 格式化输入
     if (typeof update === "string") {
@@ -533,10 +528,6 @@ export class Table {
       arguments.length === 1 || arguments.length === 2,
       `expected 1 or 2 argument for sql() but got ${arguments.length}`
     );
-    assert.ok(
-      typeof values !== "function",
-      `sql() does not expected a callback function, maybe this is what you want: sql(str).exec(callback)`
-    );
     if (values) {
       return this.query({ format: !utils.isUpdateSQL(sql) }).sql(sql, values);
     }
@@ -547,46 +538,23 @@ export class Table {
    * 获取指定主键的数据，优先从缓存读取
    * @param query 键值对数据
    */
-  public getByPrimary(query: Record<string, any>): Promise<Record<string, any>>;
-  /**
-   * 获取指定主键的数据，优先从缓存读取
-   * @param query 查询条件
-   * @param callback 回调函数
-   */
-  public getByPrimary(
-    query: Record<string, any>,
-    callback: Callback<Record<string, any>>
-  ): void;
-
-  public getByPrimary(
-    query: Record<string, any>,
-    callback?: Callback<Record<string, any>>
-  ): Promise<Record<string, any>> | void {
-    const cb = utils.wrapCallback(callback);
+  public async getByPrimary(
+    query: Record<string, any>
+  ): Promise<Record<string, any>> {
     query = this.keepPrimaryFields(query);
     const key = this.getPrimaryCacheKey(query);
     // 先尝试从缓存中获取
-    this.cache.getItem(key, (err, str) => {
-      if (err) {
-        return cb(err);
-      }
-      if (str) {
-        return cb(err, this.schema.unserialize(str));
-      }
-      // 从数据库查询
-      this.findOne()
-        .where(query)
-        .exec((err2, ret) => {
-          if (err2) {
-            return cb(err2);
-          }
-          // 更新缓存
-          this.updateCacheByDataRow(ret)
-            .then(() => cb(null, ret))
-            .catch(cb);
-        });
-    });
-    return cb.promise;
+    const str = await this.cache.getItem(key);
+    if (str) {
+      return this.schema.unserialize(str);
+    }
+    // 从数据库查询
+    const ret = await this.findOne()
+      .where(query)
+      .exec();
+    // 更新缓存
+    await this.updateCacheByDataRow(ret);
+    return ret;
   }
 
   /**
@@ -594,148 +562,71 @@ export class Table {
    * @param query 查询条件
    * @param update 更新数据
    */
-  public updateByPrimary(
+  public async updateByPrimary(
     query: Record<string, any>,
     update: Record<string, any>
-  ): Promise<Record<string, any>>;
-  /**
-   * 更新指定主键的数据，并删除缓存
-   * @param query 查询条件
-   * @param update 更新数据
-   * @param callback 回调函数
-   */
-  public updateByPrimary(
-    query: Record<string, any>,
-    update: Record<string, any>,
-    callback: Callback<Record<string, any>>
-  ): Promise<Record<string, any>> | void;
-
-  public updateByPrimary(
-    query: Record<string, any>,
-    update: Record<string, any>,
-    callback?: Callback<Record<string, any>>
-  ): Promise<Record<string, any>> | void {
-    const cb = utils.wrapCallback(callback);
+  ): Promise<Record<string, any> | null> {
     query = this.keepPrimaryFields(query);
     // 先查询出旧的数据
-    this.findOne()
+    const data = await this.findOne()
       .where(query)
-      .exec((err, data) => {
-        if (err) {
-          return cb(err);
-        }
-        if (!data) {
-          // 如果数据不存在则直接返回
-          return cb(null);
-        }
-        this.updateOne(update)
-          .where(query)
-          .exec(err2 => {
-            if (err2) {
-              return cb(err2);
-            }
-            // 删除缓存
-            this.removeCacheByDataRow(data)
-              .then(() => cb(null, data))
-              .catch(cb);
-          });
-        return cb.promise;
-      });
-    return cb.promise;
+      .exec();
+    if (!data) {
+      // 如果数据不存在则直接返回
+      return null;
+    }
+    await this.updateOne(update)
+      .where(query)
+      .exec();
+    // 删除缓存
+    await this.removeCacheByDataRow(data);
+    return data;
   }
 
   /**
    * 删除主键的数据，并删除缓存
    * @param query 查询条件
    */
-  public deleteByPrimary(
+  public async deleteByPrimary(
     query: Record<string, any>
-  ): Promise<Record<string, any>>;
-  /**
-   * 删除主键的数据，并删除缓存
-   * @param query 查询条件
-   * @param callback 回调函数
-   */
-  public deleteByPrimary(
-    query: Record<string, any>,
-    callback: Callback<Record<string, any>>
-  ): Promise<Record<string, any>> | void;
-
-  public deleteByPrimary(
-    query: Record<string, any>,
-    callback?: Callback<Record<string, any>>
-  ): Promise<Record<string, any>> | void {
-    const cb = utils.wrapCallback(callback);
+  ): Promise<Record<string, any> | null> {
     query = this.keepPrimaryFields(query);
-    this.findOne()
+    const data = await this.findOne()
       .where(query)
-      .exec((err, data) => {
-        if (err) {
-          return cb(err);
-        }
-        if (!data) {
-          // 如果数据不存在则直接返回
-          return cb(null);
-        }
-        this.deleteOne()
-          .where(query)
-          .exec((err2, ret) => {
-            if (err2) {
-              return cb(err2);
-            }
-            // 删除缓存
-            this.removeCacheByDataRow(data)
-              .then(() => cb(null, data))
-              .catch(cb);
-          });
-      });
-    return cb.promise;
+      .exec();
+    if (!data) {
+      // 如果数据不存在则直接返回
+      return null;
+    }
+    const ret = await this.deleteOne()
+      .where(query)
+      .exec();
+    // 删除缓存
+    await this.removeCacheByDataRow(data);
+    return data;
   }
 
   /**
    * 获取指定唯一键的数据，优先从缓存读取
    * @param query 键值对数据
    */
-  public getByUnique(query: Record<string, any>): Promise<Record<string, any>>;
-  /**
-   * 获取指定唯一键的数据，优先从缓存读取
-   * @param query 查询条件
-   * @param callback 回调函数
-   */
-  public getByUnique(
-    query: Record<string, any>,
-    callback: Callback<Record<string, any>>
-  ): void;
-
-  public getByUnique(
-    query: Record<string, any>,
-    callback?: Callback<Record<string, any>>
-  ): Promise<Record<string, any>> | void {
-    const cb = utils.wrapCallback(callback);
+  public async getByUnique(
+    query: Record<string, any>
+  ): Promise<Record<string, any>> {
     query = this.keepUniqueFields(query);
     const key = this.getUniqueCacheKeys(query)[0] || "";
     // 先尝试从缓存中获取
-    this.cache.getPointerItem(key, (err, str) => {
-      if (err) {
-        return cb(err);
-      }
-      if (str) {
-        return cb(err, this.schema.unserialize(str));
-      }
-      // 从数据库查询
-      this.findOne()
-        .where(query)
-        .exec((err2, ret) => {
-          if (err2) {
-            return cb(err2);
-          }
-          // 更新缓存
-          this.updateCacheByDataRow(ret)
-            .then(() => cb(null, ret))
-            .catch(cb);
-        });
-    });
-    return cb.promise;
+    const str = await this.cache.getPointerItem(key);
+    if (str) {
+      return this.schema.unserialize(str);
+    }
+    // 从数据库查询
+    const ret = await this.findOne()
+      .where(query)
+      .exec();
+    // 更新缓存
+    await this.updateCacheByDataRow(ret);
+    return ret;
   }
 
   /**
@@ -743,126 +634,57 @@ export class Table {
    * @param query 查询条件
    * @param update 更新数据
    */
-  public updateByUnique(
+  public async updateByUnique(
     query: Record<string, any>,
     update: Record<string, any>
-  ): Promise<Record<string, any>>;
-  /**
-   * 更新指定唯一键的数据，并删除缓存
-   * @param query 查询条件
-   * @param update 更新数据
-   * @param callback 回调函数
-   */
-  public updateByUnique(
-    query: Record<string, any>,
-    update: Record<string, any>,
-    callback: Callback<Record<string, any>>
-  ): Promise<Record<string, any>> | void;
-
-  public updateByUnique(
-    query: Record<string, any>,
-    update: Record<string, any>,
-    callback?: Callback<Record<string, any>>
-  ): Promise<Record<string, any>> | void {
-    const cb = utils.wrapCallback(callback);
+  ): Promise<Record<string, any> | null> {
     query = this.keepUniqueFields(query);
     // 先查询出旧的数据
-    this.findOne()
+    const data = await this.findOne()
       .where(query)
-      .exec((err, data) => {
-        if (err) {
-          return cb(err);
-        }
-        if (!data) {
-          // 如果数据不存在则直接返回
-          return cb(null);
-        }
-        this.updateOne(update)
-          .where(query)
-          .exec(err2 => {
-            if (err2) {
-              return cb(err2);
-            }
-            // 删除缓存
-            this.removeCacheByDataRow(data)
-              .then(() => cb(null, data))
-              .catch(cb);
-          });
-        return cb.promise;
-      });
-    return cb.promise;
+      .exec();
+    if (!data) {
+      // 如果数据不存在则直接返回
+      return null;
+    }
+    await this.updateOne(update)
+      .where(query)
+      .exec();
+    // 删除缓存
+    await this.removeCacheByDataRow(data);
+    return data;
   }
 
   /**
    * 删除唯一键的数据，并删除缓存
    * @param query 查询条件
    */
-  public deleteByUnique(
+  public async deleteByUnique(
     query: Record<string, any>
-  ): Promise<Record<string, any>>;
-  /**
-   * 删除唯一键的数据，并删除缓存
-   * @param query 查询条件
-   * @param callback 回调函数
-   */
-  public deleteByUnique(
-    query: Record<string, any>,
-    callback: Callback<Record<string, any>>
-  ): Promise<Record<string, any>> | void;
-
-  public deleteByUnique(
-    query: Record<string, any>,
-    callback?: Callback<Record<string, any>>
-  ): Promise<Record<string, any>> | void {
-    const cb = utils.wrapCallback(callback);
+  ): Promise<Record<string, any> | null> {
     query = this.keepUniqueFields(query);
-    this.findOne()
+    const data = await this.findOne()
       .where(query)
-      .exec((err, data) => {
-        if (err) {
-          return cb(err);
-        }
-        if (!data) {
-          // 如果数据不存在则直接返回
-          return cb(null);
-        }
-        this.deleteOne()
-          .where(query)
-          .exec((err2, ret) => {
-            if (err2) {
-              return cb(err2);
-            }
-            // 删除缓存
-            this.removeCacheByDataRow(data)
-              .then(() => cb(null, data))
-              .catch(cb);
-          });
-      });
-    return cb.promise;
+      .exec();
+    if (!data) {
+      // 如果数据不存在则直接返回
+      return null;
+    }
+    const ret = await this.deleteOne()
+      .where(query)
+      .exec();
+    // 删除缓存
+    await this.removeCacheByDataRow(data);
+    return data;
   }
 
   /**
    * 删除符合指定查询条件的所有缓存
    * @param query 可以为键值对数据或者 SQL 查询语句
    */
-  public removeAllCache(
+  public async removeAllCache(
     query: Record<string, any> | string
-  ): Promise<Array<Record<string, any>>>;
-  /**
-   * 删除符合指定查询条件的所有缓存
-   * @param query 可以为键值对数据或者 SQL 查询语句
-   * @param callback 回调函数
-   */
-  public removeAllCache(
-    query: Record<string, any> | string,
-    callback: Callback<Array<Record<string, any>>>
-  ): void;
-
-  public removeAllCache(
-    query: Record<string, any> | string,
-    callback?: Callback<Array<Record<string, any>>>
-  ): Promise<Array<Record<string, any>>> | void {
-    const cb = utils.wrapCallback(callback);
+  ): Promise<string[]> {
     if (this.importantFields.length > 0) {
       // 查询出旧的数据
       const q = this.find().fields(...this.importantFields);
@@ -871,23 +693,18 @@ export class Table {
       } else {
         q.where(query);
       }
-      q.exec((err, list) => {
-        if (err) {
-          return cb(err);
-        }
-        // 生成所有缓存的 Key
-        let keys: string[] = [];
-        for (const item of list) {
-          const { allKeys } = this.getCacheKeysByDataRow(item);
-          keys = keys.concat(allKeys);
-        }
-        // 删除缓存
-        this.cache.removeList(keys, err2 => cb(err2, list));
-      });
-    } else {
-      process.nextTick(() => cb(null, []));
+      const list = await q.exec();
+      // 生成所有缓存的 Key
+      let keys: string[] = [];
+      for (const item of list) {
+        const { allKeys } = this.getCacheKeysByDataRow(item);
+        keys = keys.concat(allKeys);
+      }
+      // 删除缓存
+      await this.cache.removeList(keys);
+      return list;
     }
-    return cb.promise;
+    return [];
   }
 
   /**

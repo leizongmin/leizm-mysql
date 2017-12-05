@@ -8,6 +8,7 @@ import * as assert from "assert";
 import * as utils from "./utils";
 import { Callback } from "./define";
 import { Schema } from "./schema";
+import { resolve } from "dns";
 
 export interface QueryBuilderOptions {
   /**
@@ -30,7 +31,7 @@ export interface QueryBuilderExecFunction {
    * @param sql SQL 语句
    * @param callback 回调函数
    */
-  (sql: string, callback?: Callback<any>): void;
+  (sql: string, callback: Callback<any>): void;
 }
 
 export interface QueryOptionsParams {
@@ -664,19 +665,21 @@ export class QueryBuilder {
   /**
    * 执行
    */
-  public exec(callback?: Callback<any>): Promise<any> | void {
-    const cb = utils.wrapCallback<any>(callback);
-    if (this._execCallback) {
-      this._execCallback(this.build(), cb);
-    } else {
-      process.nextTick(() =>
-        cb(
+  public exec(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (!this._execCallback) {
+        return reject(
           new Error(
             `please provide a exec callback when create QueryBuilder instance`
           )
-        )
-      );
-    }
-    return cb.promise;
+        );
+      }
+      this._execCallback(this.build(), (err, ret) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(ret);
+      });
+    });
   }
 }

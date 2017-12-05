@@ -9,6 +9,7 @@ import * as events from "events";
 import * as mysql from "mysql";
 import * as utils from "./utils";
 import { Callback } from "./define";
+import { resolve } from "path";
 
 export interface QueryError extends mysql.MysqlError {
   /**
@@ -151,129 +152,63 @@ export class Connection extends events.EventEmitter {
   /**
    * 关闭连接
    */
-  public close(): Promise<void>;
-  /**
-   * 关闭连接
-   * @param callback 回调函数
-   */
-  public close(callback: Callback<void>): void;
-
-  public close(callback?: Callback<void>): Promise<void> | void {
-    const cb = utils.wrapCallback(callback);
-    this._poolCluster.end();
-    process.nextTick(cb);
-    return cb.promise;
+  public close(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this._poolCluster.end(err => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      });
+    });
   }
 
   /**
    * 获取一个原始连接
    */
-  public getConnection(): Promise<WrappedConnection>;
-  /**
-   * 获取一个原始连接
-   * @param callback 回调函数
-   */
-  public getConnection(callback: Callback<WrappedConnection>): void;
-
-  public getConnection(
-    callback?: Callback<WrappedConnection>
-  ): Promise<WrappedConnection> | void {
-    const cb = utils.wrapCallback(callback);
-    return this._getConnection(this._poolCluster, cb);
+  public getConnection(): Promise<WrappedConnection> {
+    return this._getConnection(this._poolCluster);
   }
 
   /**
    * 获取一个 MASTER 连接
    */
-  public getMasterConnection(): Promise<WrappedConnection>;
-  /**
-   * 获取一个 MASTER 连接
-   * @param callback 回调函数
-   */
-  public getMasterConnection(callback: Callback<WrappedConnection>): void;
-
-  public getMasterConnection(
-    callback?: Callback<WrappedConnection>
-  ): Promise<WrappedConnection> | void {
-    const cb = utils.wrapCallback(callback);
-    return this._getConnection(this._poolCluster, cb);
+  public getMasterConnection(): Promise<WrappedConnection> {
+    return this._getConnection(this._poolCluster);
   }
 
   /**
    * 获取一个 SLAVE 连接
    */
-  public getSlaveConnection(): Promise<WrappedConnection>;
-  /**
-   * 获取一个 SLAVE 连接
-   * @param callback 回调函数
-   */
-  public getSlaveConnection(callback: Callback<WrappedConnection>): void;
-
-  public getSlaveConnection(
-    callback?: Callback<WrappedConnection>
-  ): Promise<WrappedConnection> | void {
-    const cb = utils.wrapCallback(callback);
-    return this._getConnection(this._poolCluster, cb);
+  public getSlaveConnection(): Promise<WrappedConnection> {
+    return this._getConnection(this._poolCluster);
   }
 
   /**
    * 智能查询，更新操作会在 MASTER 执行，其他在任意服务器查询
    * @param sql 要执行的 SQL 查询语句
    */
-  public query(sql: string): Promise<any>;
-  /**
-   * 智能查询，更新操作会在 MASTER 执行，其他在任意服务器查询
-   * @param sql 要执行的 SQL 查询语句
-   * @param callback 回调函数
-   */
-  public query(sql: string, callback: Callback<any>): void;
-
-  public query(sql: string, callback?: Callback<any>): Promise<any> | void {
-    const cb = utils.wrapCallback(callback);
+  public query(sql: string): Promise<any> {
     if (utils.isUpdateSQL(sql)) {
-      return this.queryMaster(sql, cb);
+      return this.queryMaster(sql);
     }
-    return this._query(this._poolCluster, sql, cb);
+    return this._query(this._poolCluster, sql);
   }
 
   /**
    * 在 MASTER 上执行查询
    * @param sql 要执行的 SQL 查询语句
    */
-  public queryMaster(sql: string): Promise<any>;
-  /**
-   * 在 MASTER 上执行查询
-   * @param sql 要执行的 SQL 查询语句
-   * @param callback 回调函数
-   */
-  public queryMaster(sql: string, callback: Callback<any>): void;
-
-  public queryMaster(
-    sql: string,
-    callback?: Callback<any>
-  ): Promise<any> | void {
-    const cb = utils.wrapCallback(callback);
-    return this._query(this._poolMaster, sql, cb);
+  public queryMaster(sql: string): Promise<any> {
+    return this._query(this._poolMaster, sql);
   }
 
   /**
    * 在 SLAVE 上执行查询
    * @param sql 要执行的 SQL 查询语句
    */
-  public querySlave(sql: string): Promise<any>;
-  /**
-   * 在 SLAVE 上执行查询
-   * @param sql 要执行的 SQL 查询语句
-   * @param callback 回调函数
-   */
-  public querySlave(sql: string, callback: Callback<any>): void;
-
-  public querySlave(
-    sql: string,
-    callback?: Callback<any>
-  ): Promise<any> | void {
-    const cb = utils.wrapCallback(callback);
-    return this._query(this._poolSlave, sql, cb);
+  public querySlave(sql: string): Promise<any> {
+    return this._query(this._poolSlave, sql);
   }
 
   /**
@@ -312,29 +247,15 @@ export class Connection extends events.EventEmitter {
    */
   private _getConnection(
     pool: mysql.Pool | mysql.PoolCluster
-  ): Promise<WrappedConnection>;
-  /**
-   * 获取一个原始连接（增加 Promise 支持）
-   * @param pool 连接池
-   * @param callback 回调函数
-   */
-  private _getConnection(
-    pool: mysql.Pool | mysql.PoolCluster,
-    callback: Callback<WrappedConnection>
-  ): void;
-
-  private _getConnection(
-    pool: mysql.Pool | mysql.PoolCluster,
-    callback?: Callback<WrappedConnection>
-  ): Promise<WrappedConnection> | void {
-    const cb = utils.wrapCallback<WrappedConnection>(callback);
-    pool.getConnection((err, connection) => {
-      if (err) {
-        return cb(err);
-      }
-      cb(null, wrapConnection(connection));
+  ): Promise<WrappedConnection> {
+    return new Promise((resolve, reject) => {
+      pool.getConnection((err, connection) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(wrapConnection(connection));
+      });
     });
-    return cb.promise;
   }
 
   /**
@@ -345,44 +266,28 @@ export class Connection extends events.EventEmitter {
   private _query(
     pool: mysql.Pool | mysql.PoolCluster,
     sql: string
-  ): Promise<any>;
-  /**
-   * 执行 SQL 查询
-   * @param pool 连接池
-   * @param sql  SQL 查询语句
-   * @param callback 回调函数
-   */
-  private _query(
-    pool: mysql.Pool | mysql.PoolCluster,
-    sql: string,
-    callback?: Callback<any>
-  ): void;
-
-  private _query(
-    pool: mysql.Pool | mysql.PoolCluster,
-    sql: string,
-    callback?: Callback<any>
-  ): Promise<any> | void {
-    const cb = utils.wrapCallback<any>(callback);
-    utils.connectionDebug("query sql: %s", sql);
-    pool.getConnection((err, connection) => {
-      if (err) {
-        return cb(err);
-      }
-      const cc = connection.config || {};
-      this.emit("query", { sql, connection, name: `${cc.host}:${cc.port}` });
-      if (this._options.stripEmoji) {
-        sql = utils.stripEmoji(sql);
-      }
-      connection.query(sql, (err2: QueryError | null, ret) => {
-        connection.release();
-        // 如果查询出错，在 Error 对象中附加当前正在查询的 SQL 语句
-        if (err2) {
-          err2.sql = sql;
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      utils.connectionDebug("query sql: %s", sql);
+      pool.getConnection((err, connection) => {
+        if (err) {
+          return reject(err);
         }
-        cb(err2, ret);
+        const cc = connection.config || {};
+        this.emit("query", { sql, connection, name: `${cc.host}:${cc.port}` });
+        if (this._options.stripEmoji) {
+          sql = utils.stripEmoji(sql);
+        }
+        connection.query(sql, (err2: QueryError | null, ret) => {
+          connection.release();
+          // 如果查询出错，在 Error 对象中附加当前正在查询的 SQL 语句
+          if (err2) {
+            err2.sql = sql;
+            return reject(err2);
+          }
+          resolve(ret);
+        });
       });
     });
-    return cb.promise;
   }
 }
