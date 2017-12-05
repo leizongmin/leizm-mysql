@@ -56,8 +56,8 @@ const manager = new Manager({
   ]
 });
 
-// 注册 Model
-manager.registerModel("User", {
+// 注册 Table
+manager.registerTable({
   table: "users",
   primary: "id",
   autoIncrement: true,
@@ -74,23 +74,13 @@ manager.registerModel("User", {
   }
 });
 
-// 使用 Model
-manager
-  .model("User")
-  .getByPrimary({ id: 123 })
-  .then(ret => console.log(ret))
-  .catch(err => console.error(err));
-// 所有接口同时支持 callback 和 promise
-manager.model("User").getByPrimary({ id: 123 }, (err, ret) => {
-  if (err) console.log(err);
-  console.log(ret);
-});
+// 使用 Table
+const ret = await manager.table("users").getByPrimary({ id: 123 });
+console.log(ret);
 
 // 使用原始连接执行查询，SELECT 语句会在任意连接执行，其它语句只在 Master 连接执行
-manager.connection
-  .query("CREATE TABLE `hello`")
-  .then(ret => console.log(ret))
-  .catch(err => console.error(err));
+const ret2 = await manager.connection.query("CREATE TABLE `hello`");
+console.log(ret2);
 
 // 事务（在 Master 连接执行）
 (async function() {
