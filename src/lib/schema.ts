@@ -103,7 +103,7 @@ export interface SchemaOptions {
 }
 
 export interface SchemaFields {
-  [key: string]: boolean | string | SchemaField;
+  [key: string]: boolean | "json" | "date" | "bool" | SchemaField;
 }
 
 export interface SchemaField {

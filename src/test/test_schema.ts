@@ -257,7 +257,7 @@ describe("Schema", function() {
     expect(function() {
       new mysql.Schema({
         fields: {
-          info: "xxxx"
+          info: "xxxx" as any
         }
       });
     }).to.throw('not support type "xxxx"');
