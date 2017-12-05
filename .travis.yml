@@ -11,4 +11,4 @@ before_install:
   - mysql -e 'CREATE DATABASE IF NOT EXISTS test;'
 after_script:
   - npm run test-cov
-  - npm ru upload-coveralls
+  - npm run coveralls
