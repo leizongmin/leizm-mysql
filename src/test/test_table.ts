@@ -51,9 +51,9 @@ describe("Table - normal", function() {
       score: 0
     };
     {
-      const ret = await table.insert(data).exec();
+      const ret = await table.insert(data);
       console.log(ret);
-      expect(ret.affectedRows).to.equal(1);
+      expect(ret.length).to.equal(1);
     }
     {
       const ret = await table
@@ -65,26 +65,24 @@ describe("Table - normal", function() {
     }
     // 批量插入
     {
-      const ret = await table
-        .insert([
-          {
-            blog_id: 2,
-            user_id: 1001,
-            created_at: utils.newDate(),
-            info: {
-              message: "hello, world"
-            }
-          },
-          {
-            blog_id: 3,
-            user_id: 1002,
-            created_at: utils.newDate(),
-            info: null
+      const ret = await table.insert([
+        {
+          blog_id: 2,
+          user_id: 1001,
+          created_at: utils.newDate(),
+          info: {
+            message: "hello, world"
           }
-        ])
-        .exec();
+        },
+        {
+          blog_id: 3,
+          user_id: 1002,
+          created_at: utils.newDate(),
+          info: null
+        }
+      ]);
       console.log(ret);
-      expect(ret.affectedRows).to.equal(2);
+      expect(ret.length).to.equal(2);
     }
   });
 
@@ -312,17 +310,15 @@ describe("Table - normal", function() {
 
   it("insert undeifned value", async function() {
     {
-      const ret = await table
-        .insert({
-          blog_id: 2001,
-          user_id: 3,
-          created_at: undefined,
-          info: undefined,
-          score: undefined
-        })
-        .exec();
+      const ret = await table.insert({
+        blog_id: 2001,
+        user_id: 3,
+        created_at: undefined,
+        info: undefined,
+        score: undefined
+      });
       console.log(ret);
-      expect(ret.affectedRows).to.equal(1);
+      expect(ret.length).to.equal(1);
     }
     {
       const ret = await table

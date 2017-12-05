@@ -87,7 +87,7 @@ describe("Table - get|update|delete by primary and cache", function() {
           score: 0,
           otherField: "test"
         }
-      ]).exec();
+      ]);
       console.log(ret);
     }
     {
@@ -120,7 +120,7 @@ describe("Table - get|update|delete by primary and cache", function() {
           remark: "阿三",
           otherField: "test"
         }
-      ]).exec();
+      ]);
       console.log(ret);
     }
   });

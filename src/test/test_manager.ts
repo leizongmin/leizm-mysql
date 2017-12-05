@@ -53,18 +53,15 @@ describe("Manager", function() {
 
   it("table", async function() {
     {
-      const ret = await manager
-        .table("admins")
-        .insert({
-          name: "超级管理员",
-          email: "admin@ucdok.com",
-          info: { role: "admin" },
-          created_at: utils.newDate()
-        })
-        .exec();
+      const ret = await manager.table("admins").insert({
+        name: "超级管理员",
+        email: "admin@ucdok.com",
+        info: { role: "admin" },
+        created_at: utils.newDate()
+      });
       console.log(ret);
-      expect(ret.affectedRows).to.equal(1);
-      expect(ret.insertId).to.equal(1);
+      expect(ret.length).to.equal(1);
+      expect(ret[0].id).to.equal(1);
     }
     {
       const ret = await manager.table("admins").getByPrimary({ id: 1 });

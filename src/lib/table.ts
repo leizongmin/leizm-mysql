@@ -441,16 +441,23 @@ export class Table {
    * 插入数据
    * @param data 键值对数据
    */
-  public insert(data: Record<string, any>): query.QueryBuilder;
+  public async insert(
+    data: Record<string, any>,
+    refreshNewData?: boolean
+  ): Promise<Array<Record<string, any>>>;
   /**
    * 插入数据
    * @param data 键值对数据数组
    */
-  public insert(data: Array<Record<string, any>>): query.QueryBuilder;
+  public async insert(
+    data: Array<Record<string, any>>,
+    refreshNewData?: boolean
+  ): Promise<Array<Record<string, any>>>;
 
-  public insert(
-    data: Record<string, any> | Array<Record<string, any>>
-  ): query.QueryBuilder {
+  public async insert(
+    data: Record<string, any> | Array<Record<string, any>>,
+    refreshNewData: boolean = true
+  ): Promise<Array<Record<string, any>>> {
     assert.equal(
       arguments.length,
       1,
@@ -469,7 +476,25 @@ export class Table {
         }
       }
     }
-    return this.query({ format: false }).insert(list);
+
+    const retList: Array<Record<string, any>> = [];
+    for (const item of list) {
+      const ret = await this.query({ format: false })
+        .insert(item)
+        .exec();
+      // 如果主键是自增时，从insertId获取自增主键
+      if (this.primaryKeyAutoIncrement) {
+        item[this.primaryKey[0]] = ret.insertId;
+      }
+      if (refreshNewData) {
+        // 查询最新数据，顺便刷新缓存
+        const newData = await this.getByPrimary(item, { master: true });
+        retList.push(newData);
+      } else {
+        retList.push({ ...item });
+      }
+    }
+    return retList;
   }
 
   /**
@@ -539,7 +564,8 @@ export class Table {
    * @param query 键值对数据
    */
   public async getByPrimary(
-    query: Record<string, any>
+    query: Record<string, any>,
+    options: Pick<TableQueryOptions, "master"> = {}
   ): Promise<Record<string, any>> {
     query = this.keepPrimaryFields(query);
     const key = this.getPrimaryCacheKey(query);
@@ -549,7 +575,7 @@ export class Table {
       return this.schema.unserialize(str);
     }
     // 从数据库查询
-    const ret = await this.findOne()
+    const ret = await this.findOne(options)
       .where(query)
       .exec();
     // 更新缓存
@@ -568,7 +594,7 @@ export class Table {
   ): Promise<Record<string, any> | null> {
     query = this.keepPrimaryFields(query);
     // 先查询出旧的数据
-    const data = await this.findOne()
+    const data = await this.findOne({ master: true })
       .where(query)
       .exec();
     if (!data) {
@@ -598,7 +624,7 @@ export class Table {
     query: Record<string, any>
   ): Promise<Record<string, any> | null> {
     query = this.keepPrimaryFields(query);
-    const data = await this.findOne()
+    const data = await this.findOne({ master: true })
       .where(query)
       .exec();
     if (!data) {
@@ -618,7 +644,8 @@ export class Table {
    * @param query 键值对数据
    */
   public async getByUnique(
-    query: Record<string, any>
+    query: Record<string, any>,
+    options: Pick<TableQueryOptions, "master"> = {}
   ): Promise<Record<string, any>> {
     query = this.keepUniqueFields(query);
     const key = this.getUniqueCacheKeys(query)[0] || "";
@@ -628,7 +655,7 @@ export class Table {
       return this.schema.unserialize(str);
     }
     // 从数据库查询
-    const ret = await this.findOne()
+    const ret = await this.findOne(options)
       .where(query)
       .exec();
     // 更新缓存
@@ -647,7 +674,7 @@ export class Table {
   ): Promise<Record<string, any> | null> {
     query = this.keepUniqueFields(query);
     // 先查询出旧的数据
-    const data = await this.findOne()
+    const data = await this.findOne({ master: true })
       .where(query)
       .exec();
     if (!data) {
@@ -677,7 +704,7 @@ export class Table {
     query: Record<string, any>
   ): Promise<Record<string, any> | null> {
     query = this.keepUniqueFields(query);
-    const data = await this.findOne()
+    const data = await this.findOne({ master: true })
       .where(query)
       .exec();
     if (!data) {
@@ -701,7 +728,7 @@ export class Table {
   ): Promise<string[]> {
     if (this.importantFields.length > 0) {
       // 查询出旧的数据
-      const q = this.find().fields(...this.importantFields);
+      const q = this.find({ master: true }).fields(...this.importantFields);
       if (typeof query === "string") {
         q.where(query);
       } else {

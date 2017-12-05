@@ -67,9 +67,9 @@ describe("Table - get|update|delete by unique and cache", function() {
         last_name: "Liu",
         info: { ChineseName: "赵✈️六" }
       }
-    ]).exec();
+    ]);
     console.log(ret);
-    expect(ret.affectedRows).to.equal(4);
+    expect(ret.length).to.equal(4);
   });
 
   it("getByUnique", async function() {
