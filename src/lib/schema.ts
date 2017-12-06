@@ -35,14 +35,16 @@ function jsonInputFormatter(v: any): string {
 }
 
 function jsonOutputFormatter(v: any): any {
-  if (v === undefined) {
-    return undefined;
-  }
-  if (v === null) {
-    return {};
+  // 如果为undefined，表示没有查询该字段，应该保持返回undefined
+  // 如果为null，表示未设置过数据，应该返回null
+  // 如果为空字符串，表示已设置过数据，可以返回空对象来兼容
+  if (v === undefined || v === null) {
+    return v;
   }
   if (typeof v !== "string") {
-    throw new TypeError(`jsonOutputFormatter: invalid input type: ${v}`);
+    throw new TypeError(
+      `jsonOutputFormatter: invalid input type: ${JSON.stringify(v)}`
+    );
   }
   if (v === "") {
     return {};
@@ -57,26 +59,11 @@ function jsonOutputFormatter(v: any): any {
 }
 
 function boolInputFormatter(v: any): number {
-  if (v === false) {
-    return 0;
-  }
-  if (v === undefined) {
-    return 0;
-  }
-  if (v === null) {
+  if (v === false || v === undefined || v === null || v === 0) {
     return 0;
   }
   v = String(v).toLowerCase();
-  if (v === "") {
-    return 0;
-  }
-  if (v === "no") {
-    return 0;
-  }
-  if (v === "off") {
-    return 0;
-  }
-  if (v === "false") {
+  if (v === "" || v === "no" || v === "off" || v === "false" || v === "0") {
     return 0;
   }
   return 1;

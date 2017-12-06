@@ -232,7 +232,7 @@ describe("Schema", function() {
         info: null
       })
     ).to.deep.equal({
-      info: {}
+      info: null
     });
     expect(
       schema.formatOutput({

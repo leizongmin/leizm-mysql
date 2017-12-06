@@ -331,7 +331,7 @@ describe("Table - normal", function() {
         user_id: 3,
         score: 0
       });
-      expect(ret.info).to.deep.equal({});
+      expect(ret.info).to.deep.equal(null);
     }
   });
 });
