@@ -109,11 +109,32 @@ export interface ConnectionOptions {
   stripEmoji?: boolean;
 }
 
+export interface QueryEventData {
+  /**
+   * 要执行的 SQL
+   */
+  sql: string;
+  /**
+   * 原始 MySQL 连接
+   */
+  connection: mysql.PoolConnection;
+  /**
+   * 连接名称：host:port
+   */
+  name: string;
+}
+
+export type ConnectionEvent = "error" | "connection" | "enqueue" | "query";
+
 export class Connection extends events.EventEmitter {
   private _options: ConnectionOptions;
   private _poolCluster: mysql.PoolCluster;
   private _poolMaster: mysql.Pool;
   private _poolSlave: mysql.Pool;
+
+  private _on = super.on;
+  private _once = super.once;
+  private _emit = super.emit;
 
   /**
    * 创建 Connection
@@ -149,6 +170,33 @@ export class Connection extends events.EventEmitter {
       this.emit("connection", connection)
     );
     this._poolCluster.on("enqueue", () => this.emit("enqueue"));
+  }
+
+  public on(event: "error", callback: (err: Error) => void): this;
+  public on(event: "connection", callback: (conn: Connection) => void): this;
+  public on(event: "enqueue", callback: () => void): this;
+  public on(event: "query", callback: (data: QueryEventData) => void): this;
+  public on(event: ConnectionEvent, callback: (...args: any[]) => void): this {
+    return this._on(event, callback);
+  }
+
+  public once(event: "error", callback: (err: Error) => void): this;
+  public once(event: "connection", callback: (conn: Connection) => void): this;
+  public once(event: "enqueue", callback: () => void): this;
+  public once(event: "query", callback: (data: QueryEventData) => void): this;
+  public once(
+    event: ConnectionEvent,
+    callback: (...args: any[]) => void
+  ): this {
+    return this._once(event, callback);
+  }
+
+  public emit(event: "error", err: Error): boolean;
+  public emit(event: "connection", conn: Connection): boolean;
+  public emit(event: "enqueue"): boolean;
+  public emit(event: "query", data: QueryEventData): boolean;
+  public emit(event: ConnectionEvent, ...data: any[]): boolean {
+    return this._emit(event, ...data);
   }
 
   /**
