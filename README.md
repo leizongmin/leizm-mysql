@@ -1,3 +1,25 @@
+[![NPM version][npm-image]][npm-url]
+[![build status][travis-image]][travis-url]
+[![Test coverage][coveralls-image]][coveralls-url]
+[![David deps][david-image]][david-url]
+[![node version][node-image]][node-url]
+[![npm download][download-image]][download-url]
+[![npm license][license-image]][download-url]
+
+[npm-image]: https://img.shields.io/npm/v/@leizm/mysql.svg?style=flat-square
+[npm-url]: https://npmjs.org/package/@leizm/mysql
+[travis-image]: https://img.shields.io/travis/leizongmin/leizm-mysql.svg?style=flat-square
+[travis-url]: https://travis-ci.org/leizongmin/leizm-mysql
+[coveralls-image]: https://img.shields.io/coveralls/leizongmin/leizm-mysql.svg?style=flat-square
+[coveralls-url]: https://coveralls.io/r/leizongmin/leizm-mysql?branch=master
+[david-image]: https://img.shields.io/david/leizongmin/leizm-mysql.svg?style=flat-square
+[david-url]: https://david-dm.org/leizongmin/leizm-mysql
+[node-image]: https://img.shields.io/badge/node.js-%3E=_6.0-green.svg?style=flat-square
+[node-url]: http://nodejs.org/download/
+[download-image]: https://img.shields.io/npm/dm/@leizm/mysql.svg?style=flat-square
+[download-url]: https://npmjs.org/package/@leizm/mysql
+[license-image]: https://img.shields.io/npm/l/@leizm/mysql.svg
+
 # @leizm/mysql
 
 基于 Node.js/TypeScript 的 MySQL 连接管理器
