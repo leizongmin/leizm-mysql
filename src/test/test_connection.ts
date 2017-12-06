@@ -76,14 +76,14 @@ describe("Connection", function() {
     });
     {
       const ret = await conn.query(
-        'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`'
+        'SHOW TABLES'
       );
       console.log(ret);
     }
     {
       try {
         const ret = await conn.querySlave(
-          'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`'
+          'SHOW TABLES'
         );
         console.log(ret);
         throw new Error("expected to throws 'Pool does not exist.' error");
@@ -93,7 +93,7 @@ describe("Connection", function() {
     }
     {
       const ret = await conn.queryMaster(
-        'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`'
+        'SHOW TABLES'
       );
       console.log(ret);
     }
