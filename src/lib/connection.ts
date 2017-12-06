@@ -224,14 +224,14 @@ export class Connection extends events.EventEmitter {
    * 获取一个 MASTER 连接
    */
   public getMasterConnection(): Promise<WrappedConnection> {
-    return this._getConnection(this._poolCluster);
+    return this._getConnection(this._poolMaster);
   }
 
   /**
    * 获取一个 SLAVE 连接
    */
   public getSlaveConnection(): Promise<WrappedConnection> {
-    return this._getConnection(this._poolCluster);
+    return this._getConnection(this._poolSlave);
   }
 
   /**

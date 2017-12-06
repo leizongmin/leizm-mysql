@@ -78,7 +78,7 @@ describe("Connection", function() {
     {
       let eventIsEmitted = false;
       let emittedSql = "";
-      conn.once("query", function(e: { sql: string; name: string }) {
+      conn.once("query", function(e) {
         console.log(e);
         eventIsEmitted = true;
         emittedSql = e.sql;
@@ -90,5 +90,52 @@ describe("Connection", function() {
       expect(emittedSql).to.equal("SHOW TABLES");
     }
     await conn.close();
+  });
+
+  it("Connection.getConnection() & getMasterConnection() & getSlaveConnection()", async function() {
+    const connConfig = utils.getConnectionConfig();
+    connConfig.connectionLimit = 5;
+    const conn = new mysql.Connection({
+      connections: [connConfig, connConfig, connConfig]
+    });
+    {
+      const conn1 = (await conn.getMasterConnection()) as any;
+      const conn2 = (await conn.getMasterConnection()) as any;
+      const conn3 = (await conn.getMasterConnection()) as any;
+      expect(conn1._clusterId).to.equal("MASTER");
+      expect(conn2._clusterId).to.equal("MASTER");
+      expect(conn3._clusterId).to.equal("MASTER");
+      conn1.release();
+      conn2.release();
+      conn3.release();
+    }
+    {
+      const conn1 = (await conn.getSlaveConnection()) as any;
+      const conn2 = (await conn.getSlaveConnection()) as any;
+      const conn3 = (await conn.getSlaveConnection()) as any;
+      const conn4 = (await conn.getSlaveConnection()) as any;
+      expect(conn1._clusterId).to.be.oneOf(["SLAVE0", "SLAVE1"]);
+      expect(conn2._clusterId).to.be.oneOf(["SLAVE0", "SLAVE1"]);
+      expect(conn3._clusterId).to.be.oneOf(["SLAVE0", "SLAVE1"]);
+      expect(conn4._clusterId).to.be.oneOf(["SLAVE0", "SLAVE1"]);
+      conn1.release();
+      conn2.release();
+      conn3.release();
+      conn4.release();
+    }
+    {
+      const conn1 = (await conn.getConnection()) as any;
+      const conn2 = (await conn.getConnection()) as any;
+      const conn3 = (await conn.getConnection()) as any;
+      const conn4 = (await conn.getConnection()) as any;
+      expect(conn1._clusterId).to.be.oneOf(["MASTER", "SLAVE0", "SLAVE1"]);
+      expect(conn2._clusterId).to.be.oneOf(["MASTER", "SLAVE0", "SLAVE1"]);
+      expect(conn3._clusterId).to.be.oneOf(["MASTER", "SLAVE0", "SLAVE1"]);
+      expect(conn4._clusterId).to.be.oneOf(["MASTER", "SLAVE0", "SLAVE1"]);
+      conn1.release();
+      conn2.release();
+      conn3.release();
+      conn4.release();
+    }
   });
 });
