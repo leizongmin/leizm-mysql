@@ -11,6 +11,8 @@ import * as utils from "./utils";
 import { Callback } from "./define";
 import { resolve } from "path";
 
+export type MysqlPool = mysql.Pool | mysql.PoolCluster;
+
 export interface QueryError extends mysql.MysqlError {
   /**
    * 当前执行的 SQL 语句
@@ -245,9 +247,7 @@ export class Connection extends events.EventEmitter {
    * 获取一个原始连接（增加 Promise 支持）
    * @param pool 连接池
    */
-  private _getConnection(
-    pool: mysql.Pool | mysql.PoolCluster
-  ): Promise<WrappedConnection> {
+  private _getConnection(pool: MysqlPool): Promise<WrappedConnection> {
     return new Promise((resolve, reject) => {
       pool.getConnection((err, connection) => {
         if (err) {
@@ -263,10 +263,7 @@ export class Connection extends events.EventEmitter {
    * @param pool 连接池
    * @param sql  SQL 查询语句
    */
-  private _query(
-    pool: mysql.Pool | mysql.PoolCluster,
-    sql: string
-  ): Promise<any> {
+  private _query(pool: MysqlPool, sql: string): Promise<any> {
     return new Promise((resolve, reject) => {
       utils.connectionDebug("query sql: %s", sql);
       pool.getConnection((err, connection) => {
