@@ -13,6 +13,7 @@
     "test-cov": "nyc --reporter=lcov mocha && nyc report",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "lint": "prettier --write 'src/**/*.ts'",
+    "docs": "typedoc --mode modules --out ./docs --theme minimal --readme none src/lib",
     "prepublish": "npm run test"
   },
   "repository": {
@@ -47,6 +48,7 @@
     "prettier": "^1.8.2",
     "remap-istanbul": "^0.9.5",
     "ts-node": "^3.3.0",
+    "typedoc": "^0.9.0",
     "typescript": "^2.6.2"
   },
   "nyc": {
