@@ -10,8 +10,8 @@
   "scripts": {
     "compile": "rm -rf dist && tsc",
     "test": "export DEBUG='@leizm/mysql:*' && mocha src/test/*.ts",
-    "test-cov": "nyc --reporter=lcov mocha && nyc report",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "coverage": "nyc --reporter=lcov mocha && nyc report",
+    "coveralls": "cat ./coverage/lcov.info | coveralls",
     "lint": "prettier --write 'src/**/*.ts'",
     "docs": "typedoc --mode modules --out ./docs --theme minimal --readme none src/lib",
     "prepublish": "npm run test"
@@ -56,7 +56,8 @@
       ".ts"
     ],
     "exclude": [
-      "**/*.d.ts"
+      "**/*.d.ts",
+      "**/test/*.ts"
     ]
   }
 }

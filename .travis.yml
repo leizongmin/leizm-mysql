@@ -10,5 +10,5 @@ services:
 before_install:
   - mysql -e 'CREATE DATABASE IF NOT EXISTS test;'
 after_script:
-  - npm run test-cov
+  - npm run coverage
   - npm run coveralls
