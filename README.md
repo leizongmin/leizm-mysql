@@ -22,6 +22,8 @@
 
 # @leizm/mysql
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/leizongmin/leizm-mysql.svg)](https://greenkeeper.io/)
+
 基于 Node.js/TypeScript 的 MySQL 连接管理器
 
 ## 安装
