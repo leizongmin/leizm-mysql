@@ -35,17 +35,6 @@ export const sqlEscapeId = mysql.escapeId;
 export const sqlFormat = mysql.format;
 
 /**
- * 如果传入的 callback 参数不存在，尝试创建支持 Promise 的回调函数
- * @param callback 回调函数
- */
-export function wrapCallback<T>(callback?: Callback<T>): Callback<T> {
-  if (callback) {
-    return callback;
-  }
-  return utils.createPromiseCallback();
-}
-
-/**
  * 返回格式化后的 SQL 语句
  * 格式： SELECT * FROM ::table WHERE `title`=:title
  * @param sql SQL 模板语句

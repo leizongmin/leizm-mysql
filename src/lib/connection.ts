@@ -27,7 +27,7 @@ export interface WrappedConnection {
    * @param values 模板变量
    * @param callback 回调函数
    */
-  query(sql: string, values?: any[], callback?: (err: Error, ret: any) => void): Promise<any>;
+  query(sql: string, values?: any[]): Promise<any>;
   /**
    * 值转义
    */
@@ -40,17 +40,17 @@ export interface WrappedConnection {
    * 开始事务
    * @param callback 回调函数
    */
-  beginTransaction(callback?: (err: Error) => void): Promise<any>;
+  beginTransaction(): Promise<any>;
   /**
    * 提交事务
    * @param callback 回调函数
    */
-  commit(callback?: (err: Error) => void): Promise<any>;
+  commit(): Promise<any>;
   /**
    * 回滚事务
    * @param callback 回调函数
    */
-  rollback(callback?: () => void): Promise<any>;
+  rollback(): Promise<any>;
   /**
    * 暂停
    */
