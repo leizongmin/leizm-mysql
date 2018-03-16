@@ -22,7 +22,7 @@ describe("Cache", function() {
           data: "CCCCCCCCC"
         }
       ]);
-      console.log(ret);
+      utils.debug(ret);
 
       // 检查TTL
       const p = cache.redis.multi();
@@ -30,7 +30,7 @@ describe("Cache", function() {
         p.ttl(k);
       }
       const ret2 = await p.exec();
-      console.log(ret2);
+      utils.debug(ret2);
       for (const item of ret2) {
         expect(item[0]).to.be.null;
         expect(item[1]).to.be.above(0);
@@ -66,7 +66,7 @@ describe("Cache", function() {
       p.ttl(k);
     }
     const ret2 = await p.exec();
-    console.log(ret2);
+    utils.debug(ret2);
     for (const item of ret2) {
       expect(item[0]).to.be.null;
       expect(item[1]).to.be.above(0);
@@ -87,29 +87,29 @@ describe("Cache", function() {
           data: "data2"
         }
       ]);
-      console.log(ret);
+      utils.debug(ret);
     }
     {
       const ret = await cache.getList(["test0", "test1", "test2", "test3"]);
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.deep.equal([null, "data1", "data2", null]);
     }
     {
       const ret = await cache.removeList(["test0", "test1"]);
-      console.log(ret);
+      utils.debug(ret);
     }
     {
       const ret = await cache.getList(["test0", "test1", "test2", "test3"]);
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.deep.equal([null, null, "data2", null]);
     }
     {
       const ret = await cache.removeItem("test2");
-      console.log(ret);
+      utils.debug(ret);
     }
     {
       const ret = await cache.getList(["test0", "test1", "test2", "test3"]);
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.deep.equal([null, null, null, null]);
     }
     await cache.close();

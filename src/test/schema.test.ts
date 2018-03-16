@@ -37,7 +37,7 @@ describe("Schema", function() {
       data: "Hello, world",
       created_at: date
     });
-    console.log(data);
+    utils.debug(data);
     expect(data).to.equal(
       '{"name":"ABC","info":{"url":"http://baidu.com/","email":"me@ucdok.com"},"data":"Hello, world","created_at":"' +
         date.toISOString() +
@@ -45,7 +45,7 @@ describe("Schema", function() {
     );
 
     const ret = schema.unserialize(data);
-    console.log(ret);
+    utils.debug(ret);
     expect(ret).to.deep.equal({
       name: "ABC",
       info: {

@@ -8,6 +8,9 @@ import * as fs from "fs";
 import * as path from "path";
 import * as mysql from "../lib";
 import * as utils from "lei-utils";
+import * as createDebug from "debug";
+
+export const debug = createDebug("@leizm/mysql:test");
 
 export const randomString = utils.randomString;
 

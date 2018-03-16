@@ -16,15 +16,15 @@ describe("Manager", function() {
       prefix
     })
   );
-  console.log(manager);
+  utils.debug(manager);
 
-  before(async function() {
+  beforeAll(async function() {
     const sql = await utils.readTestFile("admins.sql");
     await manager.connection.query("DROP TABLE IF EXISTS `admins`");
     await manager.connection.query(sql);
   });
 
-  after(async function() {
+  afterAll(async function() {
     await manager.close();
   });
 
@@ -59,13 +59,13 @@ describe("Manager", function() {
         info: { role: "admin" },
         created_at: utils.newDate()
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret.length).to.equal(1);
       expect(ret[0].id).to.equal(1);
     }
     {
       const ret = await manager.table("admins").getByPrimary({ id: 1 });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.include({
         id: 1,
         name: "超级管理员",

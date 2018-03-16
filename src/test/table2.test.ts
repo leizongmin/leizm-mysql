@@ -42,7 +42,7 @@ describe("Table - get|update|delete by primary and cache", function() {
     }
   });
 
-  before(async function() {
+  beforeAll(async function() {
     {
       const sql = await utils.readTestFile("users.sql");
       await connection.query("DROP TABLE IF EXISTS `users`");
@@ -55,7 +55,7 @@ describe("Table - get|update|delete by primary and cache", function() {
     }
   });
 
-  after(async function() {
+  afterAll(async function() {
     await connection.close();
     await cache.close();
   });
@@ -88,7 +88,7 @@ describe("Table - get|update|delete by primary and cache", function() {
           otherField: "test"
         }
       ]);
-      console.log(ret);
+      utils.debug(ret);
     }
     {
       const ret = await Friend.insert([
@@ -121,14 +121,14 @@ describe("Table - get|update|delete by primary and cache", function() {
           otherField: "test"
         }
       ]);
-      console.log(ret);
+      utils.debug(ret);
     }
   });
 
   it("getByPrimary", async function() {
     {
       const ret = await User.getByPrimary({ id: 1, otherField: "test" });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.include({
         name: "张三",
         email: "zhangsan@ucdok.com"
@@ -140,7 +140,7 @@ describe("Table - get|update|delete by primary and cache", function() {
         friend_id: 2,
         otherField: "test"
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.include({
         user_id: 1,
         friend_id: 2,
@@ -155,7 +155,7 @@ describe("Table - get|update|delete by primary and cache", function() {
         { id: 1 },
         { name: "张三丰", otherField: "test" }
       );
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.include({
         id: 1,
         name: "张三丰"
@@ -163,7 +163,7 @@ describe("Table - get|update|delete by primary and cache", function() {
     }
     {
       const ret = await User.getByPrimary({ id: 1 });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.include({
         name: "张三丰",
         email: "zhangsan@ucdok.com"
@@ -181,7 +181,7 @@ describe("Table - get|update|delete by primary and cache", function() {
           otherField: "test"
         }
       );
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.include({
         user_id: 1,
         friend_id: 2,
@@ -194,7 +194,7 @@ describe("Table - get|update|delete by primary and cache", function() {
         friend_id: 2,
         otherField: "test"
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.include({
         user_id: 1,
         friend_id: 2,
@@ -206,7 +206,7 @@ describe("Table - get|update|delete by primary and cache", function() {
   it("deleteByPrimary", async function() {
     {
       const ret = await User.deleteByPrimary({ id: 1, otherField: "test" });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.include({
         id: 1,
         name: "张三丰"
@@ -214,7 +214,7 @@ describe("Table - get|update|delete by primary and cache", function() {
     }
     {
       const ret = await User.getByPrimary({ id: 1, otherField: "test" });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.be.undefined;
     }
     {
@@ -223,7 +223,7 @@ describe("Table - get|update|delete by primary and cache", function() {
         friend_id: 2,
         otherField: "test"
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.include({
         user_id: 1,
         friend_id: 2
@@ -235,7 +235,7 @@ describe("Table - get|update|delete by primary and cache", function() {
         friend_id: 2,
         otherField: "test"
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.be.undefined;
     }
   });
@@ -243,12 +243,12 @@ describe("Table - get|update|delete by primary and cache", function() {
   it("finish", async function() {
     {
       const list = await User.find().exec();
-      console.log(list);
+      utils.debug(list);
       expect(list).to.have.lengthOf(2);
     }
     {
       const list = await Friend.find().exec();
-      console.log(list);
+      utils.debug(list);
       expect(list).to.have.lengthOf(3);
     }
   });

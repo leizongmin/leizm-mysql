@@ -30,13 +30,13 @@ describe("Table - get|update|delete by unique and cache", function() {
     }
   });
 
-  before(async function() {
+  beforeAll(async function() {
     const sql = await utils.readTestFile("users2.sql");
     await connection.query("DROP TABLE IF EXISTS `users2`");
     await connection.query(sql);
   });
 
-  after(async function() {
+  afterAll(async function() {
     await connection.close();
     await cache.close();
   });
@@ -68,7 +68,7 @@ describe("Table - get|update|delete by unique and cache", function() {
         info: { ChineseName: "赵✈️六" }
       }
     ]);
-    console.log(ret);
+    utils.debug(ret);
     expect(ret.length).to.equal(4);
   });
 
@@ -84,14 +84,14 @@ describe("Table - get|update|delete by unique and cache", function() {
       const ret = await User.getByPrimary({
         id: 2
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.deep.equal(data);
     }
     {
       const ret = await User.getByUnique({
         phone: "1230002"
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.deep.equal(data);
     }
     {
@@ -99,7 +99,7 @@ describe("Table - get|update|delete by unique and cache", function() {
         first_name: "Li",
         last_name: "Si"
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.deep.equal(data);
     }
   });
@@ -114,7 +114,7 @@ describe("Table - get|update|delete by unique and cache", function() {
           info: "user info changed"
         }
       );
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.deep.equal({
         id: 3,
         phone: "1230003",
@@ -127,7 +127,7 @@ describe("Table - get|update|delete by unique and cache", function() {
       const ret = await User.getByUnique({
         phone: "1230003"
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.deep.equal({
         id: 3,
         phone: "1230003",
@@ -149,7 +149,7 @@ describe("Table - get|update|delete by unique and cache", function() {
           info: "I am Zhao Liu"
         }
       );
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.deep.equal({
         id: 4,
         phone: "",
@@ -163,7 +163,7 @@ describe("Table - get|update|delete by unique and cache", function() {
         first_name: "Zhao",
         last_name: "Liu"
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.deep.equal({
         id: 4,
         phone: "",
@@ -179,7 +179,7 @@ describe("Table - get|update|delete by unique and cache", function() {
       const ret = await User.deleteByUnique({
         phone: ""
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.deep.equal({
         id: 4,
         phone: "",
@@ -192,7 +192,7 @@ describe("Table - get|update|delete by unique and cache", function() {
       const ret = await User.getByUnique({
         phone: ""
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.be.undefined;
     }
     {
@@ -200,19 +200,19 @@ describe("Table - get|update|delete by unique and cache", function() {
         first_name: "zhao",
         last_name: "Liu"
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.be.undefined;
     }
     {
       const ret = await User.getByPrimary({
         id: 4
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.be.undefined;
     }
     {
       const ret = await User.count().exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.equal(3);
     }
   });
@@ -221,35 +221,35 @@ describe("Table - get|update|delete by unique and cache", function() {
     // 先创建缓存
     {
       const ret = await User.getByPrimary({ id: 1 });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.have.property("id", 1);
     }
     {
       const ret = await User.getByPrimary({ id: 2 });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.have.property("id", 2);
     }
     {
       const ret = await User.getByPrimary({ id: 3 });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.have.property("id", 3);
     }
     // 使用别的方法修改内容
     {
       const ret = await User.update({ info: "no cache" }).exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.have.property("affectedRows", 3);
     }
     // 删除缓存
     {
       const ret = await User.removeAllCache("1");
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.be.lengthOf(3);
     }
     // 重新查询
     {
       const ret = await User.getByPrimary({ id: 1 });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.include({
         id: 1,
         info: "no cache"
@@ -257,7 +257,7 @@ describe("Table - get|update|delete by unique and cache", function() {
     }
     {
       const ret = await User.getByPrimary({ id: 2 });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.include({
         id: 2,
         info: "no cache"
@@ -265,7 +265,7 @@ describe("Table - get|update|delete by unique and cache", function() {
     }
     {
       const ret = await User.getByPrimary({ id: 3 });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.include({
         id: 3,
         info: "no cache"

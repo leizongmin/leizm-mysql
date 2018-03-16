@@ -28,13 +28,13 @@ describe("Table - normal", function() {
     }
   });
 
-  before(async function() {
+  beforeAll(async function() {
     const sql = await utils.readTestFile("user_blogs.sql");
     await connection.query("DROP TABLE IF EXISTS `user_blogs`");
     await connection.query(sql);
   });
 
-  after(async function() {
+  afterAll(async function() {
     await connection.close();
     await cache.close();
   });
@@ -52,7 +52,7 @@ describe("Table - normal", function() {
     };
     {
       const ret = await table.insert(data);
-      console.log(ret);
+      utils.debug(ret);
       expect(ret.length).to.equal(1);
     }
     {
@@ -60,7 +60,7 @@ describe("Table - normal", function() {
         .findOne()
         .where(table.keepPrimaryFields(data))
         .exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.deep.equal(data);
     }
     // 批量插入
@@ -81,7 +81,7 @@ describe("Table - normal", function() {
           info: null
         }
       ]);
-      console.log(ret);
+      utils.debug(ret);
       expect(ret.length).to.equal(2);
     }
   });
@@ -92,7 +92,7 @@ describe("Table - normal", function() {
         .find()
         .where({ user_id: 1001 })
         .exec();
-      console.log(list);
+      utils.debug(list);
       expect(list).to.have.lengthOf(2);
     }
     {
@@ -100,10 +100,10 @@ describe("Table - normal", function() {
         .find()
         .orderBy("`blog_id` DESC")
         .exec();
-      console.log(list);
+      utils.debug(list);
       expect(list).to.have.lengthOf(3);
       const list2 = list.slice();
-      console.log(list2);
+      utils.debug(list2);
       list.sort((a: any, b: any) => b.blog_id - a.blog_id);
       expect(list).to.deep.equal(list2);
     }
@@ -115,7 +115,7 @@ describe("Table - normal", function() {
         .findOne()
         .where({ user_id: 1001 })
         .exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret.user_id).to.equal(1001);
     }
   });
@@ -123,7 +123,7 @@ describe("Table - normal", function() {
   it("count", async function() {
     {
       const count = await table.count().exec();
-      console.log(count);
+      utils.debug(count);
       expect(count).to.equal(3);
     }
     {
@@ -131,7 +131,7 @@ describe("Table - normal", function() {
         .count()
         .where({ user_id: 1001 })
         .exec();
-      console.log(count);
+      utils.debug(count);
       expect(count).to.equal(2);
     }
     {
@@ -139,7 +139,7 @@ describe("Table - normal", function() {
         .count()
         .where("`user_id`!=1001")
         .exec();
-      console.log(count);
+      utils.debug(count);
       expect(count).to.equal(1);
     }
   });
@@ -149,12 +149,12 @@ describe("Table - normal", function() {
       const ret = await table
         .sql("SELECT COUNT(*) AS `count` FROM :$table")
         .exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.deep.equal([{ count: 3 }]);
     }
     {
       const ret = await table.sql("SHOW TABLES").exec();
-      console.log(ret);
+      utils.debug(ret);
     }
   });
 
@@ -175,7 +175,7 @@ describe("Table - normal", function() {
         .update(data)
         .where(query)
         .exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret.affectedRows).to.equal(1);
       expect(ret.changedRows).to.equal(1);
     }
@@ -184,7 +184,7 @@ describe("Table - normal", function() {
         .findOne()
         .where(query)
         .exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret.info).to.deep.equal(data.info);
       expect(ret.blog_id).to.equal(query.blog_id);
       expect(ret.user_id).to.equal(query.user_id);
@@ -205,7 +205,7 @@ describe("Table - normal", function() {
         .update("`info`=?, `created_at`=?", [JSON.stringify(info), created_at])
         .where(query)
         .exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret.affectedRows).to.equal(2);
       expect(ret.changedRows).to.equal(2);
     }
@@ -214,7 +214,7 @@ describe("Table - normal", function() {
         .find()
         .where(query)
         .exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.have.lengthOf(2);
       for (const item of ret) {
         expect(item.info).to.deep.equal(info);
@@ -241,13 +241,13 @@ describe("Table - normal", function() {
         .where({ user_id })
         .orderBy("`id` ASC")
         .exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret.affectedRows).to.equal(1);
       expect(ret.changedRows).to.equal(1);
     }
     {
       const ret = await table.find().exec();
-      console.log(ret);
+      utils.debug(ret);
       for (const item of ret) {
         if (
           item.user_id === user_id &&
@@ -267,7 +267,7 @@ describe("Table - normal", function() {
         .incr({ score: 5 })
         .where({ blog_id: 3 })
         .exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret.affectedRows).to.equal(1);
       expect(ret.changedRows).to.equal(1);
     }
@@ -276,7 +276,7 @@ describe("Table - normal", function() {
         .findOne()
         .where({ blog_id: 3 })
         .exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret.score).to.equal(5);
     }
   });
@@ -287,7 +287,7 @@ describe("Table - normal", function() {
         .deleteOne()
         .where({ user_id: 1001 })
         .exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret.affectedRows).to.equal(1);
     }
     {
@@ -299,7 +299,7 @@ describe("Table - normal", function() {
   it("delete", async function() {
     {
       const ret = await table.delete().exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret.affectedRows).to.equal(2);
     }
     {
@@ -317,7 +317,7 @@ describe("Table - normal", function() {
         info: undefined,
         score: undefined
       });
-      console.log(ret);
+      utils.debug(ret);
       expect(ret.length).to.equal(1);
     }
     {
@@ -325,7 +325,7 @@ describe("Table - normal", function() {
         .findOne()
         .where({ blog_id: 2001 })
         .exec();
-      console.log(ret);
+      utils.debug(ret);
       expect(ret).to.include({
         blog_id: 2001,
         user_id: 3,

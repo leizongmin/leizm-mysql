@@ -6,13 +6,14 @@
 
 import { expect } from "chai";
 import * as mysql from "../lib";
+import * as utils from "./utils";
 
 describe("QueryBuilder", function() {
   it("select", function() {
     {
       const query = new mysql.QueryBuilder({ table: "test1" });
       const sql = query.select("name", "age").build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal("SELECT `name`, `age` FROM `test1`");
     }
     {
@@ -24,7 +25,7 @@ describe("QueryBuilder", function() {
           b: 456
         })
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456"
       );
@@ -38,7 +39,7 @@ describe("QueryBuilder", function() {
           b: 456
         })
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456"
       );
@@ -54,7 +55,7 @@ describe("QueryBuilder", function() {
           b: 456
         })
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456"
       );
@@ -65,7 +66,7 @@ describe("QueryBuilder", function() {
         .select("name", "age")
         .where("`a`=? AND `b`=?", [123, 456])
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456"
       );
@@ -80,7 +81,7 @@ describe("QueryBuilder", function() {
         })
         .limit(10)
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 LIMIT 10"
       );
@@ -95,7 +96,7 @@ describe("QueryBuilder", function() {
         })
         .skip(10)
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 LIMIT 10,18446744073709551615"
       );
@@ -111,7 +112,7 @@ describe("QueryBuilder", function() {
         .skip(10)
         .limit(20)
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 LIMIT 10,20"
       );
@@ -128,7 +129,7 @@ describe("QueryBuilder", function() {
         .limit(20)
         .orderBy("`a` DESC, `b` ASC")
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20"
       );
@@ -145,7 +146,7 @@ describe("QueryBuilder", function() {
         .limit(20)
         .orderBy("`a` ?, `b` ?", ["DESC", "ASC"])
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20"
       );
@@ -164,7 +165,7 @@ describe("QueryBuilder", function() {
         .limit(20)
         .orderBy("`a` ?, `b` ?", ["DESC", "ASC"])
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT `name`, `age` FROM `test1` WHERE `a`=123 AND `b`=456 ORDER BY `a` DESC, `b` ASC LIMIT 10,20"
       );
@@ -182,7 +183,7 @@ describe("QueryBuilder", function() {
         .limit(20)
         .groupBy("`name`")
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT `name`, `age` FROM `test1` WHERE `a`=123 GROUP BY `name` LIMIT 10,20"
       );
@@ -198,7 +199,7 @@ describe("QueryBuilder", function() {
         .limit(20)
         .groupBy("`name` HAVING `b`=?", [22])
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT `name`, `age` FROM `test1` WHERE `a`=123 GROUP BY `name` HAVING `b`=22 LIMIT 10,20"
       );
@@ -214,7 +215,7 @@ describe("QueryBuilder", function() {
           b: 789
         })
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT COUNT(*) AS `c` FROM `test1` WHERE `a`=456 AND `b`=789"
       );
@@ -229,7 +230,7 @@ describe("QueryBuilder", function() {
         })
         .limit(1)
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT COUNT(*) AS `c` FROM `test1` WHERE `a`=456 AND `b`=789 LIMIT 1"
       );
@@ -244,7 +245,7 @@ describe("QueryBuilder", function() {
           b: 456
         })
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal("INSERT INTO `test1` (`a`, `b`) VALUES (123, 456)");
     }
     {
@@ -261,7 +262,7 @@ describe("QueryBuilder", function() {
           }
         ])
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "INSERT INTO `test1` (`a`, `b`) VALUES (123, 456),\n(789, 110)"
       );
@@ -276,7 +277,7 @@ describe("QueryBuilder", function() {
           b: 456
         })
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal("UPDATE `test1` SET `a`=123, `b`=456");
     }
     {
@@ -288,7 +289,7 @@ describe("QueryBuilder", function() {
         })
         .limit(12)
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal("UPDATE `test1` SET `a`=123, `b`=456 LIMIT 12");
     }
     {
@@ -303,7 +304,7 @@ describe("QueryBuilder", function() {
         })
         .limit(12)
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "UPDATE `test1` SET `a`=123, `b`=456 WHERE `b`=777 LIMIT 12"
       );
@@ -322,7 +323,7 @@ describe("QueryBuilder", function() {
         })
         .limit(12)
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "UPDATE `test1` SET `a`=123, `b`=456 WHERE `b`=777 LIMIT 12"
       );
@@ -340,7 +341,7 @@ describe("QueryBuilder", function() {
         })
         .limit(12)
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "UPDATE `test1` SET `a`=123, `b`=456 WHERE `b`=777 LIMIT 12"
       );
@@ -379,7 +380,7 @@ describe("QueryBuilder", function() {
         })
         .limit(456)
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "UPDATE `test1` SET `a`=456 WHERE `a`=123 LIMIT 456"
       );
@@ -389,7 +390,7 @@ describe("QueryBuilder", function() {
     {
       const query = new mysql.QueryBuilder({ table: "test1" });
       const sql = query.delete().build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal("DELETE FROM `test1`");
     }
     {
@@ -398,7 +399,7 @@ describe("QueryBuilder", function() {
         .delete()
         .where("`a`=2")
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal("DELETE FROM `test1` WHERE `a`=2");
     }
     {
@@ -408,7 +409,7 @@ describe("QueryBuilder", function() {
         .where("`a`=2")
         .limit(1)
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal("DELETE FROM `test1` WHERE `a`=2 LIMIT 1");
     }
   });
@@ -420,7 +421,7 @@ describe("QueryBuilder", function() {
           'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`'
         )
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data`'
       );
@@ -433,7 +434,7 @@ describe("QueryBuilder", function() {
         )
         .limit(10)
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` LIMIT 10'
       );
@@ -447,7 +448,7 @@ describe("QueryBuilder", function() {
         .limit(10)
         .skip(5)
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` LIMIT 5,10'
       );
@@ -462,7 +463,7 @@ describe("QueryBuilder", function() {
         .skip(5)
         .orderBy("`id` ASC")
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         'SELECT JSON_OBJECT("key1", 1, "key2", "abc", "key1", "def") as `data` ORDER BY `id` ASC LIMIT 5,10'
       );
@@ -476,7 +477,7 @@ describe("QueryBuilder", function() {
         .skip(5)
         .orderBy("`id` ASC")
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal("SELECT `a`, `b`, `c` FROM `test1`");
     }
   });
@@ -494,7 +495,7 @@ describe("QueryBuilder", function() {
           fields: ["id", "name"]
         })
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal(
         "SELECT `id`, `name` FROM `test1` GROUP BY `name` ORDER BY `id` DESC LIMIT 1,2"
       );
@@ -509,7 +510,7 @@ describe("QueryBuilder", function() {
         .select("name", "age")
         .where({})
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal("SELECT `name`, `age` FROM `test1`");
     }
     {
@@ -518,7 +519,7 @@ describe("QueryBuilder", function() {
         .select("name", "age")
         .where("   ")
         .build();
-      console.log(sql);
+      utils.debug(sql);
       expect(sql).to.equal("SELECT `name`, `age` FROM `test1`");
     }
     // 其他操作不能为空
@@ -529,7 +530,7 @@ describe("QueryBuilder", function() {
           .update({ a: 123 })
           .where({})
           .build();
-        console.log(sql);
+        utils.debug(sql);
       }).to.throw("modify condition cannot be empty");
     }
     {
@@ -539,7 +540,7 @@ describe("QueryBuilder", function() {
           .delete()
           .where("   ")
           .build();
-        console.log(sql);
+        utils.debug(sql);
       }).to.throw("modify condition cannot be empty");
     }
   });

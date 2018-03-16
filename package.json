@@ -7,15 +7,6 @@
   "files": [
     "dist/lib"
   ],
-  "scripts": {
-    "compile": "rm -rf dist && tsc",
-    "test": "export DEBUG='@leizm/mysql:*' && mocha src/test/*.ts",
-    "coverage": "nyc --reporter=lcov mocha && nyc report",
-    "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "lint": "prettier --write 'src/**/*.ts'",
-    "docs": "typedoc --mode modules --out ./docs --theme minimal --readme none src/lib",
-    "prepublish": "npm run test"
-  },
   "repository": {
     "type": "git",
     "url": "git@github.com:leizongmin/leizm-mysql.git"
@@ -38,26 +29,39 @@
   },
   "devDependencies": {
     "@types/chai": "^4.0.8",
-    "@types/mocha": "^2.2.44",
+    "@types/jest": "^22.2.0",
     "@types/node": "^8.0.54",
     "chai": "^4.1.2",
     "coveralls": "^3.0.0",
     "debug": "^3.1.0",
-    "mocha": "^4.0.1",
-    "nyc": "^11.3.0",
+    "jest": "^23.0.0-alpha.0",
     "prettier": "^1.8.2",
-    "remap-istanbul": "^0.9.5",
-    "ts-node": "^3.3.0",
+    "ts-jest": "^22.4.1",
     "typedoc": "^0.9.0",
     "typescript": "^2.6.2"
   },
-  "nyc": {
-    "extension": [
-      ".ts"
-    ],
-    "exclude": [
-      "**/*.d.ts",
-      "**/test/*.ts"
+  "scripts": {
+    "compile": "rm -rf dist && tsc",
+    "test": "jest",
+    "test-debug": "export DEBUG='@leizm/mysql:*' && jest",
+    "coverage": "nyc --reporter=lcov mocha && nyc report",
+    "coveralls": "cat ./coverage/lcov.info | coveralls",
+    "lint": "prettier --write 'src/**/*.ts'",
+    "docs": "typedoc --mode modules --out ./docs --theme minimal --readme none src/lib",
+    "prepublish": "npm run test"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
     ]
   }
 }

@@ -78,14 +78,14 @@ describe("Connection", function() {
       const ret = await conn.query(
         'SHOW TABLES'
       );
-      console.log(ret);
+      utils.debug(ret);
     }
     {
       try {
         const ret = await conn.querySlave(
           'SHOW TABLES'
         );
-        console.log(ret);
+        utils.debug(ret);
         throw new Error("expected to throws 'Pool does not exist.' error");
       } catch (err) {
         expect(err.message).to.equal("Pool does not exist.");
@@ -95,13 +95,13 @@ describe("Connection", function() {
       const ret = await conn.queryMaster(
         'SHOW TABLES'
       );
-      console.log(ret);
+      utils.debug(ret);
     }
     {
       try {
         const ret = await conn.query("select * from xxxxxxxxxxxxxxxxx");
       } catch (err) {
-        console.log(err);
+        utils.debug(err);
         expect(err).to.instanceof(Error);
         expect(err.code).to.equal("ER_NO_SUCH_TABLE");
         expect(err.sql).to.equal("select * from xxxxxxxxxxxxxxxxx");
@@ -109,57 +109,57 @@ describe("Connection", function() {
     }
     {
       const ret = await conn.query("DROP TABLE IF EXISTS `blog_contents`");
-      console.log(ret);
+      utils.debug(ret);
     }
     {
       const sql = await utils.readTestFile("blog_contents.sql");
       const ret = await conn.query(sql);
-      console.log(ret);
+      utils.debug(ret);
     }
     {
       const sql = conn.format("SELECT * FROM ::table WHERE id=:id", {
         table: "blog_contents",
         id: 2
       });
-      console.log(sql);
+      utils.debug(sql);
       const ret = await conn.query(sql);
-      console.log(ret);
+      utils.debug(ret);
     }
     {
       const sql = conn.format("SELECT * FROM ?? WHERE id=?", [
         "blog_contents",
         2
       ]);
-      console.log(sql);
+      utils.debug(sql);
       const ret = await conn.query(sql);
-      console.log(ret);
+      utils.debug(ret);
     }
     {
       const c = await conn.getMasterConnection();
-      console.log(c.escape(utils.newDate()));
+      utils.debug(c.escape(utils.newDate()));
       await c.beginTransaction();
       try {
         const ret = await c.query(
           'INSERT INTO `blog_contents`(`id`,`content`) VALUES (1234, "456")'
         );
-        console.log(ret);
+        utils.debug(ret);
       } catch (err) {
-        console.log(err);
+        utils.debug(err);
         await c.rollback();
       }
       try {
         const ret = await c.query(
           'INSERT INTO `blog_contents`(`id`,`content`) VALUES (1234, "9999")'
         );
-        console.log(ret);
+        utils.debug(ret);
       } catch (err) {
-        console.log(err);
+        utils.debug(err);
         await c.rollback();
       }
       try {
         await c.commit();
       } catch (err) {
-        console.log(err);
+        utils.debug(err);
         await c.rollback();
       }
       c.release();
@@ -168,13 +168,13 @@ describe("Connection", function() {
       let eventIsEmitted = false;
       let emittedSql = "";
       conn.once("query", function(e) {
-        console.log(e);
+        utils.debug(e);
         eventIsEmitted = true;
         emittedSql = e.sql;
         expect(e.name).to.equal(`${connConfig.host}:${connConfig.port}`);
       });
       const ret = await conn.query("SHOW TABLES");
-      console.log(ret, eventIsEmitted, emittedSql);
+      utils.debug(ret, eventIsEmitted, emittedSql);
       expect(eventIsEmitted).to.equal(true);
       expect(emittedSql).to.equal("SHOW TABLES");
     }
