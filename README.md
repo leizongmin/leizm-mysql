@@ -1,9 +1,6 @@
-[![NPM version][npm-image]][npm-url]
-[![build status][travis-image]][travis-url]
-[![Test coverage][coveralls-image]][coveralls-url]
-[![David deps][david-image]][david-url]
-[![node version][node-image]][node-url]
-[![npm download][download-image]][download-url]
+[![NPM version][npm-image]][npm-url] [![build status][travis-image]][travis-url]
+[![Test coverage][coveralls-image]][coveralls-url] [![David deps][david-image]][david-url]
+[![node version][node-image]][node-url] [![npm download][download-image]][download-url]
 [![npm license][license-image]][download-url]
 
 [npm-image]: https://img.shields.io/npm/v/@leizm/mysql.svg?style=flat-square
@@ -39,49 +36,49 @@ npm install @leizm/mysql --save
 ## 使用方法
 
 ```typescript
-import { Manager } from "@leizm/mysql";
+import { Manager } from '@leizm/mysql';
 
 const manager = new Manager({
   // Redis 连接，用于缓存
   // 参考 https://github.com/luin/ioredis/blob/master/API.md#new_Redis
   redis: {
-    host: "127.0.0.1",
+    host: '127.0.0.1',
     port: 6379,
     db: 0,
-    password: ""
+    password: '',
   },
   // 缓存 key 前缀
-  prefix: "TEST:",
+  prefix: 'TEST:',
   // 缓存世界，秒
   ttl: 60,
   // MySQL 连接，可指定多个，第一个为 Master，其余为 Slave
   // 参考 https://www.npmjs.com/package/mysql#connection-options
   connections: [
     {
-      host: "127.0.0.1",
+      host: '127.0.0.1',
       port: 3306,
-      user: "root",
-      password: "",
-      database: "test",
+      user: 'root',
+      password: '',
+      database: 'test',
       connectionLimit: 10,
-      charset: "utf8mb4"
+      charset: 'utf8mb4',
     },
     {
-      host: "127.0.0.1",
+      host: '127.0.0.1',
       port: 13306,
-      user: "root",
-      password: "",
-      database: "test",
+      user: 'root',
+      password: '',
+      database: 'test',
       connectionLimit: 10,
-      charset: "utf8mb4"
-    }
-  ]
+      charset: 'utf8mb4',
+    },
+  ],
 });
 
 // 注册 Table
 manager.registerTable({
-  table: "users",
-  primary: "id",
+  table: 'users',
+  primary: 'id',
   autoIncrement: true,
   fields: {
     // true 表示该字段存在
@@ -90,18 +87,18 @@ manager.registerTable({
     email: true,
     // 可指定字段为 json 类型，在存储是会自动对数据执行 JSON.stringify()，读取时执行 JSON.parse()
     // 或自定义 encode 和 decode 方法
-    info: "json",
-    created_at: "date"
+    info: 'json',
+    created_at: 'date',
     // 其它未定义的字段在存储时会被自动过滤
-  }
+  },
 });
 
 // 使用 Table
-const ret = await manager.table("users").getByPrimary({ id: 123 });
+const ret = await manager.table('users').getByPrimary({ id: 123 });
 console.log(ret);
 
 // 使用原始连接执行查询，SELECT 语句会在任意连接执行，其它语句只在 Master 连接执行
-const ret2 = await manager.connection.query("CREATE TABLE `hello`");
+const ret2 = await manager.connection.query('CREATE TABLE `hello`');
 console.log(ret2);
 
 // 事务（在 Master 连接执行）
@@ -110,9 +107,9 @@ console.log(ret2);
   // 开始事务
   await conn.beginTransaction();
   try {
-    await conn.query("INSERT INTO `hello`...");
-    await conn.query("INSERT INTO `hello`...");
-    await conn.query("INSERT INTO `hello`...");
+    await conn.query('INSERT INTO `hello`...');
+    await conn.query('INSERT INTO `hello`...');
+    await conn.query('INSERT INTO `hello`...');
     // 提交事务
     await conn.commit();
   } catch (err) {
