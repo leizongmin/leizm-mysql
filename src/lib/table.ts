@@ -67,11 +67,11 @@ export class Table {
   /** 表名 */
   public readonly tableName: string;
   /** 主键 */
-  public readonly primaryKey: string[];
+  public readonly primaryKey: string[] = [];
   /** 主键是否自增 */
   public readonly primaryKeyAutoIncrement: boolean;
   /** 唯一键列表 */
-  public readonly uniqueKeyList: string[][];
+  public readonly uniqueKeyList: string[][] = [];
   /** 主键和唯一键列表 */
   public readonly importantFields: string[];
   /** Schema 实例 */

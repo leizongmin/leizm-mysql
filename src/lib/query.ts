@@ -79,7 +79,7 @@ export class QueryBuilder {
     limitRows: number;
     limit: string;
   };
-  protected readonly _schema: Schema;
+  protected readonly _schema?: Schema;
 
   /**
    * 创建 QueryBuilder
@@ -373,7 +373,12 @@ export class QueryBuilder {
 
     let list: Array<Record<string, any>> = data as Array<Record<string, any>>;
     if (this._schema) {
-      list = list.map(item => this._schema.formatInput(item));
+      list = list.map(item => {
+        if (!this._schema) {
+          throw new Error(`unknown error, this._schema is emoty`);
+        }
+        return this._schema.formatInput(item);
+      });
     }
 
     const originFields = Object.keys(list[0]);

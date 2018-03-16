@@ -169,7 +169,7 @@ export class Cache extends events.EventEmitter {
    * 关闭连接
    */
   public close(): Promise<string> {
-    return this._redis.quit();
+    return this._redis.quit() as any;
   }
 
   /**
