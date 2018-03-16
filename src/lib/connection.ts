@@ -78,10 +78,16 @@ function wrapConnection(connection: any): WrappedConnection {
         case 'rollback':
           return (...args: any[]) => {
             const cb = args[args.length - 1];
-            if (typeof cb === 'function') {
-              return target[name](...args);
-            }
-            return target[name](...args);
+            if (typeof cb === 'function') return target[name](...args);
+            return new Promise((resolve, reject) => {
+              target[name](...args, (err: Error, ret: any) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve(ret);
+                }
+              });
+            });
           };
         default:
           return target[name];
