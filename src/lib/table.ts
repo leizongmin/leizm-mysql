@@ -4,13 +4,13 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import * as assert from "assert";
-import * as utils from "./utils";
-import * as connection from "./connection";
-import * as cache from "./cache";
-import * as schema from "./schema";
-import * as query from "./query";
-import { Callback } from "./define";
+import * as assert from 'assert';
+import * as utils from './utils';
+import * as connection from './connection';
+import * as cache from './cache';
+import * as schema from './schema';
+import * as query from './query';
+import { Callback } from './define';
 
 export type FieldName = string | string[];
 
@@ -83,20 +83,14 @@ export class Table {
   constructor(options: TableOptions) {
     assert.ok(options, `missing options`);
 
-    assert.ok(
-      utils.isConnectionInstance(options.connection),
-      `connection must be an Connection instance`
-    );
+    assert.ok(utils.isConnectionInstance(options.connection), `connection must be an Connection instance`);
     this.connection = options.connection;
 
-    assert.ok(
-      utils.isCacheInstance(options.cache),
-      `cache must be an Cache instance`
-    );
+    assert.ok(utils.isCacheInstance(options.cache), `cache must be an Cache instance`);
     this.cache = options.cache;
 
     assert.ok(options.table, `must provide table name`);
-    assert.ok(typeof options.table === "string", `table name must be a string`);
+    assert.ok(typeof options.table === 'string', `table name must be a string`);
     this.tableName = options.table;
 
     const importantFields = new Set<string>();
@@ -104,15 +98,12 @@ export class Table {
     // 主键
     if (options.primary) {
       assert.ok(
-        typeof options.primary === "string" || Array.isArray(options.primary),
+        typeof options.primary === 'string' || Array.isArray(options.primary),
         `primary must be a string or array`
       );
       if (Array.isArray(options.primary)) {
         options.primary.forEach(name => {
-          assert.ok(
-            typeof name === "string",
-            `every item of primary must be a string`
-          );
+          assert.ok(typeof name === 'string', `every item of primary must be a string`);
         });
         // 包装 key 是按顺序排列的
         this.primaryKey = options.primary.slice().sort();
@@ -124,11 +115,7 @@ export class Table {
 
     // 主键是否自增
     if (options.autoIncrement) {
-      assert.equal(
-        this.primaryKey.length,
-        1,
-        `invalid primary key number when autoIncrement=true`
-      );
+      assert.equal(this.primaryKey.length, 1, `invalid primary key number when autoIncrement=true`);
       this.primaryKeyAutoIncrement = true;
     } else {
       this.primaryKeyAutoIncrement = false;
@@ -137,21 +124,16 @@ export class Table {
     // 唯一键列表
     if (options.uniques) {
       assert.ok(Array.isArray(options.uniques), `uniques must be an array`);
-      assert.ok(
-        options.uniques.length > 0,
-        `uniques must have less than 1 item`
-      );
+      assert.ok(options.uniques.length > 0, `uniques must have less than 1 item`);
       this.uniqueKeyList = options.uniques.map(item => {
-        assert.ok(typeof item === "string" || Array.isArray(item));
+        assert.ok(typeof item === 'string' || Array.isArray(item));
         if (Array.isArray(item)) {
           return item.sort();
         } else {
           return [item];
         }
       });
-      this.uniqueKeyList.forEach(fields =>
-        fields.forEach(f => importantFields.add(f))
-      );
+      this.uniqueKeyList.forEach(fields => fields.forEach(f => importantFields.add(f)));
     }
 
     // 主键和唯一键列表
@@ -165,28 +147,19 @@ export class Table {
    * @param data 键值对数据
    * @param strict 是否严格检查每个键的数据都存在，如果为 true 且键不存在时抛出异常，否则返回 undefined
    */
-  public getPrimaryCacheKey(
-    data: Record<string, any>,
-    strict?: boolean
-  ): string {
-    assert.ok(
-      this.primaryKey,
-      `table "${this.tableName}" does not have primary key`
-    );
+  public getPrimaryCacheKey(data: Record<string, any>, strict?: boolean): string {
+    assert.ok(this.primaryKey, `table "${this.tableName}" does not have primary key`);
     let isEveryKeyExists = true;
     const key = this.primaryKey
       .map(name => {
         isEveryKeyExists = isEveryKeyExists && name in data;
         if (strict) {
-          assert.ok(
-            isEveryKeyExists,
-            `missing primary key "${name}" in this data row`
-          );
+          assert.ok(isEveryKeyExists, `missing primary key "${name}" in this data row`);
         }
         return `${name}:${data[name]}`;
       })
-      .join(":");
-    return isEveryKeyExists ? `${this.tableName}:r:${key}` : "";
+      .join(':');
+    return isEveryKeyExists ? `${this.tableName}:r:${key}` : '';
   }
 
   /**
@@ -199,7 +172,7 @@ export class Table {
     if (Array.isArray(this.uniqueKeyList)) {
       this.uniqueKeyList.forEach(fields => {
         if (utils.everyFieldExists(data, fields)) {
-          list.push(prefix + fields.map(f => `${f}:${data[f]}`).join(":"));
+          list.push(prefix + fields.map(f => `${f}:${data[f]}`).join(':'));
         }
       });
     }
@@ -211,10 +184,7 @@ export class Table {
    * @param data 键值对数据
    */
   public keepPrimaryFields(data: Record<string, any>): Record<string, any> {
-    assert.ok(
-      this.primaryKey,
-      `table "${this.tableName}" does not have primary key`
-    );
+    assert.ok(this.primaryKey, `table "${this.tableName}" does not have primary key`);
     const ret: Record<string, any> = {};
     for (const name of this.primaryKey) {
       assert.ok(name in data, `missing primary key "${name}" in this data row`);
@@ -228,10 +198,7 @@ export class Table {
    * @param data 键值对数据
    */
   public keepUniqueFields(data: Record<string, any>): Record<string, any> {
-    assert.ok(
-      this.uniqueKeyList,
-      `table "${this.tableName}" does not have unique key`
-    );
+    assert.ok(this.uniqueKeyList, `table "${this.tableName}" does not have unique key`);
     for (const fields of this.uniqueKeyList) {
       if (utils.everyFieldExists(data, fields)) {
         const ret: Record<string, any> = {};
@@ -243,8 +210,8 @@ export class Table {
     }
     throw new Error(
       `missing unique key in this data row, must includes one of ${this.uniqueKeyList
-        .map(keys => keys.join(","))
-        .join(" | ")}`
+        .map(keys => keys.join(','))
+        .join(' | ')}`
     );
   }
 
@@ -262,7 +229,7 @@ export class Table {
           }
           callback(err, ret);
         };
-        const method = options.master ? "queryMaster" : "query";
+        const method = options.master ? 'queryMaster' : 'query';
         this.connection[method](sql)
           .then(ret => {
             // 格式化输出
@@ -276,25 +243,21 @@ export class Table {
             cb(null, ret);
           })
           .catch(err => cb(err));
-      }
+      },
     });
   }
 
   /**
    * 查询数据
    */
-  public find(
-    options: Pick<TableQueryOptions, "master"> = {}
-  ): query.QueryBuilder {
-    return this.query({ ...options, format: true }).select("*");
+  public find(options: Pick<TableQueryOptions, 'master'> = {}): query.QueryBuilder {
+    return this.query({ ...options, format: true }).select('*');
   }
 
   /**
    * 查询一行数据
    */
-  public findOne(
-    options: Pick<TableQueryOptions, "master"> = {}
-  ): query.QueryBuilder {
+  public findOne(options: Pick<TableQueryOptions, 'master'> = {}): query.QueryBuilder {
     return this.query({
       ...options,
       format: true,
@@ -303,18 +266,16 @@ export class Table {
           return callback(err);
         }
         callback(null, ret[0]);
-      }
+      },
     })
-      .select("*")
+      .select('*')
       .limit(1);
   }
 
   /**
    * 查询数量
    */
-  public count(
-    options: Pick<TableQueryOptions, "master"> = {}
-  ): query.QueryBuilder {
+  public count(options: Pick<TableQueryOptions, 'master'> = {}): query.QueryBuilder {
     return this.query({
       ...options,
       format: false,
@@ -323,9 +284,9 @@ export class Table {
           return callback(err);
         }
         callback(null, ret[0].c);
-      }
+      },
     })
-      .count("c")
+      .count('c')
       .limit(1);
   }
 
@@ -344,10 +305,7 @@ export class Table {
    * @param update SQL 模板语句
    * @param values 模板参数，如 { a: 123 }
    */
-  public update(
-    update: string,
-    values: Record<string, any>
-  ): query.QueryBuilder;
+  public update(update: string, values: Record<string, any>): query.QueryBuilder;
   /**
    * 更新数据
    * @param update SQL 模板语句
@@ -355,16 +313,13 @@ export class Table {
    */
   public update(update: string, values: any[]): query.QueryBuilder;
 
-  public update(
-    update: Record<string, any> | string,
-    values?: Record<string, any> | any[]
-  ): query.QueryBuilder {
+  public update(update: Record<string, any> | string, values?: Record<string, any> | any[]): query.QueryBuilder {
     assert.ok(
       arguments.length === 1 || arguments.length === 2,
       `expected 1 or 2 argument for update() but got ${arguments.length}`
     );
     // 格式化输入
-    if (typeof update === "string") {
+    if (typeof update === 'string') {
       if (values) {
         return this.query({ format: false }).update(update, values);
       }
@@ -388,10 +343,7 @@ export class Table {
    * @param update SQL 模板语句
    * @param values 模板参数，如 { a: 123 }
    */
-  public updateOne(
-    update: string,
-    values: Record<string, any>
-  ): query.QueryBuilder;
+  public updateOne(update: string, values: Record<string, any>): query.QueryBuilder;
   /**
    * 更新一行数据
    * @param update SQL 模板语句
@@ -399,16 +351,13 @@ export class Table {
    */
   public updateOne(update: string, values: any[]): query.QueryBuilder;
 
-  public updateOne(
-    update: Record<string, any> | string,
-    values?: Record<string, any> | any[]
-  ): query.QueryBuilder {
+  public updateOne(update: Record<string, any> | string, values?: Record<string, any> | any[]): query.QueryBuilder {
     assert.ok(
       arguments.length === 1 || arguments.length === 2,
       `expected 1 or 2 argument for updateOne() but got ${arguments.length}`
     );
     // 格式化输入
-    if (typeof update === "string") {
+    if (typeof update === 'string') {
       if (values) {
         return this.query({ format: false })
           .update(update, values)
@@ -441,36 +390,24 @@ export class Table {
    * 插入数据
    * @param data 键值对数据
    */
-  public async insert(
-    data: Record<string, any>,
-    refreshNewData?: boolean
-  ): Promise<Array<Record<string, any>>>;
+  public async insert(data: Record<string, any>, refreshNewData?: boolean): Promise<Array<Record<string, any>>>;
   /**
    * 插入数据
    * @param data 键值对数据数组
    */
-  public async insert(
-    data: Array<Record<string, any>>,
-    refreshNewData?: boolean
-  ): Promise<Array<Record<string, any>>>;
+  public async insert(data: Array<Record<string, any>>, refreshNewData?: boolean): Promise<Array<Record<string, any>>>;
 
   public async insert(
     data: Record<string, any> | Array<Record<string, any>>,
     refreshNewData: boolean = true
   ): Promise<Array<Record<string, any>>> {
-    assert.equal(
-      arguments.length,
-      1,
-      `expected 1  argument for insert() but got ${arguments.length}`
-    );
-    const list: Array<Record<string, any>> = Array.isArray(data)
-      ? data
-      : [data];
+    assert.equal(arguments.length, 1, `expected 1  argument for insert() but got ${arguments.length}`);
+    const list: Array<Record<string, any>> = Array.isArray(data) ? data : [data];
     // 检查是否包含主键（仅当主键不是自增时）
     if (!this.primaryKeyAutoIncrement) {
       for (const item of list) {
         for (const key of this.primaryKey) {
-          if (typeof item[key] === "undefined") {
+          if (typeof item[key] === 'undefined') {
             throw new Error(`missing primary key "${key}"`);
           }
         }
@@ -502,14 +439,10 @@ export class Table {
    * @param data 键值对数据，如：{ count: 1 }
    */
   public incr(data: Record<string, any>): query.QueryBuilder {
-    assert.equal(
-      arguments.length,
-      1,
-      `expected 1  argument for incr() but got ${arguments.length}`
-    );
+    assert.equal(arguments.length, 1, `expected 1  argument for incr() but got ${arguments.length}`);
     const q = this.query({ format: false }).update();
     for (const name in data) {
-      q.set("?? = ?? + (?)", [name, name, data[name]]);
+      q.set('?? = ?? + (?)', [name, name, data[name]]);
     }
     return q;
   }
@@ -524,37 +457,22 @@ export class Table {
    * @param sql SQL 语句模板
    * @param values 模板参数，如 { a: 123 }
    */
-  public sql(
-    sql: string,
-    values: Record<string, any>,
-    options?: TableQueryOptions
-  ): query.QueryBuilder;
+  public sql(sql: string, values: Record<string, any>, options?: TableQueryOptions): query.QueryBuilder;
   /**
    * 执行 SQL 查询
    * @param sql SQL 语句模板
    * @param values 模板参数，如 [ 123 ]
    */
-  public sql(
-    sql: string,
-    values: any[],
-    options?: TableQueryOptions
-  ): query.QueryBuilder;
+  public sql(sql: string, values: any[], options?: TableQueryOptions): query.QueryBuilder;
 
-  public sql(
-    sql: string,
-    values?: Record<string, any> | any[],
-    options?: TableQueryOptions
-  ): query.QueryBuilder {
+  public sql(sql: string, values?: Record<string, any> | any[], options?: TableQueryOptions): query.QueryBuilder {
     assert.ok(
       arguments.length === 1 || arguments.length === 2,
       `expected 1 or 2 argument for sql() but got ${arguments.length}`
     );
     options = options || {};
     if (values) {
-      return this.query({ ...options, format: !utils.isUpdateSQL(sql) }).sql(
-        sql,
-        values
-      );
+      return this.query({ ...options, format: !utils.isUpdateSQL(sql) }).sql(sql, values);
     }
     return this.query({ ...options, format: !utils.isUpdateSQL(sql) }).sql(sql);
   }
@@ -565,7 +483,7 @@ export class Table {
    */
   public async getByPrimary(
     query: Record<string, any>,
-    options: Pick<TableQueryOptions, "master"> = {}
+    options: Pick<TableQueryOptions, 'master'> = {}
   ): Promise<Record<string, any>> {
     query = this.keepPrimaryFields(query);
     const key = this.getPrimaryCacheKey(query);
@@ -620,9 +538,7 @@ export class Table {
    * 删除主键的数据，并删除缓存
    * @param query 查询条件
    */
-  public async deleteByPrimary(
-    query: Record<string, any>
-  ): Promise<Record<string, any> | null> {
+  public async deleteByPrimary(query: Record<string, any>): Promise<Record<string, any> | null> {
     query = this.keepPrimaryFields(query);
     const data = await this.findOne({ master: true })
       .where(query)
@@ -645,10 +561,10 @@ export class Table {
    */
   public async getByUnique(
     query: Record<string, any>,
-    options: Pick<TableQueryOptions, "master"> = {}
+    options: Pick<TableQueryOptions, 'master'> = {}
   ): Promise<Record<string, any>> {
     query = this.keepUniqueFields(query);
-    const key = this.getUniqueCacheKeys(query)[0] || "";
+    const key = this.getUniqueCacheKeys(query)[0] || '';
     // 先尝试从缓存中获取
     const str = await this.cache.getPointerItem(key);
     if (str) {
@@ -700,9 +616,7 @@ export class Table {
    * 删除唯一键的数据，并删除缓存
    * @param query 查询条件
    */
-  public async deleteByUnique(
-    query: Record<string, any>
-  ): Promise<Record<string, any> | null> {
+  public async deleteByUnique(query: Record<string, any>): Promise<Record<string, any> | null> {
     query = this.keepUniqueFields(query);
     const data = await this.findOne({ master: true })
       .where(query)
@@ -723,13 +637,11 @@ export class Table {
    * 删除符合指定查询条件的所有缓存
    * @param query 可以为键值对数据或者 SQL 查询语句
    */
-  public async removeAllCache(
-    query: Record<string, any> | string
-  ): Promise<string[]> {
+  public async removeAllCache(query: Record<string, any> | string): Promise<string[]> {
     if (this.importantFields.length > 0) {
       // 查询出旧的数据
       const q = this.find({ master: true }).fields(...this.importantFields);
-      if (typeof query === "string") {
+      if (typeof query === 'string') {
         q.where(query);
       } else {
         q.where(query);
@@ -751,13 +663,9 @@ export class Table {
   /**
    * 更新缓存，包括 primaryKey 和 uniqueKeys
    */
-  public async updateCacheByDataRow(
-    data: Record<string, any>
-  ): Promise<string[]> {
+  public async updateCacheByDataRow(data: Record<string, any>): Promise<string[]> {
     if (data) {
-      const { primaryKey, uniqueKeys, allKeys } = this.getCacheKeysByDataRow(
-        data
-      );
+      const { primaryKey, uniqueKeys, allKeys } = this.getCacheKeysByDataRow(data);
       await this.cache.removeList(allKeys.slice());
       const save: cache.CacheDataItem[] = [];
       save.push({ key: primaryKey, data: this.schema.serialize(data) });
@@ -773,9 +681,7 @@ export class Table {
   /**
    * 删除缓存，包括 primaryKey 和 uniqueKeys
    */
-  public async removeCacheByDataRow(
-    data: Record<string, any>
-  ): Promise<string[]> {
+  public async removeCacheByDataRow(data: Record<string, any>): Promise<string[]> {
     if (data) {
       const { allKeys } = this.getCacheKeysByDataRow(data);
       await this.cache.removeList(allKeys.slice());

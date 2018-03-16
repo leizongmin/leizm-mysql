@@ -4,33 +4,33 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import { expect } from "chai";
-import * as mysql from "../lib";
-import * as utils from "./utils";
+import { expect } from 'chai';
+import * as mysql from '../lib';
+import * as utils from './utils';
 
-describe("Table - normal", function() {
-  const prefix = utils.randomString(10) + ":";
+describe('Table - normal', function() {
+  const prefix = utils.randomString(10) + ':';
   const cache = new mysql.Cache(utils.getCacheConfig({ prefix }));
   const connection = new mysql.Connection({
-    connections: [utils.getConnectionConfig()]
+    connections: [utils.getConnectionConfig()],
   });
   const table = new mysql.Table({
     cache,
     connection,
-    table: "user_blogs",
-    primary: ["blog_id", "user_id"],
+    table: 'user_blogs',
+    primary: ['blog_id', 'user_id'],
     fields: {
       blog_id: true,
       user_id: true,
-      info: "json",
-      created_at: "date",
-      score: true
-    }
+      info: 'json',
+      created_at: 'date',
+      score: true,
+    },
   });
 
   beforeAll(async function() {
-    const sql = await utils.readTestFile("user_blogs.sql");
-    await connection.query("DROP TABLE IF EXISTS `user_blogs`");
+    const sql = await utils.readTestFile('user_blogs.sql');
+    await connection.query('DROP TABLE IF EXISTS `user_blogs`');
     await connection.query(sql);
   });
 
@@ -39,16 +39,16 @@ describe("Table - normal", function() {
     await cache.close();
   });
 
-  it("insert", async function() {
+  it('insert', async function() {
     const data = {
       blog_id: 1,
       user_id: 1001,
       info: {
         mem: process.memoryUsage(),
-        uptime: process.uptime()
+        uptime: process.uptime(),
       },
       created_at: utils.newDate(),
-      score: 0
+      score: 0,
     };
     {
       const ret = await table.insert(data);
@@ -71,22 +71,22 @@ describe("Table - normal", function() {
           user_id: 1001,
           created_at: utils.newDate(),
           info: {
-            message: "hello, world"
-          }
+            message: 'hello, world',
+          },
         },
         {
           blog_id: 3,
           user_id: 1002,
           created_at: utils.newDate(),
-          info: null
-        }
+          info: null,
+        },
       ]);
       utils.debug(ret);
       expect(ret.length).to.equal(2);
     }
   });
 
-  it("find", async function() {
+  it('find', async function() {
     {
       const list = await table
         .find()
@@ -98,7 +98,7 @@ describe("Table - normal", function() {
     {
       const list = await table
         .find()
-        .orderBy("`blog_id` DESC")
+        .orderBy('`blog_id` DESC')
         .exec();
       utils.debug(list);
       expect(list).to.have.lengthOf(3);
@@ -109,7 +109,7 @@ describe("Table - normal", function() {
     }
   });
 
-  it("findOne", async function() {
+  it('findOne', async function() {
     {
       const ret = await table
         .findOne()
@@ -120,7 +120,7 @@ describe("Table - normal", function() {
     }
   });
 
-  it("count", async function() {
+  it('count', async function() {
     {
       const count = await table.count().exec();
       utils.debug(count);
@@ -137,38 +137,36 @@ describe("Table - normal", function() {
     {
       const count = await table
         .count()
-        .where("`user_id`!=1001")
+        .where('`user_id`!=1001')
         .exec();
       utils.debug(count);
       expect(count).to.equal(1);
     }
   });
 
-  it("sql", async function() {
+  it('sql', async function() {
     {
-      const ret = await table
-        .sql("SELECT COUNT(*) AS `count` FROM :$table")
-        .exec();
+      const ret = await table.sql('SELECT COUNT(*) AS `count` FROM :$table').exec();
       utils.debug(ret);
       expect(ret).to.deep.equal([{ count: 3 }]);
     }
     {
-      const ret = await table.sql("SHOW TABLES").exec();
+      const ret = await table.sql('SHOW TABLES').exec();
       utils.debug(ret);
     }
   });
 
-  it("update #1", async function() {
+  it('update #1', async function() {
     const data = {
       info: {
         mem: process.memoryUsage(),
         uptime: process.uptime(),
-        time: Date.now()
-      }
+        time: Date.now(),
+      },
     };
     const query = {
       blog_id: 1,
-      user_id: 1001
+      user_id: 1001,
     };
     {
       const ret = await table
@@ -191,18 +189,18 @@ describe("Table - normal", function() {
     }
   });
 
-  it("update #2", async function() {
+  it('update #2', async function() {
     const info = {
       pid: process.pid,
-      uptime: process.uptime()
+      uptime: process.uptime(),
     };
     const created_at = utils.newDate();
     const query = {
-      user_id: 1001
+      user_id: 1001,
     };
     {
       const ret = await table
-        .update("`info`=?, `created_at`=?", [JSON.stringify(info), created_at])
+        .update('`info`=?, `created_at`=?', [JSON.stringify(info), created_at])
         .where(query)
         .exec();
       utils.debug(ret);
@@ -224,22 +222,22 @@ describe("Table - normal", function() {
     }
   });
 
-  it("updateOne", async function() {
+  it('updateOne', async function() {
     // 等待一段时间以使得  created_at 时间不一样
     await utils.sleep(1500);
     const info = {
-      message: "from updateOne"
+      message: 'from updateOne',
     };
     const created_at = utils.newDate();
     const user_id = 1001;
     {
       const ret = await table
-        .updateOne("`info`=:info, `created_at`=:created_at", {
+        .updateOne('`info`=:info, `created_at`=:created_at', {
           info: JSON.stringify(info),
-          created_at
+          created_at,
         })
         .where({ user_id })
-        .orderBy("`id` ASC")
+        .orderBy('`id` ASC')
         .exec();
       utils.debug(ret);
       expect(ret.affectedRows).to.equal(1);
@@ -249,10 +247,7 @@ describe("Table - normal", function() {
       const ret = await table.find().exec();
       utils.debug(ret);
       for (const item of ret) {
-        if (
-          item.user_id === user_id &&
-          item.created_at.getTime() === created_at.getTime()
-        ) {
+        if (item.user_id === user_id && item.created_at.getTime() === created_at.getTime()) {
           expect(item.info).to.deep.equal(info);
         } else {
           expect(item.info).to.not.deep.equal(info);
@@ -261,7 +256,7 @@ describe("Table - normal", function() {
     }
   });
 
-  it("incr", async function() {
+  it('incr', async function() {
     {
       const ret = await table
         .incr({ score: 5 })
@@ -281,7 +276,7 @@ describe("Table - normal", function() {
     }
   });
 
-  it("deleteOne", async function() {
+  it('deleteOne', async function() {
     {
       const ret = await table
         .deleteOne()
@@ -296,7 +291,7 @@ describe("Table - normal", function() {
     }
   });
 
-  it("delete", async function() {
+  it('delete', async function() {
     {
       const ret = await table.delete().exec();
       utils.debug(ret);
@@ -308,14 +303,14 @@ describe("Table - normal", function() {
     }
   });
 
-  it("insert undeifned value", async function() {
+  it('insert undeifned value', async function() {
     {
       const ret = await table.insert({
         blog_id: 2001,
         user_id: 3,
         created_at: undefined,
         info: undefined,
-        score: undefined
+        score: undefined,
       });
       utils.debug(ret);
       expect(ret.length).to.equal(1);
@@ -329,7 +324,7 @@ describe("Table - normal", function() {
       expect(ret).to.include({
         blog_id: 2001,
         user_id: 3,
-        score: 0
+        score: 0,
       });
       expect(ret.info).to.deep.equal(null);
     }

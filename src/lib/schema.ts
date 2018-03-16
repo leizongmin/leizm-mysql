@@ -4,7 +4,7 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import * as assert from "assert";
+import * as assert from 'assert';
 
 /**
  * 获取默认的 field 配置信息
@@ -19,11 +19,11 @@ function getDefaultFieldInfo(): Record<string, any> {
  */
 function getFieldInfoByType(type: string): Record<string, any> {
   switch (type.toLowerCase()) {
-    case "json":
+    case 'json':
       return { input: jsonInputFormatter, output: jsonOutputFormatter };
-    case "bool":
+    case 'bool':
       return { input: boolInputFormatter, output: boolOutputFormatter };
-    case "date":
+    case 'date':
       return { encode: dateInputEncoder, decode: dateOutputDecoder };
     default:
       throw new TypeError(`not support type "${type}"`);
@@ -41,20 +41,16 @@ function jsonOutputFormatter(v: any): any {
   if (v === undefined || v === null) {
     return v;
   }
-  if (typeof v !== "string") {
-    throw new TypeError(
-      `jsonOutputFormatter: invalid input type: ${JSON.stringify(v)}`
-    );
+  if (typeof v !== 'string') {
+    throw new TypeError(`jsonOutputFormatter: invalid input type: ${JSON.stringify(v)}`);
   }
-  if (v === "") {
+  if (v === '') {
     return {};
   }
   try {
     return JSON.parse(v);
   } catch (err) {
-    throw new TypeError(
-      `jsonOutputFormatter: fail to parse JSON: ${err.message}`
-    );
+    throw new TypeError(`jsonOutputFormatter: fail to parse JSON: ${err.message}`);
   }
 }
 
@@ -63,7 +59,7 @@ function boolInputFormatter(v: any): number {
     return 0;
   }
   v = String(v).toLowerCase();
-  if (v === "" || v === "no" || v === "off" || v === "false" || v === "0") {
+  if (v === '' || v === 'no' || v === 'off' || v === 'false' || v === '0') {
     return 0;
   }
   return 1;
@@ -90,7 +86,7 @@ export interface SchemaOptions {
 }
 
 export interface SchemaFields {
-  [key: string]: boolean | "json" | "date" | "bool" | SchemaField;
+  [key: string]: boolean | 'json' | 'date' | 'bool' | SchemaField;
 }
 
 export interface SchemaField {
@@ -129,7 +125,7 @@ export class Schema {
   constructor(options: SchemaOptions) {
     assert.ok(options, `missing options`);
     assert.ok(options.fields, `must provide fields`);
-    assert.ok(typeof options.fields === "object", `fields must be an object`);
+    assert.ok(typeof options.fields === 'object', `fields must be an object`);
 
     this._fields = {};
     for (const name in options.fields) {
@@ -138,27 +134,15 @@ export class Schema {
       if (type === true) {
         this._fields[name] = getDefaultFieldInfo();
         continue;
-      } else if (typeof type === "string") {
+      } else if (typeof type === 'string') {
         this._fields[name] = getFieldInfoByType(type);
         continue;
       } else {
         const info = options.fields[name] as SchemaField;
-        assert.ok(
-          info.input,
-          `field "${name}" must provide an input formatter`
-        );
-        assert.ok(
-          typeof info.input === "function",
-          `input formatter for field "${name}" must be a function`
-        );
-        assert.ok(
-          info.output,
-          `field "${name}" must provide a output formatter`
-        );
-        assert.ok(
-          typeof info.output === "function",
-          `output formatter for field "${name}" must be a function`
-        );
+        assert.ok(info.input, `field "${name}" must provide an input formatter`);
+        assert.ok(typeof info.input === 'function', `input formatter for field "${name}" must be a function`);
+        assert.ok(info.output, `field "${name}" must provide a output formatter`);
+        assert.ok(typeof info.output === 'function', `output formatter for field "${name}" must be a function`);
         this._fields[name] = { input: info.input, output: info.output };
       }
     }
@@ -173,7 +157,7 @@ export class Schema {
     for (const name in data) {
       const field = this._fields[name];
       // 自动去掉不存在的字段和值为 undefined 的字段
-      if (field && typeof data[name] !== "undefined") {
+      if (field && typeof data[name] !== 'undefined') {
         const fieldInfo = field as SchemaField;
         if (fieldInfo.input) {
           ret[name] = fieldInfo.input(data[name]);
@@ -189,9 +173,7 @@ export class Schema {
    * 格式化输入数据数组
    * @param list 输入的键值对数据数组
    */
-  public formatInputList(
-    list: Array<Record<string, any>>
-  ): Array<Record<string, any>> {
+  public formatInputList(list: Array<Record<string, any>>): Array<Record<string, any>> {
     return list.map(item => this.formatInput(item));
   }
 
@@ -218,9 +200,7 @@ export class Schema {
    * 格式化输出数据数组
    * @param list 输入的键值对数据数组
    */
-  public formatOutputList(
-    list: Array<Record<string, any>>
-  ): Array<Record<string, any>> {
+  public formatOutputList(list: Array<Record<string, any>>): Array<Record<string, any>> {
     return list.map(item => this.formatOutput(item));
   }
 

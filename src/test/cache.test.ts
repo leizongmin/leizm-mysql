@@ -4,23 +4,23 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import { expect } from "chai";
-import * as mysql from "../lib";
-import * as utils from "./utils";
+import { expect } from 'chai';
+import * as mysql from '../lib';
+import * as utils from './utils';
 
-describe("Cache", function() {
-  it("cache.saveList()", async function() {
+describe('Cache', function() {
+  it('cache.saveList()', async function() {
     const cache = new mysql.Cache(utils.getCacheConfig());
     {
       const ret = await cache.saveList([
         {
-          key: "aaaaa",
-          data: "HaHa"
+          key: 'aaaaa',
+          data: 'HaHa',
         },
         {
-          key: "bb",
-          data: "CCCCCCCCC"
-        }
+          key: 'bb',
+          data: 'CCCCCCCCC',
+        },
       ]);
       utils.debug(ret);
 
@@ -39,24 +39,24 @@ describe("Cache", function() {
     await cache.close();
   });
 
-  it("cache.saveItem()", async function() {
+  it('cache.saveItem()', async function() {
     const cache = new mysql.Cache(utils.getCacheConfig());
     const list = [
       {
-        key: "aaaaa",
-        data: "HaHa"
+        key: 'aaaaa',
+        data: 'HaHa',
       },
       {
-        key: "bb",
-        data: "CCCCCCCCC"
-      }
+        key: 'bb',
+        data: 'CCCCCCCCC',
+      },
     ];
     const ret: any[] = [];
     for (const item of list) {
       ret.push(
         await cache.saveItem({
-          key: "aaaaa",
-          data: "HaHa"
+          key: 'aaaaa',
+          data: 'HaHa',
         })
       );
     }
@@ -74,48 +74,48 @@ describe("Cache", function() {
     await cache.close();
   });
 
-  it("cache.getList() & cache.removeList() & cache.removeItem()", async function() {
+  it('cache.getList() & cache.removeList() & cache.removeItem()', async function() {
     const cache = new mysql.Cache(utils.getCacheConfig());
     {
       const ret = await cache.saveList([
         {
-          key: "test1",
-          data: "data1"
+          key: 'test1',
+          data: 'data1',
         },
         {
-          key: "test2",
-          data: "data2"
-        }
+          key: 'test2',
+          data: 'data2',
+        },
       ]);
       utils.debug(ret);
     }
     {
-      const ret = await cache.getList(["test0", "test1", "test2", "test3"]);
+      const ret = await cache.getList(['test0', 'test1', 'test2', 'test3']);
       utils.debug(ret);
-      expect(ret).to.deep.equal([null, "data1", "data2", null]);
+      expect(ret).to.deep.equal([null, 'data1', 'data2', null]);
     }
     {
-      const ret = await cache.removeList(["test0", "test1"]);
-      utils.debug(ret);
-    }
-    {
-      const ret = await cache.getList(["test0", "test1", "test2", "test3"]);
-      utils.debug(ret);
-      expect(ret).to.deep.equal([null, null, "data2", null]);
-    }
-    {
-      const ret = await cache.removeItem("test2");
+      const ret = await cache.removeList(['test0', 'test1']);
       utils.debug(ret);
     }
     {
-      const ret = await cache.getList(["test0", "test1", "test2", "test3"]);
+      const ret = await cache.getList(['test0', 'test1', 'test2', 'test3']);
+      utils.debug(ret);
+      expect(ret).to.deep.equal([null, null, 'data2', null]);
+    }
+    {
+      const ret = await cache.removeItem('test2');
+      utils.debug(ret);
+    }
+    {
+      const ret = await cache.getList(['test0', 'test1', 'test2', 'test3']);
       utils.debug(ret);
       expect(ret).to.deep.equal([null, null, null, null]);
     }
     await cache.close();
   });
 
-  it("empty", async function() {
+  it('empty', async function() {
     const cache = new mysql.Cache(utils.getCacheConfig());
     {
       const ret = await cache.saveList([]);

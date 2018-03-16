@@ -4,35 +4,35 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import { expect } from "chai";
-import * as mysql from "../lib";
-import * as utils from "./utils";
+import { expect } from 'chai';
+import * as mysql from '../lib';
+import * as utils from './utils';
 
-describe("Table - get|update|delete by unique and cache", function() {
-  const prefix = utils.randomString(10) + ":";
+describe('Table - get|update|delete by unique and cache', function() {
+  const prefix = utils.randomString(10) + ':';
   const cache = new mysql.Cache(utils.getCacheConfig({ prefix }));
   const connection = new mysql.Connection({
-    connections: [utils.getConnectionConfig()]
+    connections: [utils.getConnectionConfig()],
   });
   const User = new mysql.Table({
     cache,
     connection,
-    table: "users2",
-    primary: "id",
-    uniques: ["phone", ["first_name", "last_name"]],
+    table: 'users2',
+    primary: 'id',
+    uniques: ['phone', ['first_name', 'last_name']],
     autoIncrement: true,
     fields: {
       id: true,
       phone: true,
       first_name: true,
       last_name: true,
-      info: "json"
-    }
+      info: 'json',
+    },
   });
 
   beforeAll(async function() {
-    const sql = await utils.readTestFile("users2.sql");
-    await connection.query("DROP TABLE IF EXISTS `users2`");
+    const sql = await utils.readTestFile('users2.sql');
+    await connection.query('DROP TABLE IF EXISTS `users2`');
     await connection.query(sql);
   });
 
@@ -41,171 +41,171 @@ describe("Table - get|update|delete by unique and cache", function() {
     await cache.close();
   });
 
-  it("insert initial data", async function() {
+  it('insert initial data', async function() {
     const ret = await User.insert([
       {
-        phone: "1230001",
-        first_name: "Zhang",
-        last_name: "San",
-        info: { ChineseName: "张🍎三" }
+        phone: '1230001',
+        first_name: 'Zhang',
+        last_name: 'San',
+        info: { ChineseName: '张🍎三' },
       },
       {
-        phone: "1230002",
-        first_name: "Li",
-        last_name: "Si",
-        info: { ChineseName: "😄李四" }
+        phone: '1230002',
+        first_name: 'Li',
+        last_name: 'Si',
+        info: { ChineseName: '😄李四' },
       },
       {
-        phone: "1230003",
-        first_name: "Wang",
-        last_name: "Wu",
-        info: { ChineseName: "王🍌五" }
+        phone: '1230003',
+        first_name: 'Wang',
+        last_name: 'Wu',
+        info: { ChineseName: '王🍌五' },
       },
       {
-        phone: "",
-        first_name: "zhao",
-        last_name: "Liu",
-        info: { ChineseName: "赵✈️六" }
-      }
+        phone: '',
+        first_name: 'zhao',
+        last_name: 'Liu',
+        info: { ChineseName: '赵✈️六' },
+      },
     ]);
     utils.debug(ret);
     expect(ret.length).to.equal(4);
   });
 
-  it("getByUnique", async function() {
+  it('getByUnique', async function() {
     const data = {
       id: 2,
-      phone: "1230002",
-      first_name: "Li",
-      last_name: "Si",
-      info: { ChineseName: "李四" }
+      phone: '1230002',
+      first_name: 'Li',
+      last_name: 'Si',
+      info: { ChineseName: '李四' },
     };
     {
       const ret = await User.getByPrimary({
-        id: 2
+        id: 2,
       });
       utils.debug(ret);
       expect(ret).to.deep.equal(data);
     }
     {
       const ret = await User.getByUnique({
-        phone: "1230002"
+        phone: '1230002',
       });
       utils.debug(ret);
       expect(ret).to.deep.equal(data);
     }
     {
       const ret = await User.getByUnique({
-        first_name: "Li",
-        last_name: "Si"
+        first_name: 'Li',
+        last_name: 'Si',
       });
       utils.debug(ret);
       expect(ret).to.deep.equal(data);
     }
   });
 
-  it("updateByUinque", async function() {
+  it('updateByUinque', async function() {
     {
       const ret = await User.updateByUnique(
         {
-          phone: "1230003"
+          phone: '1230003',
         },
         {
-          info: "user info changed"
+          info: 'user info changed',
         }
       );
       utils.debug(ret);
       expect(ret).to.deep.equal({
         id: 3,
-        phone: "1230003",
-        first_name: "Wang",
-        last_name: "Wu",
-        info: "user info changed"
+        phone: '1230003',
+        first_name: 'Wang',
+        last_name: 'Wu',
+        info: 'user info changed',
       });
     }
     {
       const ret = await User.getByUnique({
-        phone: "1230003"
+        phone: '1230003',
       });
       utils.debug(ret);
       expect(ret).to.deep.equal({
         id: 3,
-        phone: "1230003",
-        first_name: "Wang",
-        last_name: "Wu",
-        info: "user info changed"
+        phone: '1230003',
+        first_name: 'Wang',
+        last_name: 'Wu',
+        info: 'user info changed',
       });
     }
   });
 
-  it("updateByUinque2", async function() {
+  it('updateByUinque2', async function() {
     {
       const ret = await User.updateByUnique(
         {
-          first_name: "Zhao",
-          last_name: "Liu"
+          first_name: 'Zhao',
+          last_name: 'Liu',
         },
         {
-          info: "I am Zhao Liu"
+          info: 'I am Zhao Liu',
         }
       );
       utils.debug(ret);
       expect(ret).to.deep.equal({
         id: 4,
-        phone: "",
-        first_name: "zhao",
-        last_name: "Liu",
-        info: "I am Zhao Liu"
+        phone: '',
+        first_name: 'zhao',
+        last_name: 'Liu',
+        info: 'I am Zhao Liu',
       });
     }
     {
       const ret = await User.getByUnique({
-        first_name: "Zhao",
-        last_name: "Liu"
+        first_name: 'Zhao',
+        last_name: 'Liu',
       });
       utils.debug(ret);
       expect(ret).to.deep.equal({
         id: 4,
-        phone: "",
-        first_name: "zhao",
-        last_name: "Liu",
-        info: "I am Zhao Liu"
+        phone: '',
+        first_name: 'zhao',
+        last_name: 'Liu',
+        info: 'I am Zhao Liu',
       });
     }
   });
 
-  it("deleteByUnique", async function() {
+  it('deleteByUnique', async function() {
     {
       const ret = await User.deleteByUnique({
-        phone: ""
+        phone: '',
       });
       utils.debug(ret);
       expect(ret).to.deep.equal({
         id: 4,
-        phone: "",
-        first_name: "zhao",
-        last_name: "Liu",
-        info: "I am Zhao Liu"
+        phone: '',
+        first_name: 'zhao',
+        last_name: 'Liu',
+        info: 'I am Zhao Liu',
       });
     }
     {
       const ret = await User.getByUnique({
-        phone: ""
+        phone: '',
       });
       utils.debug(ret);
       expect(ret).to.be.undefined;
     }
     {
       const ret = await User.getByUnique({
-        first_name: "zhao",
-        last_name: "Liu"
+        first_name: 'zhao',
+        last_name: 'Liu',
       });
       utils.debug(ret);
       expect(ret).to.be.undefined;
     }
     {
       const ret = await User.getByPrimary({
-        id: 4
+        id: 4,
       });
       utils.debug(ret);
       expect(ret).to.be.undefined;
@@ -217,32 +217,32 @@ describe("Table - get|update|delete by unique and cache", function() {
     }
   });
 
-  it("removeAllCache", async function() {
+  it('removeAllCache', async function() {
     // 先创建缓存
     {
       const ret = await User.getByPrimary({ id: 1 });
       utils.debug(ret);
-      expect(ret).to.have.property("id", 1);
+      expect(ret).to.have.property('id', 1);
     }
     {
       const ret = await User.getByPrimary({ id: 2 });
       utils.debug(ret);
-      expect(ret).to.have.property("id", 2);
+      expect(ret).to.have.property('id', 2);
     }
     {
       const ret = await User.getByPrimary({ id: 3 });
       utils.debug(ret);
-      expect(ret).to.have.property("id", 3);
+      expect(ret).to.have.property('id', 3);
     }
     // 使用别的方法修改内容
     {
-      const ret = await User.update({ info: "no cache" }).exec();
+      const ret = await User.update({ info: 'no cache' }).exec();
       utils.debug(ret);
-      expect(ret).to.have.property("affectedRows", 3);
+      expect(ret).to.have.property('affectedRows', 3);
     }
     // 删除缓存
     {
-      const ret = await User.removeAllCache("1");
+      const ret = await User.removeAllCache('1');
       utils.debug(ret);
       expect(ret).to.be.lengthOf(3);
     }
@@ -252,7 +252,7 @@ describe("Table - get|update|delete by unique and cache", function() {
       utils.debug(ret);
       expect(ret).to.include({
         id: 1,
-        info: "no cache"
+        info: 'no cache',
       });
     }
     {
@@ -260,7 +260,7 @@ describe("Table - get|update|delete by unique and cache", function() {
       utils.debug(ret);
       expect(ret).to.include({
         id: 2,
-        info: "no cache"
+        info: 'no cache',
       });
     }
     {
@@ -268,7 +268,7 @@ describe("Table - get|update|delete by unique and cache", function() {
       utils.debug(ret);
       expect(ret).to.include({
         id: 3,
-        info: "no cache"
+        info: 'no cache',
       });
     }
   });

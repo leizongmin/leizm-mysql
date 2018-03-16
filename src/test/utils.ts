@@ -4,28 +4,26 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import * as fs from "fs";
-import * as path from "path";
-import * as mysql from "../lib";
-import * as utils from "lei-utils";
-import * as createDebug from "debug";
+import * as fs from 'fs';
+import * as path from 'path';
+import * as mysql from '../lib';
+import * as utils from 'lei-utils';
+import * as createDebug from 'debug';
 
-export const debug = createDebug("@leizm/mysql:test");
+export const debug = createDebug('@leizm/mysql:test');
 
 export const randomString = utils.randomString;
 
-export function getConnectionConfig(
-  config?: mysql.PoolConfig
-): mysql.PoolConfig {
+export function getConnectionConfig(config?: mysql.PoolConfig): mysql.PoolConfig {
   return Object.assign(
     {
-      host: "127.0.0.1",
+      host: '127.0.0.1',
       port: 3306,
-      user: "root",
-      password: "",
-      database: "test",
+      user: 'root',
+      password: '',
+      database: 'test',
       connectionLimit: 2,
-      charset: "utf8mb4"
+      charset: 'utf8mb4',
     },
     config || {}
   );
@@ -35,12 +33,12 @@ export function getCacheConfig(config?: any): mysql.ManagerOptions {
   return Object.assign<any, mysql.ManagerOptions>(
     {
       redis: {
-        host: "127.0.0.1",
+        host: '127.0.0.1',
         port: 6379,
-        db: 15
+        db: 15,
       },
-      prefix: "TEST:",
-      ttl: 30
+      prefix: 'TEST:',
+      ttl: 30,
     },
     config || {}
   );
@@ -59,7 +57,7 @@ export function readFile(file: string): Promise<Buffer> {
 }
 
 export async function readTestFile(file: string) {
-  const data = await readFile(path.resolve(__dirname, "../../test", file));
+  const data = await readFile(path.resolve(__dirname, '../../test', file));
   return data.toString();
 }
 
