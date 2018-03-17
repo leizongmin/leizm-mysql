@@ -10,7 +10,7 @@ import * as mysql from '../lib';
 import * as utils from 'lei-utils';
 import * as createDebug from 'debug';
 
-export const debug = createDebug('@leizm/mysql:test');
+export const debug = createDebug('t');
 
 export const randomString = utils.randomString;
 
@@ -22,7 +22,7 @@ export function getConnectionConfig(config?: mysql.PoolConfig): mysql.PoolConfig
       user: 'root',
       password: '',
       database: 'test',
-      connectionLimit: 2,
+      connectionLimit: 1,
       charset: 'utf8mb4',
     },
     config || {}
