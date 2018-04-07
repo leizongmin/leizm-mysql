@@ -4,13 +4,13 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import * as assert from 'assert';
-import * as events from 'events';
-import * as cache from './cache';
-import * as connection from './connection';
-import * as table from './table';
-import * as utils from './utils';
-import { Callback } from './define';
+import * as assert from "assert";
+import * as events from "events";
+import * as cache from "./cache";
+import * as connection from "./connection";
+import * as table from "./table";
+import * as utils from "./utils";
+import { Callback } from "./define";
 
 export interface ManagerOptions extends cache.CacheOptions, connection.ConnectionOptions {}
 
@@ -37,7 +37,7 @@ export class Manager extends events.EventEmitter {
    * @param options 选项
    */
   public registerTable(options: table.TableBaseOptions) {
-    assert.equal(typeof options.table, 'string', `table name must be a string`);
+    assert.equal(typeof options.table, "string", `table name must be a string`);
     assert.ok(options.table, `table name cannot be empty`);
     assert.ok(options, `please provide options`);
     const m = new table.Table(
@@ -46,8 +46,8 @@ export class Manager extends events.EventEmitter {
           connection: this.connection,
           cache: this.cache,
         },
-        options
-      )
+        options,
+      ),
     );
     this._tables.set(options.table, m);
   }

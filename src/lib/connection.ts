@@ -4,12 +4,12 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import * as assert from 'assert';
-import * as events from 'events';
-import * as mysql from 'mysql';
-import * as utils from './utils';
-import { Callback } from './define';
-import { resolve } from 'path';
+import * as assert from "assert";
+import * as events from "events";
+import * as mysql from "mysql";
+import * as utils from "./utils";
+import { Callback } from "./define";
+import { resolve } from "path";
 
 export type MysqlPool = mysql.Pool | mysql.PoolCluster;
 
@@ -72,13 +72,13 @@ function wrapConnection(connection: any): WrappedConnection {
   return new Proxy(connection, {
     get(target, name) {
       switch (name) {
-        case 'query':
-        case 'beginTransaction':
-        case 'commit':
-        case 'rollback':
+        case "query":
+        case "beginTransaction":
+        case "commit":
+        case "rollback":
           return (...args: any[]) => {
             const cb = args[args.length - 1];
-            if (typeof cb === 'function') return target[name](...args);
+            if (typeof cb === "function") return target[name](...args);
             return new Promise((resolve, reject) => {
               target[name](...args, (err: Error, ret: any) => {
                 if (err) {
@@ -126,7 +126,7 @@ export interface QueryEventData {
   name: string;
 }
 
-export type ConnectionEvent = 'error' | 'connection' | 'enqueue' | 'query';
+export type ConnectionEvent = "error" | "connection" | "enqueue" | "query";
 
 export class Connection extends events.EventEmitter {
   private _options: ConnectionOptions;
@@ -149,43 +149,43 @@ export class Connection extends events.EventEmitter {
     assert.ok(options.connections.length >= 1, `connections must includes at least one item`);
 
     this._options = Object.assign<any, ConnectionOptions>({}, options);
-    if (!('stripEmoji' in this._options)) {
+    if (!("stripEmoji" in this._options)) {
       this._options.stripEmoji = true;
     }
 
     this._poolCluster = mysql.createPoolCluster();
-    this._poolCluster.add('MASTER', options.connections[0]);
+    this._poolCluster.add("MASTER", options.connections[0]);
     options.connections.slice(1).forEach((config, index) => {
       this._poolCluster.add(`SLAVE${index}`, config);
     });
-    this._poolMaster = this._poolCluster.of('MASTER');
-    this._poolSlave = this._poolCluster.of('SLAVE*');
+    this._poolMaster = this._poolCluster.of("MASTER");
+    this._poolSlave = this._poolCluster.of("SLAVE*");
 
-    this._poolCluster.on('error', err => this.emit('error', err));
-    this._poolCluster.on('connection', connection => this.emit('connection', connection));
-    this._poolCluster.on('enqueue', () => this.emit('enqueue'));
+    this._poolCluster.on("error", err => this.emit("error", err));
+    this._poolCluster.on("connection", connection => this.emit("connection", connection));
+    this._poolCluster.on("enqueue", () => this.emit("enqueue"));
   }
 
-  public on(event: 'error', callback: (err: Error) => void): this;
-  public on(event: 'connection', callback: (conn: Connection) => void): this;
-  public on(event: 'enqueue', callback: () => void): this;
-  public on(event: 'query', callback: (data: QueryEventData) => void): this;
+  public on(event: "error", callback: (err: Error) => void): this;
+  public on(event: "connection", callback: (conn: Connection) => void): this;
+  public on(event: "enqueue", callback: () => void): this;
+  public on(event: "query", callback: (data: QueryEventData) => void): this;
   public on(event: ConnectionEvent, callback: (...args: any[]) => void): this {
     return this._on(event, callback);
   }
 
-  public once(event: 'error', callback: (err: Error) => void): this;
-  public once(event: 'connection', callback: (conn: Connection) => void): this;
-  public once(event: 'enqueue', callback: () => void): this;
-  public once(event: 'query', callback: (data: QueryEventData) => void): this;
+  public once(event: "error", callback: (err: Error) => void): this;
+  public once(event: "connection", callback: (conn: Connection) => void): this;
+  public once(event: "enqueue", callback: () => void): this;
+  public once(event: "query", callback: (data: QueryEventData) => void): this;
   public once(event: ConnectionEvent, callback: (...args: any[]) => void): this {
     return this._once(event, callback);
   }
 
-  public emit(event: 'error', err: Error): boolean;
-  public emit(event: 'connection', conn: Connection): boolean;
-  public emit(event: 'enqueue'): boolean;
-  public emit(event: 'query', data: QueryEventData): boolean;
+  public emit(event: "error", err: Error): boolean;
+  public emit(event: "connection", conn: Connection): boolean;
+  public emit(event: "enqueue"): boolean;
+  public emit(event: "query", data: QueryEventData): boolean;
   public emit(event: ConnectionEvent, ...data: any[]): boolean {
     return this._emit(event, ...data);
   }
@@ -304,13 +304,13 @@ export class Connection extends events.EventEmitter {
    */
   private _query(pool: MysqlPool, sql: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      utils.connectionDebug('query sql: %s', sql);
+      utils.connectionDebug("query sql: %s", sql);
       pool.getConnection((err, connection) => {
         if (err) {
           return reject(err);
         }
         const cc = connection.config || {};
-        this.emit('query', { sql, connection, name: `${cc.host}:${cc.port}` });
+        this.emit("query", { sql, connection, name: `${cc.host}:${cc.port}` });
         if (this._options.stripEmoji) {
           sql = utils.stripEmoji(sql);
         }

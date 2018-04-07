@@ -4,13 +4,13 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import * as assert from 'assert';
-import * as utils from './utils';
-import * as connection from './connection';
-import * as cache from './cache';
-import * as schema from './schema';
-import * as query from './query';
-import { Callback } from './define';
+import * as assert from "assert";
+import * as utils from "./utils";
+import * as connection from "./connection";
+import * as cache from "./cache";
+import * as schema from "./schema";
+import * as query from "./query";
+import { Callback } from "./define";
 
 export type FieldName = string | string[];
 
@@ -90,7 +90,7 @@ export class Table {
     this.cache = options.cache;
 
     assert.ok(options.table, `must provide table name`);
-    assert.ok(typeof options.table === 'string', `table name must be a string`);
+    assert.ok(typeof options.table === "string", `table name must be a string`);
     this.tableName = options.table;
 
     const importantFields = new Set<string>();
@@ -98,12 +98,12 @@ export class Table {
     // 主键
     if (options.primary) {
       assert.ok(
-        typeof options.primary === 'string' || Array.isArray(options.primary),
-        `primary must be a string or array`
+        typeof options.primary === "string" || Array.isArray(options.primary),
+        `primary must be a string or array`,
       );
       if (Array.isArray(options.primary)) {
         options.primary.forEach(name => {
-          assert.ok(typeof name === 'string', `every item of primary must be a string`);
+          assert.ok(typeof name === "string", `every item of primary must be a string`);
         });
         // 包装 key 是按顺序排列的
         this.primaryKey = options.primary.slice().sort();
@@ -126,7 +126,7 @@ export class Table {
       assert.ok(Array.isArray(options.uniques), `uniques must be an array`);
       assert.ok(options.uniques.length > 0, `uniques must have less than 1 item`);
       this.uniqueKeyList = options.uniques.map(item => {
-        assert.ok(typeof item === 'string' || Array.isArray(item));
+        assert.ok(typeof item === "string" || Array.isArray(item));
         if (Array.isArray(item)) {
           return item.sort();
         } else {
@@ -158,8 +158,8 @@ export class Table {
         }
         return `${name}:${data[name]}`;
       })
-      .join(':');
-    return isEveryKeyExists ? `${this.tableName}:r:${key}` : '';
+      .join(":");
+    return isEveryKeyExists ? `${this.tableName}:r:${key}` : "";
   }
 
   /**
@@ -172,7 +172,7 @@ export class Table {
     if (Array.isArray(this.uniqueKeyList)) {
       this.uniqueKeyList.forEach(fields => {
         if (utils.everyFieldExists(data, fields)) {
-          list.push(prefix + fields.map(f => `${f}:${data[f]}`).join(':'));
+          list.push(prefix + fields.map(f => `${f}:${data[f]}`).join(":"));
         }
       });
     }
@@ -210,8 +210,8 @@ export class Table {
     }
     throw new Error(
       `missing unique key in this data row, must includes one of ${this.uniqueKeyList
-        .map(keys => keys.join(','))
-        .join(' | ')}`
+        .map(keys => keys.join(","))
+        .join(" | ")}`,
     );
   }
 
@@ -229,7 +229,7 @@ export class Table {
           }
           callback(err, ret);
         };
-        const method = options.master ? 'queryMaster' : 'query';
+        const method = options.master ? "queryMaster" : "query";
         this.connection[method](sql)
           .then(ret => {
             // 格式化输出
@@ -250,14 +250,14 @@ export class Table {
   /**
    * 查询数据
    */
-  public find(options: Pick<TableQueryOptions, 'master'> = {}): query.QueryBuilder {
-    return this.query({ ...options, format: true }).select('*');
+  public find(options: Pick<TableQueryOptions, "master"> = {}): query.QueryBuilder {
+    return this.query({ ...options, format: true }).select("*");
   }
 
   /**
    * 查询一行数据
    */
-  public findOne(options: Pick<TableQueryOptions, 'master'> = {}): query.QueryBuilder {
+  public findOne(options: Pick<TableQueryOptions, "master"> = {}): query.QueryBuilder {
     return this.query({
       ...options,
       format: true,
@@ -268,14 +268,14 @@ export class Table {
         callback(null, ret[0]);
       },
     })
-      .select('*')
+      .select("*")
       .limit(1);
   }
 
   /**
    * 查询数量
    */
-  public count(options: Pick<TableQueryOptions, 'master'> = {}): query.QueryBuilder {
+  public count(options: Pick<TableQueryOptions, "master"> = {}): query.QueryBuilder {
     return this.query({
       ...options,
       format: false,
@@ -286,7 +286,7 @@ export class Table {
         callback(null, ret[0].c);
       },
     })
-      .count('c')
+      .count("c")
       .limit(1);
   }
 
@@ -316,10 +316,10 @@ export class Table {
   public update(update: Record<string, any> | string, values?: Record<string, any> | any[]): query.QueryBuilder {
     assert.ok(
       arguments.length === 1 || arguments.length === 2,
-      `expected 1 or 2 argument for update() but got ${arguments.length}`
+      `expected 1 or 2 argument for update() but got ${arguments.length}`,
     );
     // 格式化输入
-    if (typeof update === 'string') {
+    if (typeof update === "string") {
       if (values) {
         return this.query({ format: false }).update(update, values);
       }
@@ -354,10 +354,10 @@ export class Table {
   public updateOne(update: Record<string, any> | string, values?: Record<string, any> | any[]): query.QueryBuilder {
     assert.ok(
       arguments.length === 1 || arguments.length === 2,
-      `expected 1 or 2 argument for updateOne() but got ${arguments.length}`
+      `expected 1 or 2 argument for updateOne() but got ${arguments.length}`,
     );
     // 格式化输入
-    if (typeof update === 'string') {
+    if (typeof update === "string") {
       if (values) {
         return this.query({ format: false })
           .update(update, values)
@@ -399,7 +399,7 @@ export class Table {
 
   public async insert(
     data: Record<string, any> | Array<Record<string, any>>,
-    refreshNewData: boolean = true
+    refreshNewData: boolean = true,
   ): Promise<Array<Record<string, any>>> {
     assert.equal(arguments.length, 1, `expected 1  argument for insert() but got ${arguments.length}`);
     const list: Array<Record<string, any>> = Array.isArray(data) ? data : [data];
@@ -407,7 +407,7 @@ export class Table {
     if (!this.primaryKeyAutoIncrement) {
       for (const item of list) {
         for (const key of this.primaryKey) {
-          if (typeof item[key] === 'undefined') {
+          if (typeof item[key] === "undefined") {
             throw new Error(`missing primary key "${key}"`);
           }
         }
@@ -442,7 +442,7 @@ export class Table {
     assert.equal(arguments.length, 1, `expected 1  argument for incr() but got ${arguments.length}`);
     const q = this.query({ format: false }).update();
     for (const name in data) {
-      q.set('?? = ?? + (?)', [name, name, data[name]]);
+      q.set("?? = ?? + (?)", [name, name, data[name]]);
     }
     return q;
   }
@@ -468,7 +468,7 @@ export class Table {
   public sql(sql: string, values?: Record<string, any> | any[], options?: TableQueryOptions): query.QueryBuilder {
     assert.ok(
       arguments.length === 1 || arguments.length === 2,
-      `expected 1 or 2 argument for sql() but got ${arguments.length}`
+      `expected 1 or 2 argument for sql() but got ${arguments.length}`,
     );
     options = options || {};
     if (values) {
@@ -483,7 +483,7 @@ export class Table {
    */
   public async getByPrimary(
     query: Record<string, any>,
-    options: Pick<TableQueryOptions, 'master'> = {}
+    options: Pick<TableQueryOptions, "master"> = {},
   ): Promise<Record<string, any>> {
     query = this.keepPrimaryFields(query);
     const key = this.getPrimaryCacheKey(query);
@@ -508,7 +508,7 @@ export class Table {
    */
   public async updateByPrimary(
     query: Record<string, any>,
-    update: Record<string, any>
+    update: Record<string, any>,
   ): Promise<Record<string, any> | null> {
     query = this.keepPrimaryFields(query);
     // 先查询出旧的数据
@@ -561,10 +561,10 @@ export class Table {
    */
   public async getByUnique(
     query: Record<string, any>,
-    options: Pick<TableQueryOptions, 'master'> = {}
+    options: Pick<TableQueryOptions, "master"> = {},
   ): Promise<Record<string, any>> {
     query = this.keepUniqueFields(query);
-    const key = this.getUniqueCacheKeys(query)[0] || '';
+    const key = this.getUniqueCacheKeys(query)[0] || "";
     // 先尝试从缓存中获取
     const str = await this.cache.getPointerItem(key);
     if (str) {
@@ -586,7 +586,7 @@ export class Table {
    */
   public async updateByUnique(
     query: Record<string, any>,
-    update: Record<string, any>
+    update: Record<string, any>,
   ): Promise<Record<string, any> | null> {
     query = this.keepUniqueFields(query);
     // 先查询出旧的数据
@@ -641,7 +641,7 @@ export class Table {
     if (this.importantFields.length > 0) {
       // 查询出旧的数据
       const q = this.find({ master: true }).fields(...this.importantFields);
-      if (typeof query === 'string') {
+      if (typeof query === "string") {
         q.where(query);
       } else {
         q.where(query);
@@ -694,7 +694,7 @@ export class Table {
    * 根据数据行获取其相关的缓存 Key
    */
   public getCacheKeysByDataRow(
-    data: Record<string, any>
+    data: Record<string, any>,
   ): {
     primaryKey: string;
     uniqueKeys: string[];

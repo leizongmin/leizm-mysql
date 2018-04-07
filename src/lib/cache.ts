@@ -4,11 +4,11 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import * as assert from 'assert';
-import * as events from 'events';
-import * as Redis from 'ioredis';
-import * as utils from './utils';
-import { Callback } from './define';
+import * as assert from "assert";
+import * as events from "events";
+import * as Redis from "ioredis";
+import * as utils from "./utils";
+import { Callback } from "./define";
 
 const GET_BY_POINTER_SCRIPT = `
 local k = redis.call("get", KEYS[1])
@@ -62,15 +62,15 @@ export class Cache extends events.EventEmitter {
     options = Object.assign<any, CacheOptions>({}, options);
 
     this._redis = new Redis(options.redis);
-    this._redis.on('error', (err: Error) => {
-      this.emit('error', err);
+    this._redis.on("error", (err: Error) => {
+      this.emit("error", err);
     });
 
     assert.ok(options.ttl, `missing ttl parameter`);
     assert.ok(options.ttl > 0, `parameter ttl must > 0`);
     this._ttl = Number(options.ttl);
 
-    this._prefix = options.prefix || '';
+    this._prefix = options.prefix || "";
   }
 
   /**

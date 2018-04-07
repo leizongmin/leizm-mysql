@@ -1,6 +1,6 @@
 // .prettierrc.js
 module.exports = {
   printWidth: 120,
-  singleQuote: true,
-  trailingComma: "es5"
+  trailingComma: "all",
+  parser: "typescript"
 };

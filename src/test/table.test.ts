@@ -4,11 +4,11 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import { expect } from 'chai';
-import * as mysql from '../lib';
-import * as utils from './utils';
+import { expect } from "chai";
+import * as mysql from "../lib";
+import * as utils from "./utils";
 
-const prefix = utils.randomString(10) + ':';
+const prefix = utils.randomString(10) + ":";
 const cache = new mysql.Cache(utils.getCacheConfig({ prefix }));
 const connection = new mysql.Connection({
   connections: [utils.getConnectionConfig()],
@@ -16,20 +16,20 @@ const connection = new mysql.Connection({
 const table = new mysql.Table({
   cache,
   connection,
-  table: 'user_blogs',
-  primary: ['blog_id', 'user_id'],
+  table: "user_blogs",
+  primary: ["blog_id", "user_id"],
   fields: {
     blog_id: true,
     user_id: true,
-    info: 'json',
-    created_at: 'date',
+    info: "json",
+    created_at: "date",
     score: true,
   },
 });
 
 beforeAll(async function() {
-  const sql = await utils.readTestFile('user_blogs.sql');
-  await connection.query('DROP TABLE IF EXISTS `user_blogs`');
+  const sql = await utils.readTestFile("user_blogs.sql");
+  await connection.query("DROP TABLE IF EXISTS `user_blogs`");
   await connection.query(sql);
 });
 
@@ -38,7 +38,7 @@ afterAll(async function() {
   await cache.close();
 });
 
-test('insert', async function() {
+test("insert", async function() {
   const data = {
     blog_id: 1,
     user_id: 1001,
@@ -70,7 +70,7 @@ test('insert', async function() {
         user_id: 1001,
         created_at: utils.newDate(),
         info: {
-          message: 'hello, world',
+          message: "hello, world",
         },
       },
       {
@@ -85,7 +85,7 @@ test('insert', async function() {
   }
 });
 
-test('find', async function() {
+test("find", async function() {
   {
     const list = await table
       .find()
@@ -97,7 +97,7 @@ test('find', async function() {
   {
     const list = await table
       .find()
-      .orderBy('`blog_id` DESC')
+      .orderBy("`blog_id` DESC")
       .exec();
     utils.debug(list);
     expect(list).to.have.lengthOf(3);
@@ -108,7 +108,7 @@ test('find', async function() {
   }
 });
 
-test('findOne', async function() {
+test("findOne", async function() {
   {
     const ret = await table
       .findOne()
@@ -119,7 +119,7 @@ test('findOne', async function() {
   }
 });
 
-test('count', async function() {
+test("count", async function() {
   {
     const count = await table.count().exec();
     utils.debug(count);
@@ -136,26 +136,26 @@ test('count', async function() {
   {
     const count = await table
       .count()
-      .where('`user_id`!=1001')
+      .where("`user_id`!=1001")
       .exec();
     utils.debug(count);
     expect(count).to.equal(1);
   }
 });
 
-test('sql', async function() {
+test("sql", async function() {
   {
-    const ret = await table.sql('SELECT COUNT(*) AS `count` FROM :$table').exec();
+    const ret = await table.sql("SELECT COUNT(*) AS `count` FROM :$table").exec();
     utils.debug(ret);
     expect(ret).to.deep.equal([{ count: 3 }]);
   }
   {
-    const ret = await table.sql('SHOW TABLES').exec();
+    const ret = await table.sql("SHOW TABLES").exec();
     utils.debug(ret);
   }
 });
 
-test('update #1', async function() {
+test("update #1", async function() {
   const data = {
     info: {
       mem: process.memoryUsage(),
@@ -188,7 +188,7 @@ test('update #1', async function() {
   }
 });
 
-test('update #2', async function() {
+test("update #2", async function() {
   const info = {
     pid: process.pid,
     uptime: process.uptime(),
@@ -199,7 +199,7 @@ test('update #2', async function() {
   };
   {
     const ret = await table
-      .update('`info`=?, `created_at`=?', [JSON.stringify(info), created_at])
+      .update("`info`=?, `created_at`=?", [JSON.stringify(info), created_at])
       .where(query)
       .exec();
     utils.debug(ret);
@@ -221,22 +221,22 @@ test('update #2', async function() {
   }
 });
 
-test('updateOne', async function() {
+test("updateOne", async function() {
   // 等待一段时间以使得  created_at 时间不一样
   await utils.sleep(1500);
   const info = {
-    message: 'from updateOne',
+    message: "from updateOne",
   };
   const created_at = utils.newDate();
   const user_id = 1001;
   {
     const ret = await table
-      .updateOne('`info`=:info, `created_at`=:created_at', {
+      .updateOne("`info`=:info, `created_at`=:created_at", {
         info: JSON.stringify(info),
         created_at,
       })
       .where({ user_id })
-      .orderBy('`id` ASC')
+      .orderBy("`id` ASC")
       .exec();
     utils.debug(ret);
     expect(ret.affectedRows).to.equal(1);
@@ -255,7 +255,7 @@ test('updateOne', async function() {
   }
 });
 
-test('incr', async function() {
+test("incr", async function() {
   {
     const ret = await table
       .incr({ score: 5 })
@@ -275,7 +275,7 @@ test('incr', async function() {
   }
 });
 
-test('deleteOne', async function() {
+test("deleteOne", async function() {
   {
     const ret = await table
       .deleteOne()
@@ -290,7 +290,7 @@ test('deleteOne', async function() {
   }
 });
 
-test('delete', async function() {
+test("delete", async function() {
   {
     const ret = await table.delete().exec();
     utils.debug(ret);
@@ -302,7 +302,7 @@ test('delete', async function() {
   }
 });
 
-test('insert undeifned value', async function() {
+test("insert undeifned value", async function() {
   {
     const ret = await table.insert({
       blog_id: 2001,
