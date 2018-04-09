@@ -14,6 +14,8 @@ import { Callback } from "./define";
 
 export type FieldName = string | string[];
 
+export type DataRow = Record<string, any>;
+
 export interface TableBaseOptions extends schema.SchemaOptions {
   /**
    * 表名
@@ -155,7 +157,7 @@ export class Table {
    * @param data 键值对数据
    * @param strict 是否严格检查每个键的数据都存在，如果为 true 且键不存在时抛出异常，否则返回 undefined
    */
-  public getPrimaryCacheKey(data: Record<string, any>, strict?: boolean): string {
+  public getPrimaryCacheKey(data: DataRow, strict?: boolean): string {
     assert.ok(this.primaryKey, `table "${this.tableName}" does not have primary key`);
     let isEveryKeyExists = true;
     const key = this.primaryKey
@@ -174,7 +176,7 @@ export class Table {
    * 从一行数据中获取唯一键缓存名称列表
    * @param data 键值对数据
    */
-  public getUniqueCacheKeys(data: Record<string, any>): string[] {
+  public getUniqueCacheKeys(data: DataRow): string[] {
     const list: string[] = [];
     const prefix = `${this.tableName}:u:`;
     if (Array.isArray(this.uniqueKeyList)) {
@@ -191,9 +193,9 @@ export class Table {
    * 从一行数据中保留主键的数据
    * @param data 键值对数据
    */
-  public keepPrimaryFields(data: Record<string, any>): Record<string, any> {
+  public keepPrimaryFields(data: DataRow): DataRow {
     assert.ok(this.primaryKey, `table "${this.tableName}" does not have primary key`);
-    const ret: Record<string, any> = {};
+    const ret: DataRow = {};
     for (const name of this.primaryKey) {
       assert.ok(name in data, `missing primary key "${name}" in this data row`);
       ret[name] = data[name];
@@ -205,11 +207,11 @@ export class Table {
    * 从一行数据中保留唯一键的数据，如果有多组唯一键则仅返回第一个匹配的唯一键
    * @param data 键值对数据
    */
-  public keepUniqueFields(data: Record<string, any>): Record<string, any> {
+  public keepUniqueFields(data: DataRow): DataRow {
     assert.ok(this.uniqueKeyList, `table "${this.tableName}" does not have unique key`);
     for (const fields of this.uniqueKeyList) {
       if (utils.everyFieldExists(data, fields)) {
-        const ret: Record<string, any> = {};
+        const ret: DataRow = {};
         for (const f of fields) {
           ret[f] = data[f];
         }
@@ -302,7 +304,7 @@ export class Table {
    * 更新数据
    * @param update 键值对数据
    */
-  public update(update: Record<string, any>): query.QueryBuilder;
+  public update(update: DataRow): query.QueryBuilder;
   /**
    * 更新数据
    * @param update SQL 语句
@@ -313,7 +315,7 @@ export class Table {
    * @param update SQL 模板语句
    * @param values 模板参数，如 { a: 123 }
    */
-  public update(update: string, values: Record<string, any>): query.QueryBuilder;
+  public update(update: string, values: DataRow): query.QueryBuilder;
   /**
    * 更新数据
    * @param update SQL 模板语句
@@ -321,7 +323,7 @@ export class Table {
    */
   public update(update: string, values: any[]): query.QueryBuilder;
 
-  public update(update: Record<string, any> | string, values?: Record<string, any> | any[]): query.QueryBuilder {
+  public update(update: DataRow | string, values?: DataRow | any[]): query.QueryBuilder {
     assert.ok(
       arguments.length === 1 || arguments.length === 2,
       `expected 1 or 2 argument for update() but got ${arguments.length}`,
@@ -340,7 +342,7 @@ export class Table {
    * 更新一行数据
    * @param update 键值对数据
    */
-  public updateOne(update: Record<string, any>): query.QueryBuilder;
+  public updateOne(update: DataRow): query.QueryBuilder;
   /**
    * 更新一行数据
    * @param update SQL 语句
@@ -351,7 +353,7 @@ export class Table {
    * @param update SQL 模板语句
    * @param values 模板参数，如 { a: 123 }
    */
-  public updateOne(update: string, values: Record<string, any>): query.QueryBuilder;
+  public updateOne(update: string, values: DataRow): query.QueryBuilder;
   /**
    * 更新一行数据
    * @param update SQL 模板语句
@@ -359,7 +361,7 @@ export class Table {
    */
   public updateOne(update: string, values: any[]): query.QueryBuilder;
 
-  public updateOne(update: Record<string, any> | string, values?: Record<string, any> | any[]): query.QueryBuilder {
+  public updateOne(update: DataRow | string, values?: DataRow | any[]): query.QueryBuilder {
     assert.ok(
       arguments.length === 1 || arguments.length === 2,
       `expected 1 or 2 argument for updateOne() but got ${arguments.length}`,
@@ -398,19 +400,16 @@ export class Table {
    * 插入数据
    * @param data 键值对数据
    */
-  public async insert(data: Record<string, any>, refreshNewData?: boolean): Promise<Array<Record<string, any>>>;
+  public async insert(data: DataRow, refreshNewData?: boolean): Promise<Array<DataRow>>;
   /**
    * 插入数据
    * @param data 键值对数据数组
    */
-  public async insert(data: Array<Record<string, any>>, refreshNewData?: boolean): Promise<Array<Record<string, any>>>;
+  public async insert(data: Array<DataRow>, refreshNewData?: boolean): Promise<Array<DataRow>>;
 
-  public async insert(
-    data: Record<string, any> | Array<Record<string, any>>,
-    refreshNewData: boolean = true,
-  ): Promise<Array<Record<string, any>>> {
+  public async insert(data: DataRow | Array<DataRow>, refreshNewData: boolean = true): Promise<Array<DataRow>> {
     assert.equal(arguments.length, 1, `expected 1  argument for insert() but got ${arguments.length}`);
-    const list: Array<Record<string, any>> = Array.isArray(data) ? data : [data];
+    const list: Array<DataRow> = Array.isArray(data) ? data : [data];
     // 检查是否包含主键（仅当主键不是自增时）
     if (!this.primaryKeyAutoIncrement) {
       for (const item of list) {
@@ -422,7 +421,7 @@ export class Table {
       }
     }
 
-    const retList: Array<Record<string, any>> = [];
+    const retList: Array<DataRow> = [];
     for (const item of list) {
       const ret = await this.query({ format: false })
         .insert(item)
@@ -446,7 +445,7 @@ export class Table {
    * 增加指定字段的值
    * @param data 键值对数据，如：{ count: 1 }
    */
-  public incr(data: Record<string, any>): query.QueryBuilder {
+  public incr(data: DataRow): query.QueryBuilder {
     assert.equal(arguments.length, 1, `expected 1  argument for incr() but got ${arguments.length}`);
     const q = this.query({ format: false }).update();
     for (const name in data) {
@@ -465,7 +464,7 @@ export class Table {
    * @param sql SQL 语句模板
    * @param values 模板参数，如 { a: 123 }
    */
-  public sql(sql: string, values: Record<string, any>, options?: TableQueryOptions): query.QueryBuilder;
+  public sql(sql: string, values: DataRow, options?: TableQueryOptions): query.QueryBuilder;
   /**
    * 执行 SQL 查询
    * @param sql SQL 语句模板
@@ -473,7 +472,7 @@ export class Table {
    */
   public sql(sql: string, values: any[], options?: TableQueryOptions): query.QueryBuilder;
 
-  public sql(sql: string, values?: Record<string, any> | any[], options?: TableQueryOptions): query.QueryBuilder {
+  public sql(sql: string, values?: DataRow | any[], options?: TableQueryOptions): query.QueryBuilder {
     assert.ok(
       arguments.length === 1 || arguments.length === 2,
       `expected 1 or 2 argument for sql() but got ${arguments.length}`,
@@ -489,10 +488,7 @@ export class Table {
    * 获取指定主键的数据，优先从缓存读取
    * @param query 键值对数据
    */
-  public async getByPrimary(
-    query: Record<string, any>,
-    options: Pick<TableQueryOptions, "master"> = {},
-  ): Promise<Record<string, any>> {
+  public async getByPrimary(query: DataRow, options: Pick<TableQueryOptions, "master"> = {}): Promise<DataRow> {
     query = this.keepPrimaryFields(query);
     const key = this.getPrimaryCacheKey(query);
     // 先尝试从缓存中获取
@@ -514,10 +510,7 @@ export class Table {
    * @param query 查询条件
    * @param update 更新数据
    */
-  public async updateByPrimary(
-    query: Record<string, any>,
-    update: Record<string, any>,
-  ): Promise<Record<string, any> | null> {
+  public async updateByPrimary(query: DataRow, update: DataRow): Promise<DataRow | null> {
     query = this.keepPrimaryFields(query);
     // 先查询出旧的数据
     const data = await this.findOne({ master: true })
@@ -546,7 +539,7 @@ export class Table {
    * 删除主键的数据，并删除缓存
    * @param query 查询条件
    */
-  public async deleteByPrimary(query: Record<string, any>): Promise<Record<string, any> | null> {
+  public async deleteByPrimary(query: DataRow): Promise<DataRow | null> {
     query = this.keepPrimaryFields(query);
     const data = await this.findOne({ master: true })
       .where(query)
@@ -567,10 +560,7 @@ export class Table {
    * 获取指定唯一键的数据，优先从缓存读取
    * @param query 键值对数据
    */
-  public async getByUnique(
-    query: Record<string, any>,
-    options: Pick<TableQueryOptions, "master"> = {},
-  ): Promise<Record<string, any>> {
+  public async getByUnique(query: DataRow, options: Pick<TableQueryOptions, "master"> = {}): Promise<DataRow> {
     query = this.keepUniqueFields(query);
     const key = this.getUniqueCacheKeys(query)[0] || "";
     // 先尝试从缓存中获取
@@ -592,10 +582,7 @@ export class Table {
    * @param query 查询条件
    * @param update 更新数据
    */
-  public async updateByUnique(
-    query: Record<string, any>,
-    update: Record<string, any>,
-  ): Promise<Record<string, any> | null> {
+  public async updateByUnique(query: DataRow, update: DataRow): Promise<DataRow | null> {
     query = this.keepUniqueFields(query);
     // 先查询出旧的数据
     const data = await this.findOne({ master: true })
@@ -624,7 +611,7 @@ export class Table {
    * 删除唯一键的数据，并删除缓存
    * @param query 查询条件
    */
-  public async deleteByUnique(query: Record<string, any>): Promise<Record<string, any> | null> {
+  public async deleteByUnique(query: DataRow): Promise<DataRow | null> {
     query = this.keepUniqueFields(query);
     const data = await this.findOne({ master: true })
       .where(query)
@@ -645,7 +632,7 @@ export class Table {
    * 删除符合指定查询条件的所有缓存
    * @param query 可以为键值对数据或者 SQL 查询语句
    */
-  public async removeAllCache(query: Record<string, any> | string): Promise<string[]> {
+  public async removeAllCache(query: DataRow | string): Promise<string[]> {
     if (this.importantFields.length > 0) {
       // 查询出旧的数据
       const q = this.find({ master: true }).fields(...this.importantFields);
@@ -671,7 +658,7 @@ export class Table {
   /**
    * 更新缓存，包括 primaryKey 和 uniqueKeys
    */
-  public async updateCacheByDataRow(data: Record<string, any>): Promise<string[]> {
+  public async updateCacheByDataRow(data: DataRow): Promise<string[]> {
     if (data) {
       const { primaryKey, uniqueKeys, allKeys } = this.getCacheKeysByDataRow(data);
       await this.cache.removeList(allKeys.slice());
@@ -689,7 +676,7 @@ export class Table {
   /**
    * 删除缓存，包括 primaryKey 和 uniqueKeys
    */
-  public async removeCacheByDataRow(data: Record<string, any>): Promise<string[]> {
+  public async removeCacheByDataRow(data: DataRow): Promise<string[]> {
     if (data) {
       const { allKeys } = this.getCacheKeysByDataRow(data);
       await this.cache.removeList(allKeys.slice());
@@ -702,7 +689,7 @@ export class Table {
    * 根据数据行获取其相关的缓存 Key
    */
   public getCacheKeysByDataRow(
-    data: Record<string, any>,
+    data: DataRow,
   ): {
     primaryKey: string;
     uniqueKeys: string[];
