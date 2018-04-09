@@ -43,6 +43,7 @@
   "scripts": {
     "compile": "rm -rf dist && tsc",
     "test": "jest",
+    "test-cov": "jest --coverage",
     "test-debug": "export DEBUG='@leizm/mysql:*,t' && jest",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "lint": "prettier --write 'src/**/*.ts'",

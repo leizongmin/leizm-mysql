@@ -37,7 +37,7 @@ export interface TableOptions extends TableBaseOptions {
   /**
    * Connection 实例
    */
-  connection: connection.Connection;
+  connection: connection.IConnectionBase;
   /**
    * Cache 实例
    */
@@ -61,7 +61,7 @@ export interface TableQueryOptions {
 
 export class Table {
   /** Connection 实例 */
-  public readonly connection: connection.Connection;
+  public readonly connection: connection.IConnectionBase;
   /** Cache 实例 */
   public readonly cache: cache.Cache;
   /** 表名 */
@@ -80,10 +80,10 @@ export class Table {
   /**
    * 创建 Table
    */
-  constructor(options: TableOptions) {
+  constructor(public readonly options: TableOptions) {
     assert.ok(options, `missing options`);
 
-    assert.ok(utils.isConnectionInstance(options.connection), `connection must be an Connection instance`);
+    assert.ok(utils.isConnectionBaseInstance(options.connection), `connection must be an ConnectionBase instance`);
     this.connection = options.connection;
 
     assert.ok(utils.isCacheInstance(options.cache), `cache must be an Cache instance`);
@@ -140,6 +140,14 @@ export class Table {
     this.importantFields = Array.from(importantFields).sort();
 
     this.schema = new schema.Schema(options);
+  }
+
+  /**
+   * 返回绑定指定连接的新实例
+   * @param connection
+   */
+  public bindConnection(c: connection.WrappedConnection) {
+    return new Table({ ...this.options, connection: connection.toConnectionBase(c) });
   }
 
   /**
@@ -547,7 +555,7 @@ export class Table {
       // 如果数据不存在则直接返回
       return null;
     }
-    const ret = await this.deleteOne()
+    await this.deleteOne()
       .where(query)
       .exec();
     // 删除缓存
@@ -625,7 +633,7 @@ export class Table {
       // 如果数据不存在则直接返回
       return null;
     }
-    const ret = await this.deleteOne()
+    await this.deleteOne()
       .where(query)
       .exec();
     // 删除缓存

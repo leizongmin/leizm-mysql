@@ -22,7 +22,7 @@ export function getConnectionConfig(config?: mysql.PoolConfig): mysql.PoolConfig
       user: "root",
       password: "",
       database: "test",
-      connectionLimit: 1,
+      connectionLimit: 2,
       charset: "utf8mb4",
     },
     config || {},

@@ -82,6 +82,14 @@ export function isConnectionInstance(conn: any): boolean {
 }
 
 /**
+ * 判断是否为 IConnectionBase 实例
+ * @param conn 任意对象
+ */
+export function isConnectionBaseInstance(conn: any): boolean {
+  return conn && typeof conn.query === "function" && typeof conn.queryMaster === "function";
+}
+
+/**
  * 判断是否为 Cache 实例
  * @param cache 任意对象
  */

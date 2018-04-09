@@ -8,8 +8,6 @@ import * as assert from "assert";
 import * as events from "events";
 import * as mysql from "mysql";
 import * as utils from "./utils";
-import { Callback } from "./define";
-import { resolve } from "path";
 
 export type MysqlPool = mysql.Pool | mysql.PoolCluster;
 
@@ -94,6 +92,24 @@ function wrapConnection(connection: any): WrappedConnection {
       }
     },
   });
+}
+
+/**
+ * 用于 table 的 connection 接口
+ */
+export interface IConnectionBase {
+  query(sql: string): Promise<any>;
+  queryMaster(sql: string): Promise<any>;
+}
+
+/**
+ * 封装原始 connection
+ */
+export function toConnectionBase(c: WrappedConnection): IConnectionBase {
+  function query(sql: string) {
+    return c.query(sql);
+  }
+  return { query, queryMaster: query };
 }
 
 export interface ConnectionOptions {

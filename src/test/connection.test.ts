@@ -92,7 +92,7 @@ test("query", async function() {
   }
   {
     try {
-      const ret = await conn.query("select * from xxxxxxxxxxxxxxxxx");
+      await conn.query("select * from xxxxxxxxxxxxxxxxx");
     } catch (err) {
       utils.debug(err);
       expect(err).to.instanceof(Error);
