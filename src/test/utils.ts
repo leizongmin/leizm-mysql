@@ -57,7 +57,7 @@ export function readFile(file: string): Promise<Buffer> {
 }
 
 export async function readTestFile(file: string) {
-  const data = await readFile(path.resolve(__dirname, "../../test", file));
+  const data = await readFile(path.resolve(__dirname, "../../test_data", file));
   return data.toString();
 }
 
