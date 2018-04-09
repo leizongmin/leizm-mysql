@@ -52,6 +52,7 @@ test("cache.saveItem()", async function() {
   ];
   const ret: any[] = [];
   for (const item of list) {
+    console.log(item);
     ret.push(
       await cache.saveItem({
         key: "aaaaa",

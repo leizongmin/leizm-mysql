@@ -8,7 +8,6 @@ import * as assert from "assert";
 import * as utils from "./utils";
 import { Callback } from "./define";
 import { Schema } from "./schema";
-import { resolve } from "dns";
 
 export interface QueryBuilderOptions {
   /**

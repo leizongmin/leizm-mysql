@@ -7,8 +7,6 @@
 import * as assert from "assert";
 import * as events from "events";
 import * as Redis from "ioredis";
-import * as utils from "./utils";
-import { Callback } from "./define";
 
 const GET_BY_POINTER_SCRIPT = `
 local k = redis.call("get", KEYS[1])

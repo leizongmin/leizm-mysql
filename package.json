@@ -1,6 +1,6 @@
 {
   "name": "@leizm/mysql",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "基于 Node.js/TypeScript 的 MySQL 连接管理器",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -48,7 +48,7 @@
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "lint": "prettier --write 'src/**/*.ts'",
     "docs": "typedoc --mode modules --out ./docs --theme minimal --readme none src/lib",
-    "prepublish": "npm run test"
+    "prepublish": "npm run test && npm run compile"
   },
   "jest": {
     "transform": {

@@ -94,7 +94,7 @@ test("transaction - rollback success", async function() {
     info: { age: 18 },
   });
   // console.log(user);
-  const [blog] = await UserBlog.bindConnection(c).insert({ blog_id: 1, user_id: user.id, score: 111 });
+  await UserBlog.bindConnection(c).insert({ blog_id: 1, user_id: user.id, score: 111 });
   // console.log(blog);
   await c.rollback();
   c.release();

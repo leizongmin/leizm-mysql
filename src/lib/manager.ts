@@ -9,8 +9,6 @@ import * as events from "events";
 import * as cache from "./cache";
 import * as connection from "./connection";
 import * as table from "./table";
-import * as utils from "./utils";
-import { Callback } from "./define";
 
 export interface ManagerOptions extends cache.CacheOptions, connection.ConnectionOptions {}
 

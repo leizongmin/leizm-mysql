@@ -6,8 +6,6 @@
 
 import * as createDebug from "debug";
 import * as mysql from "mysql";
-import * as utils from "lei-utils";
-import { Callback } from "./define";
 
 // TODO: 不知为何无法正确识别 d.ts 文件
 const emojiRegex = require("emoji-regex");
