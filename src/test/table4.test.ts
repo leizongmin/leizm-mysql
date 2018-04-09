@@ -8,12 +8,27 @@ import { expect } from "chai";
 import * as mysql from "../lib";
 import * as utils from "./utils";
 
+interface IUser {
+  id: number;
+  phone: string;
+  first_name: string;
+  last_name: string;
+  info: any;
+}
+interface IUserBlog {
+  blog_id: number;
+  user_id: number;
+  info: any;
+  created_at: Date;
+  score: number;
+}
+
 const prefix = utils.randomString(10) + ":";
 const cache = new mysql.Cache(utils.getCacheConfig({ prefix }));
 const connection = new mysql.Connection({
   connections: [utils.getConnectionConfig()],
 });
-const User = new mysql.Table({
+const User = new mysql.Table<IUser>({
   cache,
   connection,
   table: "users4",
@@ -28,7 +43,7 @@ const User = new mysql.Table({
     info: "json",
   },
 });
-const UserBlog = new mysql.Table({
+const UserBlog = new mysql.Table<IUserBlog>({
   cache,
   connection,
   table: "user_blogs4",
@@ -69,9 +84,9 @@ test("transaction - commit success", async function() {
     last_name: "Ei",
     info: { age: 18 },
   });
-  // console.log(user);
+  console.log(user.id, user.first_name, user.last_name);
   const [blog] = await UserBlog.bindConnection(c).insert({ blog_id: 1, user_id: user.id, score: 111 });
-  // console.log(blog);
+  console.log(blog.user_id, blog.blog_id, blog.created_at);
   await c.commit();
   c.release();
   const u = await User.findOne()

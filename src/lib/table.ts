@@ -61,7 +61,7 @@ export interface TableQueryOptions {
   callback?: (err: Error | null, ret: any, callback: Callback<any>) => void;
 }
 
-export class Table {
+export class Table<R = DataRow> {
   /** Connection 实例 */
   public readonly connection: connection.IConnectionBase;
   /** Cache 实例 */
@@ -149,7 +149,7 @@ export class Table {
    * @param connection
    */
   public bindConnection(c: connection.WrappedConnection) {
-    return new Table({ ...this.options, connection: connection.toConnectionBase(c) });
+    return new Table<R>({ ...this.options, connection: connection.toConnectionBase(c) });
   }
 
   /**
@@ -193,21 +193,21 @@ export class Table {
    * 从一行数据中保留主键的数据
    * @param data 键值对数据
    */
-  public keepPrimaryFields(data: DataRow): DataRow {
+  public keepPrimaryFields(data: DataRow): Partial<R> {
     assert.ok(this.primaryKey, `table "${this.tableName}" does not have primary key`);
     const ret: DataRow = {};
     for (const name of this.primaryKey) {
       assert.ok(name in data, `missing primary key "${name}" in this data row`);
       ret[name] = data[name];
     }
-    return ret;
+    return ret as any;
   }
 
   /**
    * 从一行数据中保留唯一键的数据，如果有多组唯一键则仅返回第一个匹配的唯一键
    * @param data 键值对数据
    */
-  public keepUniqueFields(data: DataRow): DataRow {
+  public keepUniqueFields(data: DataRow): Partial<R> {
     assert.ok(this.uniqueKeyList, `table "${this.tableName}" does not have unique key`);
     for (const fields of this.uniqueKeyList) {
       if (utils.everyFieldExists(data, fields)) {
@@ -215,7 +215,7 @@ export class Table {
         for (const f of fields) {
           ret[f] = data[f];
         }
-        return ret;
+        return ret as any;
       }
     }
     throw new Error(
@@ -400,14 +400,14 @@ export class Table {
    * 插入数据
    * @param data 键值对数据
    */
-  public async insert(data: DataRow, refreshNewData?: boolean): Promise<Array<DataRow>>;
+  public async insert(data: DataRow, refreshNewData?: boolean): Promise<R[]>;
   /**
    * 插入数据
    * @param data 键值对数据数组
    */
-  public async insert(data: Array<DataRow>, refreshNewData?: boolean): Promise<Array<DataRow>>;
+  public async insert(data: Array<DataRow>, refreshNewData?: boolean): Promise<R[]>;
 
-  public async insert(data: DataRow | Array<DataRow>, refreshNewData: boolean = true): Promise<Array<DataRow>> {
+  public async insert(data: DataRow | Array<DataRow>, refreshNewData: boolean = true): Promise<R[]> {
     assert.equal(arguments.length, 1, `expected 1  argument for insert() but got ${arguments.length}`);
     const list: Array<DataRow> = Array.isArray(data) ? data : [data];
     // 检查是否包含主键（仅当主键不是自增时）
@@ -438,7 +438,7 @@ export class Table {
         retList.push({ ...item });
       }
     }
-    return retList;
+    return retList as any;
   }
 
   /**
@@ -488,13 +488,13 @@ export class Table {
    * 获取指定主键的数据，优先从缓存读取
    * @param query 键值对数据
    */
-  public async getByPrimary(query: DataRow, options: Pick<TableQueryOptions, "master"> = {}): Promise<DataRow> {
+  public async getByPrimary(query: DataRow, options: Pick<TableQueryOptions, "master"> = {}): Promise<R> {
     query = this.keepPrimaryFields(query);
     const key = this.getPrimaryCacheKey(query);
     // 先尝试从缓存中获取
     const str = await this.cache.getItem(key);
     if (str) {
-      return this.schema.unserialize(str);
+      return this.schema.unserialize(str) as any;
     }
     // 从数据库查询
     const ret = await this.findOne(options)
@@ -510,7 +510,7 @@ export class Table {
    * @param query 查询条件
    * @param update 更新数据
    */
-  public async updateByPrimary(query: DataRow, update: DataRow): Promise<DataRow | null> {
+  public async updateByPrimary(query: DataRow, update: DataRow): Promise<R | null> {
     query = this.keepPrimaryFields(query);
     // 先查询出旧的数据
     const data = await this.findOne({ master: true })
@@ -539,7 +539,7 @@ export class Table {
    * 删除主键的数据，并删除缓存
    * @param query 查询条件
    */
-  public async deleteByPrimary(query: DataRow): Promise<DataRow | null> {
+  public async deleteByPrimary(query: DataRow): Promise<R | null> {
     query = this.keepPrimaryFields(query);
     const data = await this.findOne({ master: true })
       .where(query)
@@ -560,13 +560,13 @@ export class Table {
    * 获取指定唯一键的数据，优先从缓存读取
    * @param query 键值对数据
    */
-  public async getByUnique(query: DataRow, options: Pick<TableQueryOptions, "master"> = {}): Promise<DataRow> {
+  public async getByUnique(query: DataRow, options: Pick<TableQueryOptions, "master"> = {}): Promise<R> {
     query = this.keepUniqueFields(query);
     const key = this.getUniqueCacheKeys(query)[0] || "";
     // 先尝试从缓存中获取
     const str = await this.cache.getPointerItem(key);
     if (str) {
-      return this.schema.unserialize(str);
+      return this.schema.unserialize(str) as any;
     }
     // 从数据库查询
     const ret = await this.findOne(options)
@@ -582,7 +582,7 @@ export class Table {
    * @param query 查询条件
    * @param update 更新数据
    */
-  public async updateByUnique(query: DataRow, update: DataRow): Promise<DataRow | null> {
+  public async updateByUnique(query: DataRow, update: DataRow): Promise<R | null> {
     query = this.keepUniqueFields(query);
     // 先查询出旧的数据
     const data = await this.findOne({ master: true })
@@ -611,7 +611,7 @@ export class Table {
    * 删除唯一键的数据，并删除缓存
    * @param query 查询条件
    */
-  public async deleteByUnique(query: DataRow): Promise<DataRow | null> {
+  public async deleteByUnique(query: DataRow): Promise<R | null> {
     query = this.keepUniqueFields(query);
     const data = await this.findOne({ master: true })
       .where(query)
