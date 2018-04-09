@@ -20,9 +20,6 @@
   "homepage": "https://github.com/leizongmin/leizm-mysql",
   "dependencies": {
     "@types/debug": "0.0.30",
-    "@types/ioredis": "^3.2.1",
-    "@types/mysql": "^2.15.2",
-    "@types/node": "^9.4.7",
     "emoji-regex": "^6.5.1",
     "ioredis": "^3.2.2",
     "lei-utils": "^3.1.1",
@@ -30,15 +27,18 @@
   },
   "devDependencies": {
     "@types/chai": "^4.0.8",
-    "@types/jest": "^22.2.0",
+    "@types/ioredis": "^3.2.7",
+    "@types/jest": "^22.2.2",
+    "@types/mysql": "^2.15.4",
+    "@types/node": "^9.6.2",
     "chai": "^4.1.2",
     "coveralls": "^3.0.0",
     "debug": "^3.1.0",
-    "jest": "^23.0.0-alpha.0",
+    "jest": "^22.4.3",
     "prettier": "^1.8.2",
-    "ts-jest": "^22.4.1",
+    "ts-jest": "^22.4.2",
     "typedoc": "^0.11.1",
-    "typescript": "^2.7.2"
+    "typescript": "^2.8.1"
   },
   "scripts": {
     "compile": "rm -rf dist && tsc",
