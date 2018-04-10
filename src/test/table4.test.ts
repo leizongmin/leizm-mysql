@@ -122,3 +122,20 @@ test("transaction - rollback success", async function() {
   expect(u).to.equal(undefined);
   expect(b).to.equal(undefined);
 });
+
+test("generics support", async function() {
+  const users = await User.find().exec();
+  expect(users.length).to.greaterThan(0);
+  for (const u of users) {
+    expect(u.id).to.greaterThan(0);
+    const ret = await User.update({ phone: "12345" })
+      .where({ id: u.id })
+      .exec();
+    expect(ret.changedRows).to.equal(1);
+    expect(ret.affectedRows).to.equal(1);
+    const ret2 = await User.delete()
+      .where({ phone: "123" })
+      .exec();
+    expect(ret2.affectedRows).to.equal(0);
+  }
+});

@@ -6,7 +6,7 @@
 
 import * as assert from "assert";
 import * as utils from "./utils";
-import { Callback } from "./define";
+import { Callback, DataRow } from "./define";
 import { Schema } from "./schema";
 
 export interface QueryBuilderOptions {
@@ -56,7 +56,7 @@ export interface QueryOptionsParams {
   fields?: string[];
 }
 
-export class QueryBuilder {
+export class QueryBuilder<Q = DataRow, R = any> {
   protected readonly _tableName: string;
   protected readonly _tableNameEscaped: string;
   protected readonly _execCallback: QueryBuilderExecFunction | null;
@@ -132,7 +132,7 @@ export class QueryBuilder {
    * @param tpl 模板字符串
    * @param values 键值对数据
    */
-  public format(tpl: string, values: Record<string, any>): string;
+  public format(tpl: string, values: DataRow): string;
   /**
    * 格式化模板字符串
    * @param tpl 模板字符串
@@ -140,7 +140,7 @@ export class QueryBuilder {
    */
   public format(tpl: string, values: any[]): string;
 
-  public format(tpl: string, values?: Record<string, any> | any[]): string {
+  public format(tpl: string, values?: DataRow | any[]): string {
     assert.ok(typeof tpl === "string", `first parameter must be a string`);
     if (!values) {
       return tpl;
@@ -159,7 +159,7 @@ export class QueryBuilder {
    * 查询条件
    * @param condition 键值对数据：{ aaa: 1, bbb: 22 })
    */
-  public where(condition: Record<string, any>): this;
+  public where(condition: Partial<Q>): this;
   /**
    * 查询条件
    * @param condition SQL 语句
@@ -169,9 +169,9 @@ export class QueryBuilder {
    * 查询条件
    * @param condition 模板字符串，可以为 ('aaa=:a AND bbb=:b', { a: 123, b: 456 }) 或 ('aaa=? AND bbb=?', [ 123, 456 ])
    */
-  public where(condition: string, values: Record<string, any> | any[]): this;
+  public where(condition: string, values: DataRow | any[]): this;
 
-  public where(condition: Record<string, any> | string, values?: Record<string, any> | any[]): this {
+  public where(condition: Partial<Q> | string, values?: DataRow | any[]): this {
     if (typeof condition === "string") {
       if (values) {
         return this.and(condition, values);
@@ -185,7 +185,7 @@ export class QueryBuilder {
    * 查询条件
    * @param condition 键值对数据：{ aaa: 1, bbb: 22 })
    */
-  public and(condition: Record<string, any>): this;
+  public and(condition: Partial<Q>): this;
   /**
    * 查询条件
    * @param condition SQL 语句
@@ -195,14 +195,14 @@ export class QueryBuilder {
    * 查询条件
    * @param condition 模板字符串，可以为 ('aaa=:a AND bbb=:b', { a: 123, b: 456 })
    */
-  public and(condition: string, values: Record<string, any>): this;
+  public and(condition: string, values: DataRow): this;
   /**
    * 查询条件
    * @param condition 模板字符串，可以为 ('aaa=? AND bbb=?', [ 123, 456 ])
    */
   public and(condition: string, values: any[]): this;
 
-  public and(condition: Record<string, any> | string, values?: Record<string, any> | any[]): this {
+  public and(condition: Partial<Q> | string, values?: DataRow | any[]): this {
     const t = typeof condition;
     assert.ok(condition, `missing condition`);
     assert.ok(t === "string" || t === "object", `condition must be a string or object`);
@@ -214,14 +214,14 @@ export class QueryBuilder {
       this._data.conditions.push(this.format(condition, values || []));
     } else {
       if (this._schema) {
-        condition = this._schema.formatInput(condition);
+        condition = this._schema.formatInput(condition) as any;
       }
       if (this._data.type !== "SELECT") {
         // 如果是更改操作，检查 condition 不能为空
         assert.ok(Object.keys(condition).length > 0, `modify condition cannot be empty`);
       }
-      for (const name in condition) {
-        this._data.conditions.push(`${utils.sqlEscapeId(name)}=${utils.sqlEscape(condition[name])}`);
+      for (const name in condition as any) {
+        this._data.conditions.push(`${utils.sqlEscapeId(name)}=${utils.sqlEscape((condition as any)[name])}`);
       }
     }
     return this;
@@ -271,7 +271,7 @@ export class QueryBuilder {
    * 更新
    * @param update 键值对数据，如 { a: 123, b: 456 }
    */
-  public update(update: Record<string, any>): this;
+  public update(update: DataRow): this;
   /**
    * 更新
    * @param update SQL 语句，如 a=a+1
@@ -282,7 +282,7 @@ export class QueryBuilder {
    * @param update SQL 语句模板，如 a=:a
    * @param values 模板参数，如 { a: 123 }
    */
-  public update(update: string, values: Record<string, any>): this;
+  public update(update: string, values: DataRow): this;
   /**
    * 更新
    * @param update SQL 语句模板，如 a=?
@@ -290,7 +290,7 @@ export class QueryBuilder {
    */
   public update(update: string, values: any[]): this;
 
-  public update(update?: Record<string, any> | string, values?: Record<string, any> | any[]): this {
+  public update(update?: DataRow | string, values?: DataRow | any[]): this {
     assert.ok(this._data.type === "", `cannot change query type after it was set to "${this._data.type}"`);
     this._data.type = "UPDATE";
     this._data.update = [];
@@ -310,7 +310,7 @@ export class QueryBuilder {
    * 更新
    * @param update 键值对数据，如 { a: 123, b: 456 }
    */
-  public set(update: Record<string, any>): this;
+  public set(update: DataRow): this;
   /**
    * 更新
    * @param update SQL 语句，如 a=a+1
@@ -321,7 +321,7 @@ export class QueryBuilder {
    * @param update SQL 语句模板，如 a=:a
    * @param values 模板参数，如 { a: 123 }
    */
-  public set(update: string, values: Record<string, any>): this;
+  public set(update: string, values: DataRow): this;
   /**
    * 更新
    * @param update SQL 语句模板，如 a=?
@@ -329,7 +329,7 @@ export class QueryBuilder {
    */
   public set(update: string, values: any[]): this;
 
-  public set(update: Record<string, any> | string, values?: Record<string, any> | any[]): this {
+  public set(update: DataRow | string, values?: DataRow | any[]): this {
     const t = typeof update;
     assert.ok(this._data.type === "UPDATE", `query type must be UPDATE, please call .update() before`);
     assert.ok(update, `missing update data`);
@@ -352,14 +352,14 @@ export class QueryBuilder {
    * 插入
    * @param data 键值对数据
    */
-  public insert(data: Record<string, any>): this;
+  public insert(data: DataRow): this;
   /**
    * 插入
    * @param data 键值对数据数组
    */
-  public insert(data: Array<Record<string, any>>): this;
+  public insert(data: Array<DataRow>): this;
 
-  public insert(data: Record<string, any> | Array<Record<string, any>>): this {
+  public insert(data: DataRow | Array<DataRow>): this {
     assert.ok(this._data.type === "", `cannot change query type after it was set to "${this._data.type}"`);
     this._data.type = "INSERT";
     assert.ok(data, `missing data`);
@@ -370,7 +370,7 @@ export class QueryBuilder {
       data = [data];
     }
 
-    let list: Array<Record<string, any>> = data as Array<Record<string, any>>;
+    let list: Array<DataRow> = data as Array<DataRow>;
     if (this._schema) {
       list = list.map(item => {
         if (!this._schema) {
@@ -415,7 +415,7 @@ export class QueryBuilder {
    * @param sql SQL 查询语句
    * @param values 模板参数，如 { a: 123 }
    */
-  public sql(sql: string, values: Record<string, any>): this;
+  public sql(sql: string, values: DataRow): this;
   /**
    * 自定义SQL语句
    * @param sql SQL 查询语句
@@ -423,7 +423,7 @@ export class QueryBuilder {
    */
   public sql(sql: string, values: any[]): this;
 
-  public sql(sql: string, values?: Record<string, any> | any[]): this {
+  public sql(sql: string, values?: DataRow | any[]): this {
     assert.ok(this._data.type === "", `cannot change query type after it was set to "${this._data.type}"`);
     this._data.type = "CUSTOM";
     this._data.sqlTpl = sql;
@@ -441,7 +441,7 @@ export class QueryBuilder {
    * @param tpl SQL 查询语句
    * @param values 模板参数，如 { a: 123 }
    */
-  public orderBy(tpl: string, values: Record<string, any>): this;
+  public orderBy(tpl: string, values: DataRow): this;
   /**
    * 排序方法
    * @param tpl SQL 查询语句
@@ -449,7 +449,7 @@ export class QueryBuilder {
    */
   public orderBy(tpl: string, values: any[]): this;
 
-  public orderBy(tpl: string, values?: Record<string, any> | any[]): this {
+  public orderBy(tpl: string, values?: DataRow | any[]): this {
     if (values) {
       this._data.orderFields = this.format(tpl, values);
     } else {
@@ -470,7 +470,7 @@ export class QueryBuilder {
    * @param tpl SQL 查询语句
    * @param values 模板参数，如 { a: 123 }
    */
-  public groupBy(tpl: string, values: Record<string, any>): this;
+  public groupBy(tpl: string, values: DataRow): this;
   /**
    * 分组方法
    * @param tpl SQL 查询语句
@@ -478,7 +478,7 @@ export class QueryBuilder {
    */
   public groupBy(tpl: string, values: any[]): this;
 
-  public groupBy(tpl: string, values?: Record<string, any> | any[]): this {
+  public groupBy(tpl: string, values?: DataRow | any[]): this {
     if (values) {
       this._data.groupByFields = this.format(tpl, values);
     } else {
@@ -594,7 +594,7 @@ export class QueryBuilder {
   /**
    * 执行
    */
-  public exec(): Promise<any> {
+  public exec(): Promise<R> {
     return new Promise((resolve, reject) => {
       if (!this._execCallback) {
         return reject(new Error(`please provide a exec callback when create QueryBuilder instance`));

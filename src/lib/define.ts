@@ -12,4 +12,21 @@ export interface Callback<T> {
   promise?: Promise<T>;
 }
 
+/**
+ * 数据行
+ */
 export type DataRow = Record<string, any>;
+
+/**
+ * 执行 SQL 更新和插入操作返回的结果
+ */
+export interface OkPacket {
+  fieldCount: number;
+  affectedRows: number;
+  insertId: number;
+  serverStatus: number;
+  warningCount: number;
+  message: string;
+  protocol41: true;
+  changedRows: number;
+}

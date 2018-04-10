@@ -10,7 +10,7 @@ import * as connection from "./connection";
 import * as cache from "./cache";
 import * as schema from "./schema";
 import * as query from "./query";
-import { Callback, DataRow } from "./define";
+import { Callback, DataRow, OkPacket } from "./define";
 
 export type FieldName = string | string[];
 
@@ -226,7 +226,7 @@ export class Table<R = DataRow> {
   /**
    * 创建 Query
    */
-  public query(options: TableQueryOptions = {}): query.QueryBuilder {
+  public query<A = any>(options: TableQueryOptions = {}): query.QueryBuilder<R, any> {
     return new query.QueryBuilder({
       table: this.tableName,
       schema: this.schema,
@@ -258,14 +258,14 @@ export class Table<R = DataRow> {
   /**
    * 查询数据
    */
-  public find(options: Pick<TableQueryOptions, "master"> = {}): query.QueryBuilder {
+  public find(options: Pick<TableQueryOptions, "master"> = {}): query.QueryBuilder<R, R[]> {
     return this.query({ ...options, format: true }).select("*");
   }
 
   /**
    * 查询一行数据
    */
-  public findOne(options: Pick<TableQueryOptions, "master"> = {}): query.QueryBuilder {
+  public findOne(options: Pick<TableQueryOptions, "master"> = {}): query.QueryBuilder<R, R> {
     return this.query({
       ...options,
       format: true,
@@ -283,7 +283,7 @@ export class Table<R = DataRow> {
   /**
    * 查询数量
    */
-  public count(options: Pick<TableQueryOptions, "master"> = {}): query.QueryBuilder {
+  public count(options: Pick<TableQueryOptions, "master"> = {}): query.QueryBuilder<R, number> {
     return this.query({
       ...options,
       format: false,
@@ -302,26 +302,26 @@ export class Table<R = DataRow> {
    * 更新数据
    * @param update 键值对数据
    */
-  public update(update: DataRow): query.QueryBuilder;
+  public update(update: Partial<R>): query.QueryBuilder<R, OkPacket>;
   /**
    * 更新数据
    * @param update SQL 语句
    */
-  public update(update: string): query.QueryBuilder;
+  public update(update: string): query.QueryBuilder<R, OkPacket>;
   /**
    * 更新数据
    * @param update SQL 模板语句
    * @param values 模板参数，如 { a: 123 }
    */
-  public update(update: string, values: DataRow): query.QueryBuilder;
+  public update(update: string, values: DataRow): query.QueryBuilder<R, OkPacket>;
   /**
    * 更新数据
    * @param update SQL 模板语句
    * @param values 模板参数，如 [ 123 ]
    */
-  public update(update: string, values: any[]): query.QueryBuilder;
+  public update(update: string, values: any[]): query.QueryBuilder<R, OkPacket>;
 
-  public update(update: DataRow | string, values?: DataRow | any[]): query.QueryBuilder {
+  public update(update: Partial<R> | string, values?: DataRow | any[]): query.QueryBuilder<R, OkPacket> {
     assert.ok(
       arguments.length === 1 || arguments.length === 2,
       `expected 1 or 2 argument for update() but got ${arguments.length}`,
@@ -340,26 +340,26 @@ export class Table<R = DataRow> {
    * 更新一行数据
    * @param update 键值对数据
    */
-  public updateOne(update: DataRow): query.QueryBuilder;
+  public updateOne(update: Partial<R>): query.QueryBuilder<R, OkPacket>;
   /**
    * 更新一行数据
    * @param update SQL 语句
    */
-  public updateOne(update: string): query.QueryBuilder;
+  public updateOne(update: string): query.QueryBuilder<R, OkPacket>;
   /**
    * 更新一行数据
    * @param update SQL 模板语句
    * @param values 模板参数，如 { a: 123 }
    */
-  public updateOne(update: string, values: DataRow): query.QueryBuilder;
+  public updateOne(update: string, values: DataRow): query.QueryBuilder<R, OkPacket>;
   /**
    * 更新一行数据
    * @param update SQL 模板语句
    * @param values 模板参数，如 [ 123 ]
    */
-  public updateOne(update: string, values: any[]): query.QueryBuilder;
+  public updateOne(update: string, values: any[]): query.QueryBuilder<R, OkPacket>;
 
-  public updateOne(update: DataRow | string, values?: DataRow | any[]): query.QueryBuilder {
+  public updateOne(update: Partial<R> | string, values?: DataRow | any[]): query.QueryBuilder<R, OkPacket> {
     assert.ok(
       arguments.length === 1 || arguments.length === 2,
       `expected 1 or 2 argument for updateOne() but got ${arguments.length}`,
@@ -381,14 +381,14 @@ export class Table<R = DataRow> {
   /**
    * 删除数据
    */
-  public delete(): query.QueryBuilder {
+  public delete(): query.QueryBuilder<R, OkPacket> {
     return this.query({ format: false }).delete();
   }
 
   /**
    * 删除一行数据
    */
-  public deleteOne(): query.QueryBuilder {
+  public deleteOne(): query.QueryBuilder<R, OkPacket> {
     return this.query({ format: false })
       .delete()
       .limit(1);
@@ -397,43 +397,45 @@ export class Table<R = DataRow> {
   /**
    * 插入数据
    * @param data 键值对数据
+   * @param refreshNewData 是否刷新缓存
    */
-  public async insert(data: DataRow, refreshNewData?: boolean): Promise<R[]>;
+  public async insert(data: Partial<R>, refreshNewData?: boolean): Promise<R[]>;
   /**
    * 插入数据
    * @param data 键值对数据数组
+   * @param refreshNewData 是否刷新缓存
    */
-  public async insert(data: Array<DataRow>, refreshNewData?: boolean): Promise<R[]>;
+  public async insert(data: Partial<R>[], refreshNewData?: boolean): Promise<R[]>;
 
-  public async insert(data: DataRow | Array<DataRow>, refreshNewData: boolean = true): Promise<R[]> {
+  public async insert(data: Partial<R> | Partial<R>[], refreshNewData: boolean = true): Promise<R[]> {
     assert.equal(arguments.length, 1, `expected 1  argument for insert() but got ${arguments.length}`);
-    const list: Array<DataRow> = Array.isArray(data) ? data : [data];
+    const list = Array.isArray(data) ? data : [data];
     // 检查是否包含主键（仅当主键不是自增时）
     if (!this.primaryKeyAutoIncrement) {
       for (const item of list) {
         for (const key of this.primaryKey) {
-          if (typeof item[key] === "undefined") {
+          if (typeof (item as any)[key] === "undefined") {
             throw new Error(`missing primary key "${key}"`);
           }
         }
       }
     }
 
-    const retList: Array<DataRow> = [];
+    const retList: R[] = [];
     for (const item of list) {
       const ret = await this.query({ format: false })
         .insert(item)
         .exec();
       // 如果主键是自增时，从insertId获取自增主键
       if (this.primaryKeyAutoIncrement) {
-        item[this.primaryKey[0]] = ret.insertId;
+        (item as any)[this.primaryKey[0]] = ret.insertId;
       }
       if (refreshNewData) {
         // 查询最新数据，顺便刷新缓存
         const newData = await this.getByPrimary(item, { master: true });
         retList.push(newData);
       } else {
-        retList.push({ ...item });
+        retList.push({ ...(item as any) });
       }
     }
     return retList as any;
@@ -443,7 +445,7 @@ export class Table<R = DataRow> {
    * 增加指定字段的值
    * @param data 键值对数据，如：{ count: 1 }
    */
-  public incr(data: DataRow): query.QueryBuilder {
+  public incr(data: DataRow): query.QueryBuilder<R, OkPacket> {
     assert.equal(arguments.length, 1, `expected 1  argument for incr() but got ${arguments.length}`);
     const q = this.query({ format: false }).update();
     for (const name in data) {
@@ -456,21 +458,21 @@ export class Table<R = DataRow> {
    * 执行 SQL 查询
    * @param sql SQL 语句
    */
-  public sql(sql: string, options?: TableQueryOptions): query.QueryBuilder;
+  public sql(sql: string, options?: TableQueryOptions): query.QueryBuilder<R, any>;
   /**
    * 执行 SQL 查询
    * @param sql SQL 语句模板
    * @param values 模板参数，如 { a: 123 }
    */
-  public sql(sql: string, values: DataRow, options?: TableQueryOptions): query.QueryBuilder;
+  public sql(sql: string, values: DataRow, options?: TableQueryOptions): query.QueryBuilder<R, any>;
   /**
    * 执行 SQL 查询
    * @param sql SQL 语句模板
    * @param values 模板参数，如 [ 123 ]
    */
-  public sql(sql: string, values: any[], options?: TableQueryOptions): query.QueryBuilder;
+  public sql(sql: string, values: any[], options?: TableQueryOptions): query.QueryBuilder<R, any>;
 
-  public sql(sql: string, values?: DataRow | any[], options?: TableQueryOptions): query.QueryBuilder {
+  public sql(sql: string, values?: DataRow | any[], options?: TableQueryOptions): query.QueryBuilder<R, any> {
     assert.ok(
       arguments.length === 1 || arguments.length === 2,
       `expected 1 or 2 argument for sql() but got ${arguments.length}`,
@@ -486,7 +488,7 @@ export class Table<R = DataRow> {
    * 获取指定主键的数据，优先从缓存读取
    * @param query 键值对数据
    */
-  public async getByPrimary(query: DataRow, options: Pick<TableQueryOptions, "master"> = {}): Promise<R> {
+  public async getByPrimary(query: Partial<R>, options: Pick<TableQueryOptions, "master"> = {}): Promise<R> {
     query = this.keepPrimaryFields(query);
     const key = this.getPrimaryCacheKey(query);
     // 先尝试从缓存中获取
@@ -508,7 +510,7 @@ export class Table<R = DataRow> {
    * @param query 查询条件
    * @param update 更新数据
    */
-  public async updateByPrimary(query: DataRow, update: DataRow): Promise<R | null> {
+  public async updateByPrimary(query: Partial<R>, update: Partial<R>): Promise<R | null> {
     query = this.keepPrimaryFields(query);
     // 先查询出旧的数据
     const data = await this.findOne({ master: true })
@@ -537,7 +539,7 @@ export class Table<R = DataRow> {
    * 删除主键的数据，并删除缓存
    * @param query 查询条件
    */
-  public async deleteByPrimary(query: DataRow): Promise<R | null> {
+  public async deleteByPrimary(query: Partial<R>): Promise<R | null> {
     query = this.keepPrimaryFields(query);
     const data = await this.findOne({ master: true })
       .where(query)
@@ -558,7 +560,7 @@ export class Table<R = DataRow> {
    * 获取指定唯一键的数据，优先从缓存读取
    * @param query 键值对数据
    */
-  public async getByUnique(query: DataRow, options: Pick<TableQueryOptions, "master"> = {}): Promise<R> {
+  public async getByUnique(query: Partial<R>, options: Pick<TableQueryOptions, "master"> = {}): Promise<R> {
     query = this.keepUniqueFields(query);
     const key = this.getUniqueCacheKeys(query)[0] || "";
     // 先尝试从缓存中获取
@@ -580,7 +582,7 @@ export class Table<R = DataRow> {
    * @param query 查询条件
    * @param update 更新数据
    */
-  public async updateByUnique(query: DataRow, update: DataRow): Promise<R | null> {
+  public async updateByUnique(query: Partial<R>, update: Partial<R>): Promise<R | null> {
     query = this.keepUniqueFields(query);
     // 先查询出旧的数据
     const data = await this.findOne({ master: true })
@@ -609,7 +611,7 @@ export class Table<R = DataRow> {
    * 删除唯一键的数据，并删除缓存
    * @param query 查询条件
    */
-  public async deleteByUnique(query: DataRow): Promise<R | null> {
+  public async deleteByUnique(query: Partial<R>): Promise<R | null> {
     query = this.keepUniqueFields(query);
     const data = await this.findOne({ master: true })
       .where(query)
@@ -630,7 +632,7 @@ export class Table<R = DataRow> {
    * 删除符合指定查询条件的所有缓存
    * @param query 可以为键值对数据或者 SQL 查询语句
    */
-  public async removeAllCache(query: DataRow | string): Promise<string[]> {
+  public async removeAllCache(query: Partial<R> | string): Promise<R[]> {
     if (this.importantFields.length > 0) {
       // 查询出旧的数据
       const q = this.find({ master: true }).fields(...this.importantFields);
