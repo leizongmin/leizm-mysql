@@ -10,11 +10,9 @@ import * as connection from "./connection";
 import * as cache from "./cache";
 import * as schema from "./schema";
 import * as query from "./query";
-import { Callback } from "./define";
+import { Callback, DataRow } from "./define";
 
 export type FieldName = string | string[];
-
-export type DataRow = Record<string, any>;
 
 export interface TableBaseOptions extends schema.SchemaOptions {
   /**

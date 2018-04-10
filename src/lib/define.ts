@@ -11,3 +11,5 @@ export interface Callback<T> {
   (err: Error | null, ret?: T): void;
   promise?: Promise<T>;
 }
+
+export type DataRow = Record<string, any>;
