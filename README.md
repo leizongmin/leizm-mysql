@@ -21,6 +21,10 @@
 
 基于 Node.js/TypeScript 的 MySQL 连接管理器
 
+## 注意
+
+* 不支持 MySQL 连接配置 `dateStrings = "DATETIME"`，如果设置了该参数，可能导致返回的日期字段可能为 string 也可能为 Date 对象
+
 ## 安装
 
 ```bash
