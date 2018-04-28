@@ -1,6 +1,6 @@
 {
   "name": "@leizm/mysql",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "基于 Node.js/TypeScript 的 MySQL 连接管理器",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
