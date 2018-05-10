@@ -173,3 +173,12 @@ export function stripEmoji(text: string): string {
 export function findKeysForUndefinedValue(data: Record<string, any>): string[] {
   return Object.keys(data).filter(k => typeof data[k] === "undefined");
 }
+
+/**
+ * 生成RequestID
+ */
+export function generateRequestId(): string {
+  return `${Date.now()}.${Math.random()
+    .toString()
+    .slice(2)}`;
+}

@@ -129,6 +129,10 @@ export interface ConnectionOptions {
 
 export interface QueryEventData {
   /**
+   * 请求ID
+   */
+  id: string;
+  /**
    * 要执行的 SQL
    */
   sql: string;
@@ -140,9 +144,48 @@ export interface QueryEventData {
    * 连接名称：host:port
    */
   name: string;
+  /**
+   * 时间戳
+   */
+  timestamp: number;
 }
 
-export type ConnectionEvent = "error" | "connection" | "enqueue" | "query";
+export interface ResultEventData {
+  /**
+   * 请求ID
+   */
+  id: string;
+  /**
+   * 要执行的 SQL
+   */
+  sql: string;
+  /**
+   * 原始 MySQL 连接
+   */
+  connection: mysql.PoolConnection;
+  /**
+   * 连接名称：host:port
+   */
+  name: string;
+  /**
+   * 查询时间戳
+   */
+  timestamp: number;
+  /**
+   * 消耗时间（毫秒）
+   */
+  spent: number;
+  /**
+   * 结果
+   */
+  data: any;
+  /**
+   * 出错信息
+   */
+  error: null | Error;
+}
+
+export type ConnectionEvent = "error" | "connection" | "enqueue" | "query" | "result";
 
 export class Connection extends events.EventEmitter {
   private _options: ConnectionOptions;
@@ -186,6 +229,7 @@ export class Connection extends events.EventEmitter {
   public on(event: "connection", callback: (conn: Connection) => void): this;
   public on(event: "enqueue", callback: () => void): this;
   public on(event: "query", callback: (data: QueryEventData) => void): this;
+  public on(event: "result", callback: (data: ResultEventData) => void): this;
   public on(event: ConnectionEvent, callback: (...args: any[]) => void): this {
     return this._on(event, callback);
   }
@@ -194,6 +238,7 @@ export class Connection extends events.EventEmitter {
   public once(event: "connection", callback: (conn: Connection) => void): this;
   public once(event: "enqueue", callback: () => void): this;
   public once(event: "query", callback: (data: QueryEventData) => void): this;
+  public once(event: "result", callback: (data: ResultEventData) => void): this;
   public once(event: ConnectionEvent, callback: (...args: any[]) => void): this {
     return this._once(event, callback);
   }
@@ -202,6 +247,7 @@ export class Connection extends events.EventEmitter {
   public emit(event: "connection", conn: Connection): boolean;
   public emit(event: "enqueue"): boolean;
   public emit(event: "query", data: QueryEventData): boolean;
+  public emit(event: "result", data: ResultEventData): boolean;
   public emit(event: ConnectionEvent, ...data: any[]): boolean {
     return this._emit(event, ...data);
   }
@@ -326,12 +372,17 @@ export class Connection extends events.EventEmitter {
           return reject(err);
         }
         const cc = connection.config || {};
-        this.emit("query", { sql, connection, name: `${cc.host}:${cc.port}` });
+        const timestamp = Date.now();
+        const connectionName = `${cc.host}:${cc.port}`;
+        const id = utils.generateRequestId();
+        this.emit("query", { id, sql, connection, name: connectionName, timestamp });
         if (this._options.stripEmoji) {
           sql = utils.stripEmoji(sql);
         }
         connection.query(sql, (err2: QueryError | null, ret) => {
           connection.release();
+          const spent = Date.now() - timestamp;
+          this.emit("result", { id, sql, connection, name: connectionName, timestamp, spent, data: ret, error: err2 });
           // 如果查询出错，在 Error 对象中附加当前正在查询的 SQL 语句
           if (err2) {
             err2.sql = sql;

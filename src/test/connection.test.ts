@@ -151,17 +151,32 @@ test("query", async function() {
     c.release();
   }
   {
-    let eventIsEmitted = false;
+    let queryEventIsEmitted = false;
+    let resultEventIsEmitted = false;
     let emittedSql = "";
     conn.once("query", function(e) {
       utils.debug(e);
-      eventIsEmitted = true;
+      queryEventIsEmitted = true;
       emittedSql = e.sql;
+      expect(/\d+\.\d+/.test(e.id)).to.equal(true);
+      expect(Date.now() - e.timestamp >= 0).to.equal(true);
       expect(e.name).to.equal(`${connConfig.host}:${connConfig.port}`);
     });
+    conn.once("result", function(e) {
+      utils.debug(e);
+      resultEventIsEmitted = true;
+      expect(e.sql).to.equal(emittedSql);
+      expect(/\d+\.\d+/.test(e.id)).to.equal(true);
+      expect(Date.now() - e.timestamp >= 0).to.equal(true);
+      expect(e.name).to.equal(`${connConfig.host}:${connConfig.port}`);
+      expect(e.spent >= 0).to.equal(true);
+      expect(Array.isArray(e.data)).to.equal(true);
+      expect(e.error).to.equal(null);
+    });
     const ret = await conn.query("SHOW TABLES");
-    utils.debug(ret, eventIsEmitted, emittedSql);
-    expect(eventIsEmitted).to.equal(true);
+    utils.debug(ret, queryEventIsEmitted, emittedSql);
+    expect(queryEventIsEmitted).to.equal(true);
+    expect(resultEventIsEmitted).to.equal(true);
     expect(emittedSql).to.equal("SHOW TABLES");
   }
   await conn.close();
