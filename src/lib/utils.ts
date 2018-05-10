@@ -165,3 +165,11 @@ export function everyFieldExists(data: Record<string, any>, fields: string[]): b
 export function stripEmoji(text: string): string {
   return text.replace(emojiRegex(), "");
 }
+
+/**
+ * 查找值为undefined的key列表
+ * @param data
+ */
+export function findKeysForUndefinedValue(data: Record<string, any>): string[] {
+  return Object.keys(data).filter(k => typeof data[k] === "undefined");
+}

@@ -213,6 +213,8 @@ export class QueryBuilder<Q = DataRow, R = any> {
       }
       this._data.conditions.push(this.format(condition, values || []));
     } else {
+      const keys = utils.findKeysForUndefinedValue(condition);
+      assert.ok(keys.length < 1, `found undefined value for condition keys ${keys}; it may caused unexpected errors`);
       if (this._schema) {
         condition = this._schema.formatInput(condition) as any;
       }

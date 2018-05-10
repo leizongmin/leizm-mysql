@@ -493,3 +493,26 @@ test("where(condition): modify condition cannot be empty", function() {
     }).to.throw("modify condition cannot be empty");
   }
 });
+
+test("where(condition): condition key cannot be undefined", function() {
+  {
+    const query = new mysql.QueryBuilder({ table: "test1" });
+    expect(() => {
+      const sql = query
+        .update({ a: 123 })
+        .where({ a: 123, b: undefined })
+        .build();
+      utils.debug(sql);
+    }).to.throw("found undefined value for condition keys b; it may caused unexpected errors");
+  }
+  {
+    const query = new mysql.QueryBuilder({ table: "test1" });
+    expect(() => {
+      const sql = query
+        .select("name", "age")
+        .where({ a: 123, b: 456, c: undefined, d: undefined })
+        .build();
+      utils.debug(sql);
+    }).to.throw("found undefined value for condition keys c,d; it may caused unexpected errors");
+  }
+});
