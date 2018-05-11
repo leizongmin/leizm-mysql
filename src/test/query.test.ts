@@ -516,3 +516,43 @@ test("where(condition): condition key cannot be undefined", function() {
     }).to.throw("found undefined value for condition keys c,d; it may caused unexpected errors");
   }
 });
+
+test("where(condition): support for $in & $like", function() {
+  {
+    const query = new mysql.QueryBuilder({ table: "test1" });
+    const sql = query
+      .select("name", "age")
+      .where({
+        a: { $in: [1, 2, 3] },
+        b: { $like: "%hello%" },
+      })
+      .skip(10)
+      .limit(20)
+      .orderBy("`a` DESC, `b` ASC")
+      .build();
+    utils.debug(sql);
+    expect(sql).to.equal(
+      "SELECT `name`, `age` FROM `test1` WHERE `a` IN (1, 2, 3) AND `b` LIKE '%hello%' ORDER BY `a` DESC, `b` ASC LIMIT 10,20",
+    );
+  }
+  {
+    const query = new mysql.QueryBuilder({ table: "test1" });
+    expect(() => {
+      const sql = query
+        .update({ a: 123 })
+        .where({ a: { $in: 123 } })
+        .build();
+      utils.debug(sql);
+    }).to.throw("value for condition type $in in field a must be an array");
+  }
+  {
+    const query = new mysql.QueryBuilder({ table: "test1" });
+    expect(() => {
+      const sql = query
+        .update({ a: 123 })
+        .where({ a: { $like: 123 } })
+        .build();
+      utils.debug(sql);
+    }).to.throw("value for condition type $like in a must be a string");
+  }
+});

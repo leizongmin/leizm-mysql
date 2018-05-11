@@ -235,4 +235,12 @@ export class Schema {
     }
     return ret;
   }
+
+  /**
+   * 判断是否为JSON字段
+   * @param name 字段名
+   */
+  public isJsonField(name: string): boolean {
+    return this._fields[name] && this._fields[name] === "json";
+  }
 }

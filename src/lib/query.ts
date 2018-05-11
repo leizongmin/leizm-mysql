@@ -56,6 +56,13 @@ export interface QueryOptionsParams {
   fields?: string[];
 }
 
+export interface AdvancedQueryCondition {
+  [key: string]: {
+    $in?: any[];
+    $like?: string;
+  };
+}
+
 export class QueryBuilder<Q = DataRow, R = any> {
   protected readonly _tableName: string;
   protected readonly _tableNameEscaped: string;
@@ -159,7 +166,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    * 查询条件
    * @param condition 键值对数据：{ aaa: 1, bbb: 22 })
    */
-  public where(condition: Partial<Q>): this;
+  public where(condition: Partial<Q> | Pick<AdvancedQueryCondition, keyof Q>): this;
   /**
    * 查询条件
    * @param condition SQL 语句
@@ -171,7 +178,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    */
   public where(condition: string, values: DataRow | any[]): this;
 
-  public where(condition: Partial<Q> | string, values?: DataRow | any[]): this {
+  public where(condition: Partial<Q> | Pick<AdvancedQueryCondition, keyof Q> | string, values?: DataRow | any[]): this {
     if (typeof condition === "string") {
       if (values) {
         return this.and(condition, values);
@@ -185,7 +192,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    * 查询条件
    * @param condition 键值对数据：{ aaa: 1, bbb: 22 })
    */
-  public and(condition: Partial<Q>): this;
+  public and(condition: Partial<Q> | Pick<AdvancedQueryCondition, keyof Q>): this;
   /**
    * 查询条件
    * @param condition SQL 语句
@@ -202,7 +209,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    */
   public and(condition: string, values: any[]): this;
 
-  public and(condition: Partial<Q> | string, values?: DataRow | any[]): this {
+  public and(condition: Partial<Q> | Pick<AdvancedQueryCondition, keyof Q> | string, values?: DataRow | any[]): this {
     const t = typeof condition;
     assert.ok(condition, `missing condition`);
     assert.ok(t === "string" || t === "object", `condition must be a string or object`);
@@ -222,8 +229,30 @@ export class QueryBuilder<Q = DataRow, R = any> {
         // 如果是更改操作，检查 condition 不能为空
         assert.ok(Object.keys(condition).length > 0, `condition for modify operation cannot be empty`);
       }
+      // 解析查询条件
       for (const name in condition as any) {
-        this._data.conditions.push(`${utils.sqlEscapeId(name)}=${utils.sqlEscape((condition as any)[name])}`);
+        const info = (condition as any)[name];
+        const isJsonField = this._schema && this._schema.isJsonField(name);
+        const escapedName = utils.sqlEscapeId(name);
+        if (info && typeof info === "object" && Object.keys(info).length === 1 && !isJsonField) {
+          const op = Object.keys(info)[0];
+          switch (op) {
+            case "$in":
+              assert.ok(Array.isArray(info.$in), `value for condition type $in in field ${name} must be an array`);
+              this._data.conditions.push(
+                `${escapedName} IN (${info.$in.map((v: any) => utils.sqlEscape(v)).join(", ")})`,
+              );
+              break;
+            case "$like":
+              assert.ok(typeof info.$like === "string", `value for condition type $like in ${name} must be a string`);
+              this._data.conditions.push(`${escapedName} LIKE ${utils.sqlEscape(info.$like)}`);
+              break;
+            default:
+              throw new Error(`condition type ${op} does not supported`);
+          }
+        } else {
+          this._data.conditions.push(`${escapedName}=${utils.sqlEscape((condition as any)[name])}`);
+        }
       }
     }
     return this;
