@@ -451,7 +451,7 @@ test("options", function() {
   }
 });
 
-test("where(condition): modify condition cannot be empty", function() {
+test("where(condition): condition for modify operation cannot be empty", function() {
   // SELECT 操作可以为空
   {
     const query = new mysql.QueryBuilder({ table: "test1" });
@@ -480,7 +480,7 @@ test("where(condition): modify condition cannot be empty", function() {
         .where({})
         .build();
       utils.debug(sql);
-    }).to.throw("modify condition cannot be empty");
+    }).to.throw("condition for modify operation cannot be empty");
   }
   {
     const query = new mysql.QueryBuilder({ table: "test1" });
@@ -490,7 +490,7 @@ test("where(condition): modify condition cannot be empty", function() {
         .where("   ")
         .build();
       utils.debug(sql);
-    }).to.throw("modify condition cannot be empty");
+    }).to.throw("condition for modify operation cannot be empty");
   }
 });
 

@@ -209,7 +209,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
     if (typeof condition === "string") {
       if (this._data.type !== "SELECT") {
         // 如果是更改操作，检查 condition 不能为空
-        assert.ok(condition.trim(), `modify condition cannot be empty`);
+        assert.ok(condition.trim(), `condition for modify operation cannot be empty`);
       }
       this._data.conditions.push(this.format(condition, values || []));
     } else {
@@ -220,7 +220,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
       }
       if (this._data.type !== "SELECT") {
         // 如果是更改操作，检查 condition 不能为空
-        assert.ok(Object.keys(condition).length > 0, `modify condition cannot be empty`);
+        assert.ok(Object.keys(condition).length > 0, `condition for modify operation cannot be empty`);
       }
       for (const name in condition as any) {
         this._data.conditions.push(`${utils.sqlEscapeId(name)}=${utils.sqlEscape((condition as any)[name])}`);
