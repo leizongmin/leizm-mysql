@@ -302,7 +302,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    * 更新
    * @param update 键值对数据，如 { a: 123, b: 456 }
    */
-  public update(update: DataRow): this;
+  public update(update: Partial<Q>): this;
   /**
    * 更新
    * @param update SQL 语句，如 a=a+1
@@ -321,7 +321,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    */
   public update(update: string, values: any[]): this;
 
-  public update(update?: DataRow | string, values?: DataRow | any[]): this {
+  public update(update?: Partial<Q> | string, values?: DataRow | any[]): this {
     assert.ok(this._data.type === "", `cannot change query type after it was set to "${this._data.type}"`);
     this._data.type = "UPDATE";
     this._data.update = [];
@@ -341,7 +341,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    * 更新
    * @param update 键值对数据，如 { a: 123, b: 456 }
    */
-  public set(update: DataRow): this;
+  public set(update: Partial<Q>): this;
   /**
    * 更新
    * @param update SQL 语句，如 a=a+1
@@ -360,7 +360,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    */
   public set(update: string, values: any[]): this;
 
-  public set(update: DataRow | string, values?: DataRow | any[]): this {
+  public set(update: Partial<Q> | string, values?: DataRow | any[]): this {
     const t = typeof update;
     assert.ok(this._data.type === "UPDATE", `query type must be UPDATE, please call .update() before`);
     assert.ok(update, `missing update data`);
@@ -368,10 +368,11 @@ export class QueryBuilder<Q = DataRow, R = any> {
     if (typeof update === "string") {
       this._data.update.push(this.format(update, values || []));
     } else {
+      let update2 = update as Record<string, any>;
       if (this._schema) {
-        update = this._schema.formatInput(update);
+        update2 = this._schema.formatInput(update2);
       }
-      const sql = utils.sqlUpdateString(update);
+      const sql = utils.sqlUpdateString(update2);
       if (sql) {
         this._data.update.push(sql);
       }
@@ -383,14 +384,14 @@ export class QueryBuilder<Q = DataRow, R = any> {
    * 插入
    * @param data 键值对数据
    */
-  public insert(data: DataRow): this;
+  public insert(data: Partial<Q>): this;
   /**
    * 插入
    * @param data 键值对数据数组
    */
-  public insert(data: Array<DataRow>): this;
+  public insert(data: Array<Partial<Q>>): this;
 
-  public insert(data: DataRow | Array<DataRow>): this {
+  public insert(data: Partial<Q> | Array<Partial<Q>>): this {
     assert.ok(this._data.type === "", `cannot change query type after it was set to "${this._data.type}"`);
     this._data.type = "INSERT";
     assert.ok(data, `missing data`);
