@@ -22,7 +22,7 @@
     "@types/debug": "0.0.30",
     "@types/ioredis": "^3.2.7",
     "@types/mysql": "^2.15.4",
-    "@types/node": "^9.6.2",
+    "@types/node": "^10.0.8",
     "emoji-regex": "^6.5.1",
     "ioredis": "^3.2.2",
     "lei-utils": "^3.1.1",
