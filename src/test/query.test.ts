@@ -556,3 +556,17 @@ test("where(condition): support for $in & $like", function() {
     }).to.throw("value for condition type $like in a must be a string");
   }
 });
+
+test("update(data): support for $incr", function() {
+  {
+    const query = new mysql.QueryBuilder({ table: "test1" });
+    const sql = query
+      .update({ a: { $incr: 1 }})
+      .where({ a: 2 })
+      .build();
+    utils.debug(sql);
+    expect(sql).to.equal(
+      "UPDATE `test1` SET `a`=`a`+1 WHERE `a`=2",
+    );
+  }
+});

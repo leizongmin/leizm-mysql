@@ -4,8 +4,10 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
+import * as assert from "assert";
 import * as createDebug from "debug";
 import * as mysql from "mysql";
+import { QueryBuilder } from "./query";
 
 // TODO: 不知为何无法正确识别 d.ts 文件
 const emojiRegex = require("emoji-regex");
@@ -103,12 +105,60 @@ export function isCacheInstance(cache: any): boolean {
 
 /**
  * 返回根据对象生成的 SQL UPDATE 语句
+ * @param self QueryBuilder实例
  * @param data 键值对对象
  */
-export function sqlUpdateString(data: Record<string, any>): string {
+export function sqlUpdateString(self: QueryBuilder, data: Record<string, any>): string {
   return Object.keys(data)
-    .map(name => `${sqlEscapeId(name)}=${sqlEscape(data[name])}`)
+    .map(name => {
+      const info = data[name];
+      const isJsonField = self._schema && self._schema.isJsonField(name);
+      const escapedName = sqlEscapeId(name);
+      if (info && typeof info === "object" && Object.keys(info).length === 1 && !isJsonField) {
+        const op = Object.keys(info)[0];
+        switch (op) {
+          case "$incr":
+            return `${escapedName}=${escapedName}+${sqlEscape(info.$incr)}`;
+          default:
+            throw new Error(`update type ${op} does not supported`);
+        }
+      } else {
+        return `${escapedName}=${sqlEscape(data[name])}`;
+      }
+    })
     .join(", ");
+}
+
+/**
+ * 返回根据对象生成的 SQL WHERE 语句
+ * @param self QueryBuilder实例
+ * @param condition 查询条件
+ */
+export function sqlConditionStrings(self: QueryBuilder, condition: Record<string, any>): string[] {
+  const ret: string[] = [];
+  for (const name in condition as any) {
+    const info = (condition as any)[name];
+    const isJsonField = self._schema && self._schema.isJsonField(name);
+    const escapedName = sqlEscapeId(name);
+    if (info && typeof info === "object" && Object.keys(info).length === 1 && !isJsonField) {
+      const op = Object.keys(info)[0];
+      switch (op) {
+        case "$in":
+          assert.ok(Array.isArray(info.$in), `value for condition type $in in field ${name} must be an array`);
+          ret.push(`${escapedName} IN (${info.$in.map((v: any) => sqlEscape(v)).join(", ")})`);
+          break;
+        case "$like":
+          assert.ok(typeof info.$like === "string", `value for condition type $like in ${name} must be a string`);
+          ret.push(`${escapedName} LIKE ${sqlEscape(info.$like)}`);
+          break;
+        default:
+          throw new Error(`condition type ${op} does not supported`);
+      }
+    } else {
+      ret.push(`${escapedName}=${sqlEscape((condition as any)[name])}`);
+    }
+  }
+  return ret;
 }
 
 /**

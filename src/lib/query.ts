@@ -56,10 +56,16 @@ export interface QueryOptionsParams {
   fields?: string[];
 }
 
-export interface AdvancedQueryCondition {
+export interface AdvancedCondition {
   [key: string]: {
     $in?: any[];
     $like?: string;
+  };
+}
+
+export interface AdvancedUpdate {
+  [key: string]: {
+    $incr?: number;
   };
 }
 
@@ -85,7 +91,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
     limitRows: number;
     limit: string;
   };
-  protected readonly _schema?: Schema;
+  public readonly _schema?: Schema;
 
   /**
    * 创建 QueryBuilder
@@ -166,7 +172,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    * 查询条件
    * @param condition 键值对数据：{ aaa: 1, bbb: 22 })
    */
-  public where(condition: Partial<Q> | Pick<AdvancedQueryCondition, keyof Q>): this;
+  public where(condition: Partial<Q> | Pick<AdvancedCondition, keyof Q>): this;
   /**
    * 查询条件
    * @param condition SQL 语句
@@ -178,7 +184,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    */
   public where(condition: string, values: DataRow | any[]): this;
 
-  public where(condition: Partial<Q> | Pick<AdvancedQueryCondition, keyof Q> | string, values?: DataRow | any[]): this {
+  public where(condition: Partial<Q> | Pick<AdvancedCondition, keyof Q> | string, values?: DataRow | any[]): this {
     if (typeof condition === "string") {
       if (values) {
         return this.and(condition, values);
@@ -192,7 +198,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    * 查询条件
    * @param condition 键值对数据：{ aaa: 1, bbb: 22 })
    */
-  public and(condition: Partial<Q> | Pick<AdvancedQueryCondition, keyof Q>): this;
+  public and(condition: Partial<Q> | Pick<AdvancedCondition, keyof Q>): this;
   /**
    * 查询条件
    * @param condition SQL 语句
@@ -209,7 +215,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    */
   public and(condition: string, values: any[]): this;
 
-  public and(condition: Partial<Q> | Pick<AdvancedQueryCondition, keyof Q> | string, values?: DataRow | any[]): this {
+  public and(condition: Partial<Q> | Pick<AdvancedCondition, keyof Q> | string, values?: DataRow | any[]): this {
     const t = typeof condition;
     assert.ok(condition, `missing condition`);
     assert.ok(t === "string" || t === "object", `condition must be a string or object`);
@@ -229,31 +235,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
         // 如果是更改操作，检查 condition 不能为空
         assert.ok(Object.keys(condition).length > 0, `condition for modify operation cannot be empty`);
       }
-      // 解析查询条件
-      for (const name in condition as any) {
-        const info = (condition as any)[name];
-        const isJsonField = this._schema && this._schema.isJsonField(name);
-        const escapedName = utils.sqlEscapeId(name);
-        if (info && typeof info === "object" && Object.keys(info).length === 1 && !isJsonField) {
-          const op = Object.keys(info)[0];
-          switch (op) {
-            case "$in":
-              assert.ok(Array.isArray(info.$in), `value for condition type $in in field ${name} must be an array`);
-              this._data.conditions.push(
-                `${escapedName} IN (${info.$in.map((v: any) => utils.sqlEscape(v)).join(", ")})`,
-              );
-              break;
-            case "$like":
-              assert.ok(typeof info.$like === "string", `value for condition type $like in ${name} must be a string`);
-              this._data.conditions.push(`${escapedName} LIKE ${utils.sqlEscape(info.$like)}`);
-              break;
-            default:
-              throw new Error(`condition type ${op} does not supported`);
-          }
-        } else {
-          this._data.conditions.push(`${escapedName}=${utils.sqlEscape((condition as any)[name])}`);
-        }
-      }
+      this._data.conditions = this._data.conditions.concat(utils.sqlConditionStrings(this, condition as any));
     }
     return this;
   }
@@ -302,7 +284,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    * 更新
    * @param update 键值对数据，如 { a: 123, b: 456 }
    */
-  public update(update: Partial<Q>): this;
+  public update(update: Partial<Q> | Pick<AdvancedUpdate, keyof Q>): this;
   /**
    * 更新
    * @param update SQL 语句，如 a=a+1
@@ -321,7 +303,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    */
   public update(update: string, values: any[]): this;
 
-  public update(update?: Partial<Q> | string, values?: DataRow | any[]): this {
+  public update(update?: Partial<Q> | Pick<AdvancedUpdate, keyof Q> | string, values?: DataRow | any[]): this {
     assert.ok(this._data.type === "", `cannot change query type after it was set to "${this._data.type}"`);
     this._data.type = "UPDATE";
     this._data.update = [];
@@ -341,7 +323,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    * 更新
    * @param update 键值对数据，如 { a: 123, b: 456 }
    */
-  public set(update: Partial<Q>): this;
+  public set(update: Partial<Q> | Pick<AdvancedUpdate, keyof Q>): this;
   /**
    * 更新
    * @param update SQL 语句，如 a=a+1
@@ -360,7 +342,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
    */
   public set(update: string, values: any[]): this;
 
-  public set(update: Partial<Q> | string, values?: DataRow | any[]): this {
+  public set(update: Partial<Q> | Pick<AdvancedUpdate, keyof Q> | string, values?: DataRow | any[]): this {
     const t = typeof update;
     assert.ok(this._data.type === "UPDATE", `query type must be UPDATE, please call .update() before`);
     assert.ok(update, `missing update data`);
@@ -372,7 +354,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
       if (this._schema) {
         update2 = this._schema.formatInput(update2);
       }
-      const sql = utils.sqlUpdateString(update2);
+      const sql = utils.sqlUpdateString(this, update2);
       if (sql) {
         this._data.update.push(sql);
       }
