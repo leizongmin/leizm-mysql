@@ -35,9 +35,9 @@ export class Manager extends events.EventEmitter {
    * @param options 选项
    */
   public registerTable(options: table.TableBaseOptions) {
+    assert.ok(options, `please provide options`);
     assert.equal(typeof options.table, "string", `table name must be a string`);
     assert.ok(options.table, `table name cannot be empty`);
-    assert.ok(options, `please provide options`);
     const m = new table.Table(
       Object.assign(
         {

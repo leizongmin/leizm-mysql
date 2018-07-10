@@ -56,18 +56,20 @@ export interface QueryOptionsParams {
   fields?: string[];
 }
 
-export interface AdvancedCondition {
-  [key: string]: {
+export type AdvancedCondition = Record<
+  string | number | symbol,
+  {
     $in?: any[];
     $like?: string;
-  };
-}
+  }
+>;
 
-export interface AdvancedUpdate {
-  [key: string]: {
+export type AdvancedUpdate = Record<
+  string | number | symbol,
+  {
     $incr?: number;
-  };
-}
+  }
+>;
 
 export class QueryBuilder<Q = DataRow, R = any> {
   protected readonly _tableName: string;
@@ -158,10 +160,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
     if (!values) {
       return tpl;
     }
-    assert.ok(
-      values && (Array.isArray(values) || typeof values === "object"),
-      "second parameter must be an array or object",
-    );
+    assert.ok(Array.isArray(values) || typeof values === "object", "second parameter must be an array or object");
     if (Array.isArray(values)) {
       return utils.sqlFormat(tpl, values);
     }

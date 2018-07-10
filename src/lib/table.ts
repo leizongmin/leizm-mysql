@@ -635,12 +635,9 @@ export class Table<R = DataRow> {
   public async removeAllCache(query: Partial<R> | string): Promise<R[]> {
     if (this.importantFields.length > 0) {
       // 查询出旧的数据
-      const q = this.find({ master: true }).fields(...this.importantFields);
-      if (typeof query === "string") {
-        q.where(query);
-      } else {
-        q.where(query);
-      }
+      const q = this.find({ master: true })
+        .fields(...this.importantFields)
+        .where(query as string);
       const list = await q.exec();
       // 生成所有缓存的 Key
       let keys: string[] = [];
