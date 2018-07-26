@@ -87,7 +87,7 @@ export class Cache extends events.EventEmitter {
       const p = this._redis.multi();
       const keys: string[] = [];
       for (const item of list) {
-        const key = this._getKey(item.key);
+        const key = this.getKey(item.key);
         keys.push(key);
         p.setex(key, this._ttl, item.data);
       }
@@ -112,7 +112,7 @@ export class Cache extends events.EventEmitter {
    */
   public async getList(keys: string[]): Promise<string[]> {
     if (keys && keys.length > 0) {
-      keys = keys.map(key => this._getKey(key));
+      keys = keys.map(key => this.getKey(key));
       return await this._redis.mget(keys[0], ...keys.slice(1));
     }
     return [];
@@ -136,7 +136,7 @@ export class Cache extends events.EventEmitter {
       const p = this._redis.multi();
       const keys: string[] = [];
       for (const item of list) {
-        const key = this._getKey(item);
+        const key = this.getKey(item);
         keys.push(key);
         p.del(key);
       }
@@ -160,7 +160,7 @@ export class Cache extends events.EventEmitter {
    * @param key
    */
   public getPointerItem(key: string): Promise<string> {
-    return this._redis.eval(GET_BY_POINTER_SCRIPT, 1, this._getKey(key));
+    return this._redis.eval(GET_BY_POINTER_SCRIPT, 1, this.getKey(key));
   }
 
   /**
@@ -174,7 +174,7 @@ export class Cache extends events.EventEmitter {
    * 返回实际的 Key
    * @param key 原来的 key
    */
-  private _getKey(key: string): string {
+  public getKey(key: string): string {
     return this._prefix + key;
   }
 }

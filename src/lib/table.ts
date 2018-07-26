@@ -662,7 +662,7 @@ export class Table<R = DataRow> {
       const save: cache.CacheDataItem[] = [];
       save.push({ key: primaryKey, data: this.schema.serialize(data) });
       for (const key of uniqueKeys) {
-        save.push({ key, data: primaryKey });
+        save.push({ key, data: this.cache.getKey(primaryKey) });
       }
       await this.cache.saveList(save);
       return allKeys;
