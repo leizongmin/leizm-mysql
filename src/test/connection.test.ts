@@ -207,8 +207,12 @@ test("Connection.getConnection() cocurrent", async function() {
           .then(async c => {
             try {
               const r1 = await c.query(`SELECT ${i}`);
+              const r22 = await c.query("INSERT INTO `blog_contents`(`id`,`content`) VALUES (10000" + i + ', "123")');
+              expect(r22.insertId).to.greaterThan(0);
               const r2 = await c.query(`SELECT ${i}`);
               const r3 = await c.query(`SELECT ${i}`);
+              const r33 = await c.query("INSERT INTO `blog_contents`(`id`,`content`) VALUES (20000" + i + ', "123")');
+              expect(r33.insertId).to.greaterThan(0);
               expect(r1).to.deep.equal(r2);
               expect(r2).to.deep.equal(r3);
               resolve(r1);
