@@ -181,3 +181,52 @@ test("query", async function() {
   }
   await conn.close();
 });
+
+test("Connection.getConnection() cocurrent", async function() {
+  const connConfig = utils.getConnectionConfig();
+  connConfig.connectionLimit = 2;
+  const conn = new mysql.Connection({
+    connections: [connConfig],
+  });
+  {
+    const list: Promise<any>[] = [];
+    for (let i = 0; i < 100; i++) {
+      list.push(conn.query(`SELECT ${i}`));
+    }
+    const ret = await Promise.all(list);
+    for (let i = 0; i < 100; i++) {
+      expect(ret[i]).to.deep.equal([{ [i]: i }]);
+    }
+  }
+  {
+    const list: Promise<any>[] = [];
+    const gen = (i: number) =>
+      new Promise((resolve, reject) => {
+        conn
+          .getConnection()
+          .then(async c => {
+            try {
+              const r1 = await c.query(`SELECT ${i}`);
+              const r2 = await c.query(`SELECT ${i}`);
+              const r3 = await c.query(`SELECT ${i}`);
+              expect(r1).to.deep.equal(r2);
+              expect(r2).to.deep.equal(r3);
+              resolve(r1);
+            } catch (err) {
+              reject(err);
+            } finally {
+              c.release();
+            }
+          })
+          .catch(reject);
+      });
+    for (let i = 0; i < 100; i++) {
+      list.push(gen(i));
+    }
+    const ret = await Promise.all(list);
+    for (let i = 0; i < 100; i++) {
+      expect(ret[i]).to.deep.equal([{ [i]: i }]);
+    }
+  }
+  await conn.close();
+});
