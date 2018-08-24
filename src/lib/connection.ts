@@ -97,7 +97,7 @@ function wrapConnection(connection: any): WrappedConnection {
 /**
  * 用于 table 的 connection 接口
  */
-export interface IConnectionBase {
+export interface ConnectionBase {
   query(sql: string): Promise<any>;
   queryMaster(sql: string): Promise<any>;
 }
@@ -105,7 +105,7 @@ export interface IConnectionBase {
 /**
  * 封装原始 connection
  */
-export function toConnectionBase(c: WrappedConnection): IConnectionBase {
+export function toConnectionBase(c: WrappedConnection): ConnectionBase {
   function query(sql: string) {
     return c.query(sql);
   }

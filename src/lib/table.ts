@@ -37,7 +37,7 @@ export interface TableOptions extends TableBaseOptions {
   /**
    * Connection 实例
    */
-  connection: connection.IConnectionBase;
+  connection: connection.ConnectionBase;
   /**
    * Cache 实例
    */
@@ -61,7 +61,7 @@ export interface TableQueryOptions {
 
 export class Table<R = DataRow> {
   /** Connection 实例 */
-  public readonly connection: connection.IConnectionBase;
+  public readonly connection: connection.ConnectionBase;
   /** Cache 实例 */
   public readonly cache: cache.Cache;
   /** 表名 */

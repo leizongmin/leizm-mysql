@@ -8,14 +8,14 @@ import { expect } from "chai";
 import * as mysql from "../lib";
 import * as utils from "./utils";
 
-interface IUser {
+interface User {
   id: number;
   phone: string;
   first_name: string;
   last_name: string;
   info: any;
 }
-interface IUserBlog {
+interface UserBlog {
   blog_id: number;
   user_id: number;
   info: any;
@@ -28,7 +28,7 @@ const cache = new mysql.Cache(utils.getCacheConfig({ prefix }));
 const connection = new mysql.Connection({
   connections: [utils.getConnectionConfig()],
 });
-const User = new mysql.Table<IUser>({
+const User = new mysql.Table<User>({
   cache,
   connection,
   table: "users4",
@@ -43,7 +43,7 @@ const User = new mysql.Table<IUser>({
     info: "json",
   },
 });
-const UserBlog = new mysql.Table<IUserBlog>({
+const UserBlog = new mysql.Table<UserBlog>({
   cache,
   connection,
   table: "user_blogs4",
