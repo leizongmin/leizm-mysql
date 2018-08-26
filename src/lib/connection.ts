@@ -190,8 +190,6 @@ export type ConnectionEvent = "error" | "connection" | "enqueue" | "query" | "re
 export class Connection extends events.EventEmitter {
   private _options: ConnectionOptions;
   private _poolCluster: mysql.PoolCluster;
-  private _poolMaster: mysql.Pool;
-  private _poolSlave: mysql.Pool;
 
   private _on = super.on;
   private _once = super.once;
@@ -217,12 +215,18 @@ export class Connection extends events.EventEmitter {
     options.connections.slice(1).forEach((config, index) => {
       this._poolCluster.add(`SLAVE${index}`, config);
     });
-    this._poolMaster = this._poolCluster.of("MASTER");
-    this._poolSlave = this._poolCluster.of("SLAVE*");
 
     this._poolCluster.on("error", err => this.emit("error", err));
     this._poolCluster.on("connection", connection => this.emit("connection", connection));
     this._poolCluster.on("enqueue", () => this.emit("enqueue"));
+  }
+
+  protected get _poolMaster(): mysql.Pool {
+    return this._poolCluster.of("MASTER");
+  }
+
+  protected get _poolSlave(): mysql.Pool {
+    return this._poolCluster.of("SLAVE*");
   }
 
   public on(event: "error", callback: (err: Error) => void): this;
