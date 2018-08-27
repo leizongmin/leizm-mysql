@@ -96,7 +96,7 @@ export function isConnectionBaseInstance(conn: any): boolean {
 export function isCacheInstance(cache: any): boolean {
   return (
     cache &&
-    cache.redis &&
+    (cache.redis === null || cache.redis) &&
     typeof cache.saveList === "function" &&
     typeof cache.removeList === "function" &&
     typeof cache.getList === "function"

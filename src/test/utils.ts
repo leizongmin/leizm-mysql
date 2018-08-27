@@ -31,15 +31,17 @@ export function getConnectionConfig(config?: mysql.PoolConfig): mysql.PoolConfig
 
 export function getCacheConfig(config?: any): mysql.ManagerOptions {
   return Object.assign<any, mysql.ManagerOptions>(
-    {
-      redis: {
-        host: "127.0.0.1",
-        port: 6379,
-        db: 15,
-      },
-      prefix: "TEST:",
-      ttl: 30,
-    },
+    process.env.TEST_DISABLE_CACHE === "1"
+      ? { disableCache: true }
+      : {
+          redis: {
+            host: "127.0.0.1",
+            port: 6379,
+            db: 15,
+          },
+          prefix: "TEST:",
+          ttl: 30,
+        },
     config || {},
   );
 }

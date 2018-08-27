@@ -30,6 +30,10 @@ export interface CacheOptions {
    * Redis Key 前缀
    */
   prefix: string;
+  /**
+   * 关闭缓存
+   */
+  disableCache?: boolean;
 }
 
 export interface CacheDataItem {
@@ -44,7 +48,7 @@ export interface CacheDataItem {
 }
 
 export class Cache extends events.EventEmitter {
-  public readonly redis: Redis.Redis;
+  public readonly redis: Redis.Redis | null;
   protected ttl: number;
   protected prefix: string;
 
@@ -55,20 +59,26 @@ export class Cache extends events.EventEmitter {
     super();
 
     assert.ok(options, `missing options`);
-    assert.ok(options.redis, `missing redis parameter`);
-
     options = Object.assign<any, CacheOptions>({}, options);
 
-    this.redis = new Redis(options.redis);
-    this.redis.on("error", (err: Error) => {
-      this.emit("error", err);
-    });
+    if (options.disableCache) {
+      this.redis = null;
+      this.ttl = 0;
+      this.prefix = "";
+    } else {
+      assert.ok(options.redis, `missing redis parameter`);
 
-    assert.ok(options.ttl, `missing ttl parameter`);
-    assert.ok(options.ttl > 0, `parameter ttl must > 0`);
-    this.ttl = Number(options.ttl);
+      this.redis = new Redis(options.redis);
+      this.redis.on("error", (err: Error) => {
+        this.emit("error", err);
+      });
 
-    this.prefix = options.prefix || "";
+      assert.ok(options.ttl, `missing ttl parameter`);
+      assert.ok(options.ttl > 0, `parameter ttl must > 0`);
+      this.ttl = Number(options.ttl);
+
+      this.prefix = options.prefix || "";
+    }
   }
 
   /**
@@ -76,6 +86,8 @@ export class Cache extends events.EventEmitter {
    * @param list 每个元素为 { key, data }
    */
   public async saveList(list: CacheDataItem[]): Promise<string[]> {
+    if (!this.redis) return [];
+
     if (list && list.length > 0) {
       const p = this.redis.multi();
       const keys: string[] = [];
@@ -104,6 +116,8 @@ export class Cache extends events.EventEmitter {
    * @param keys key 数组
    */
   public async getList(keys: string[]): Promise<string[]> {
+    if (!this.redis) return [];
+
     if (keys && keys.length > 0) {
       keys = keys.map(key => this.getKey(key));
       return await this.redis.mget(keys[0], ...keys.slice(1));
@@ -125,6 +139,8 @@ export class Cache extends events.EventEmitter {
    * @param keys
    */
   public async removeList(list: string[]): Promise<string[]> {
+    if (!this.redis) return [];
+
     if (list && list.length > 0) {
       const p = this.redis.multi();
       const keys: string[] = [];
@@ -153,6 +169,8 @@ export class Cache extends events.EventEmitter {
    * @param key
    */
   public getPointerItem(key: string): Promise<string> {
+    if (!this.redis) return Promise.resolve("");
+
     return this.redis.eval(GET_BY_POINTER_SCRIPT, 1, this.getKey(key));
   }
 
@@ -160,6 +178,8 @@ export class Cache extends events.EventEmitter {
    * 关闭连接
    */
   public close(): Promise<string> {
+    if (!this.redis) return Promise.resolve("");
+
     return this.redis.quit() as any;
   }
 
