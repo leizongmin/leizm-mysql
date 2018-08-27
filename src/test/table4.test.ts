@@ -84,9 +84,24 @@ test("transaction - commit success", async function() {
     last_name: "Ei",
     info: { age: 18 },
   });
-  console.log(user.id, user.first_name, user.last_name);
-  const [blog] = await UserBlog.bindConnection(c).insert({ blog_id: 1, user_id: user.id, score: 111 });
-  console.log(blog.user_id, blog.blog_id, blog.created_at);
+  // console.log(user);
+  const [blog] = await UserBlog.bindConnection(c).insert({
+    blog_id: 1,
+    user_id: user.id,
+    score: 111,
+  });
+  // console.log(blog);
+  expect(blog).to.includes({
+    blog_id: 1,
+    user_id: user.id,
+    score: 111,
+  });
+  const user2 = await User.bindConnection(c)
+    .findOne()
+    .where({ id: user.id })
+    .exec();
+  // console.log(user2);
+  expect(user).to.deep.equal(user2);
   await c.commit();
   c.release();
   const u = await User.findOne()
