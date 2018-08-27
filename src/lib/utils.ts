@@ -68,7 +68,7 @@ export function sqlFormatObject(sql: string, values: Record<string, any>, disabl
 export function isConnectionInstance(conn: any): boolean {
   return (
     conn &&
-    conn._poolCluster &&
+    conn.poolCluster &&
     typeof conn.getConnection === "function" &&
     typeof conn.getMasterConnection === "function" &&
     typeof conn.getSlaveConnection === "function" &&
@@ -96,7 +96,7 @@ export function isConnectionBaseInstance(conn: any): boolean {
 export function isCacheInstance(cache: any): boolean {
   return (
     cache &&
-    cache._redis &&
+    cache.redis &&
     typeof cache.saveList === "function" &&
     typeof cache.removeList === "function" &&
     typeof cache.getList === "function"

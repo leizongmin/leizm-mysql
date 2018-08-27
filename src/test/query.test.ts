@@ -561,12 +561,10 @@ test("update(data): support for $incr", function() {
   {
     const query = new mysql.QueryBuilder({ table: "test1" });
     const sql = query
-      .update({ a: { $incr: 1 }})
+      .update({ a: { $incr: 1 } })
       .where({ a: 2 })
       .build();
     utils.debug(sql);
-    expect(sql).to.equal(
-      "UPDATE `test1` SET `a`=`a`+1 WHERE `a`=2",
-    );
+    expect(sql).to.equal("UPDATE `test1` SET `a`=`a`+1 WHERE `a`=2");
   }
 });

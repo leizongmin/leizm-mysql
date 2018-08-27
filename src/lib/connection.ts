@@ -188,12 +188,8 @@ export interface ResultEventData {
 export type ConnectionEvent = "error" | "connection" | "enqueue" | "query" | "result";
 
 export class Connection extends events.EventEmitter {
-  private _options: ConnectionOptions;
-  private _poolCluster: mysql.PoolCluster;
-
-  private _on = super.on;
-  private _once = super.once;
-  private _emit = super.emit;
+  protected readonly options: ConnectionOptions;
+  protected readonly poolCluster: mysql.PoolCluster;
 
   /**
    * 创建 Connection
@@ -205,28 +201,28 @@ export class Connection extends events.EventEmitter {
     assert.ok(Array.isArray(options.connections), `connections must be an array`);
     assert.ok(options.connections.length >= 1, `connections must includes at least one item`);
 
-    this._options = Object.assign<any, ConnectionOptions>({}, options);
-    if (!("stripEmoji" in this._options)) {
-      this._options.stripEmoji = true;
+    this.options = Object.assign<any, ConnectionOptions>({}, options);
+    if (!("stripEmoji" in this.options)) {
+      this.options.stripEmoji = true;
     }
 
-    this._poolCluster = mysql.createPoolCluster();
-    this._poolCluster.add("MASTER", options.connections[0]);
+    this.poolCluster = mysql.createPoolCluster();
+    this.poolCluster.add("MASTER", options.connections[0]);
     options.connections.slice(1).forEach((config, index) => {
-      this._poolCluster.add(`SLAVE${index}`, config);
+      this.poolCluster.add(`SLAVE${index}`, config);
     });
 
-    this._poolCluster.on("error", err => this.emit("error", err));
-    this._poolCluster.on("connection", connection => this.emit("connection", connection));
-    this._poolCluster.on("enqueue", () => this.emit("enqueue"));
+    this.poolCluster.on("error", err => this.emit("error", err));
+    this.poolCluster.on("connection", connection => this.emit("connection", connection));
+    this.poolCluster.on("enqueue", () => this.emit("enqueue"));
   }
 
   protected get _poolMaster(): mysql.Pool {
-    return this._poolCluster.of("MASTER");
+    return this.poolCluster.of("MASTER");
   }
 
   protected get _poolSlave(): mysql.Pool {
-    return this._poolCluster.of("SLAVE*");
+    return this.poolCluster.of("SLAVE*");
   }
 
   public on(event: "error", callback: (err: Error) => void): this;
@@ -235,7 +231,7 @@ export class Connection extends events.EventEmitter {
   public on(event: "query", callback: (data: QueryEventData) => void): this;
   public on(event: "result", callback: (data: ResultEventData) => void): this;
   public on(event: ConnectionEvent, callback: (...args: any[]) => void): this {
-    return this._on(event, callback);
+    return super.on(event, callback);
   }
 
   public once(event: "error", callback: (err: Error) => void): this;
@@ -244,7 +240,7 @@ export class Connection extends events.EventEmitter {
   public once(event: "query", callback: (data: QueryEventData) => void): this;
   public once(event: "result", callback: (data: ResultEventData) => void): this;
   public once(event: ConnectionEvent, callback: (...args: any[]) => void): this {
-    return this._once(event, callback);
+    return super.once(event, callback);
   }
 
   public emit(event: "error", err: Error): boolean;
@@ -253,7 +249,7 @@ export class Connection extends events.EventEmitter {
   public emit(event: "query", data: QueryEventData): boolean;
   public emit(event: "result", data: ResultEventData): boolean;
   public emit(event: ConnectionEvent, ...data: any[]): boolean {
-    return this._emit(event, ...data);
+    return super.emit(event, ...data);
   }
 
   /**
@@ -261,7 +257,7 @@ export class Connection extends events.EventEmitter {
    */
   public close(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this._poolCluster.end(err => {
+      this.poolCluster.end(err => {
         if (err) {
           return reject(err);
         }
@@ -274,21 +270,21 @@ export class Connection extends events.EventEmitter {
    * 获取一个原始连接
    */
   public getConnection(): Promise<WrappedConnection> {
-    return this._getConnection(this._poolCluster);
+    return this.getConnectionFromPool(this.poolCluster);
   }
 
   /**
    * 获取一个 MASTER 连接
    */
   public getMasterConnection(): Promise<WrappedConnection> {
-    return this._getConnection(this._poolMaster);
+    return this.getConnectionFromPool(this._poolMaster);
   }
 
   /**
    * 获取一个 SLAVE 连接
    */
   public getSlaveConnection(): Promise<WrappedConnection> {
-    return this._getConnection(this._poolSlave);
+    return this.getConnectionFromPool(this._poolSlave);
   }
 
   /**
@@ -299,7 +295,7 @@ export class Connection extends events.EventEmitter {
     if (utils.isUpdateSQL(sql)) {
       return this.queryMaster(sql);
     }
-    return this._query(this._poolCluster, sql);
+    return this.queryFromPool(this.poolCluster, sql);
   }
 
   /**
@@ -307,7 +303,7 @@ export class Connection extends events.EventEmitter {
    * @param sql 要执行的 SQL 查询语句
    */
   public queryMaster(sql: string): Promise<any> {
-    return this._query(this._poolMaster, sql);
+    return this.queryFromPool(this._poolMaster, sql);
   }
 
   /**
@@ -315,7 +311,7 @@ export class Connection extends events.EventEmitter {
    * @param sql 要执行的 SQL 查询语句
    */
   public querySlave(sql: string): Promise<any> {
-    return this._query(this._poolSlave, sql);
+    return this.queryFromPool(this._poolSlave, sql);
   }
 
   /**
@@ -352,7 +348,7 @@ export class Connection extends events.EventEmitter {
    * 获取一个原始连接（增加 Promise 支持）
    * @param pool 连接池
    */
-  private _getConnection(pool: MysqlPool): Promise<WrappedConnection> {
+  protected getConnectionFromPool(pool: MysqlPool): Promise<WrappedConnection> {
     return new Promise((resolve, reject) => {
       pool.getConnection((err, connection) => {
         if (err) {
@@ -368,7 +364,7 @@ export class Connection extends events.EventEmitter {
    * @param pool 连接池
    * @param sql  SQL 查询语句
    */
-  private _query(pool: MysqlPool, sql: string): Promise<any> {
+  protected queryFromPool(pool: MysqlPool, sql: string): Promise<any> {
     return new Promise((resolve, reject) => {
       utils.connectionDebug("query sql: %s", sql);
       pool.getConnection((err, connection) => {
@@ -380,7 +376,7 @@ export class Connection extends events.EventEmitter {
         const connectionName = `${cc.host}:${cc.port}`;
         const id = utils.generateRequestId();
         this.emit("query", { id, sql, connection, name: connectionName, timestamp });
-        if (this._options.stripEmoji) {
+        if (this.options.stripEmoji) {
           sql = utils.stripEmoji(sql);
         }
         connection.query(sql, (err2: QueryError | null, ret) => {

@@ -117,7 +117,7 @@ export interface SchemaField {
 }
 
 export class Schema {
-  private _fields: SchemaFields;
+  protected fields: SchemaFields;
 
   /**
    * 创建 Schema
@@ -127,15 +127,15 @@ export class Schema {
     assert.ok(options.fields, `must provide fields`);
     assert.ok(typeof options.fields === "object", `fields must be an object`);
 
-    this._fields = {};
+    this.fields = {};
     for (const name in options.fields) {
       const type = options.fields[name];
       assert.ok(type, `options for field "${name}" must be true or object`);
       if (type === true) {
-        this._fields[name] = getDefaultFieldInfo();
+        this.fields[name] = getDefaultFieldInfo();
         continue;
       } else if (typeof type === "string") {
-        this._fields[name] = getFieldInfoByType(type);
+        this.fields[name] = getFieldInfoByType(type);
         continue;
       } else {
         const info = options.fields[name] as SchemaField;
@@ -143,7 +143,7 @@ export class Schema {
         assert.ok(typeof info.input === "function", `input formatter for field "${name}" must be a function`);
         assert.ok(info.output, `field "${name}" must provide a output formatter`);
         assert.ok(typeof info.output === "function", `output formatter for field "${name}" must be a function`);
-        this._fields[name] = { input: info.input, output: info.output };
+        this.fields[name] = { input: info.input, output: info.output };
       }
     }
   }
@@ -155,7 +155,7 @@ export class Schema {
   public formatInput(data: Record<string, any>): Record<string, any> {
     const ret: Record<string, any> = {};
     for (const name in data) {
-      const field = this._fields[name];
+      const field = this.fields[name];
       // 自动去掉不存在的字段和值为 undefined 的字段
       if (field && typeof data[name] !== "undefined") {
         const fieldInfo = field as SchemaField;
@@ -184,7 +184,7 @@ export class Schema {
   public formatOutput(data: Record<string, any>): Record<string, any> {
     const ret: Record<string, any> = {};
     for (const name in data) {
-      const field = this._fields[name];
+      const field = this.fields[name];
       const fieldInfo = field as SchemaField;
       // 不处理不存在的字段
       if (field && fieldInfo.output) {
@@ -211,7 +211,7 @@ export class Schema {
   public serialize(data: Record<string, any>): string {
     data = Object.assign({}, data);
     for (const name in data) {
-      const field = this._fields[name];
+      const field = this.fields[name];
       const fieldInfo = field as SchemaField;
       if (field && fieldInfo.encode) {
         data[name] = fieldInfo.encode(data[name]);
@@ -227,7 +227,7 @@ export class Schema {
   public unserialize(data: string): Record<string, any> {
     const ret = JSON.parse(data);
     for (const name in ret) {
-      const field = this._fields[name];
+      const field = this.fields[name];
       const fieldInfo = field as SchemaField;
       if (field && fieldInfo.decode) {
         ret[name] = fieldInfo.decode(ret[name]);
@@ -241,6 +241,6 @@ export class Schema {
    * @param name 字段名
    */
   public isJsonField(name: string): boolean {
-    return this._fields[name] && this._fields[name] === "json";
+    return this.fields[name] && this.fields[name] === "json";
   }
 }

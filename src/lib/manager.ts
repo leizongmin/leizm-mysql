@@ -15,7 +15,7 @@ export interface ManagerOptions extends cache.CacheOptions, connection.Connectio
 export class Manager extends events.EventEmitter {
   public readonly cache: cache.Cache;
   public readonly connection: connection.Connection;
-  private readonly _tables: Map<string, table.Table>;
+  protected readonly tables: Map<string, table.Table>;
 
   /**
    * 创建 Manager
@@ -26,7 +26,7 @@ export class Manager extends events.EventEmitter {
     this.cache = new cache.Cache(options);
     this.connection = new connection.Connection(options);
 
-    this._tables = new Map();
+    this.tables = new Map();
   }
 
   /**
@@ -47,7 +47,7 @@ export class Manager extends events.EventEmitter {
         options,
       ),
     );
-    this._tables.set(options.table, m);
+    this.tables.set(options.table, m);
   }
 
   /**
@@ -55,7 +55,7 @@ export class Manager extends events.EventEmitter {
    * @param name Table 名称
    */
   public hasTable(name: string): boolean {
-    return this._tables.has(name);
+    return this.tables.has(name);
   }
 
   /**
@@ -63,10 +63,10 @@ export class Manager extends events.EventEmitter {
    * @param name Table 名称
    */
   public table(name: string): table.Table {
-    if (!this._tables.has(name)) {
+    if (!this.tables.has(name)) {
       throw new Error(`table "${name}" does not exists`);
     }
-    return this._tables.get(name) as table.Table;
+    return this.tables.get(name) as table.Table;
   }
 
   /**
@@ -75,6 +75,6 @@ export class Manager extends events.EventEmitter {
   public async close(): Promise<void> {
     await this.cache.close();
     await this.connection.close();
-    this._tables.clear();
+    this.tables.clear();
   }
 }

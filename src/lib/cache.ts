@@ -44,9 +44,9 @@ export interface CacheDataItem {
 }
 
 export class Cache extends events.EventEmitter {
-  private _redis: Redis.Redis;
-  private _ttl: number;
-  private _prefix: string;
+  public readonly redis: Redis.Redis;
+  protected ttl: number;
+  protected prefix: string;
 
   /**
    * 创建 Cache 实例
@@ -59,23 +59,16 @@ export class Cache extends events.EventEmitter {
 
     options = Object.assign<any, CacheOptions>({}, options);
 
-    this._redis = new Redis(options.redis);
-    this._redis.on("error", (err: Error) => {
+    this.redis = new Redis(options.redis);
+    this.redis.on("error", (err: Error) => {
       this.emit("error", err);
     });
 
     assert.ok(options.ttl, `missing ttl parameter`);
     assert.ok(options.ttl > 0, `parameter ttl must > 0`);
-    this._ttl = Number(options.ttl);
+    this.ttl = Number(options.ttl);
 
-    this._prefix = options.prefix || "";
-  }
-
-  /**
-   * 获取 redis 实例
-   */
-  get redis(): Redis.Redis {
-    return this._redis;
+    this.prefix = options.prefix || "";
   }
 
   /**
@@ -84,12 +77,12 @@ export class Cache extends events.EventEmitter {
    */
   public async saveList(list: CacheDataItem[]): Promise<string[]> {
     if (list && list.length > 0) {
-      const p = this._redis.multi();
+      const p = this.redis.multi();
       const keys: string[] = [];
       for (const item of list) {
         const key = this.getKey(item.key);
         keys.push(key);
-        p.setex(key, this._ttl, item.data);
+        p.setex(key, this.ttl, item.data);
       }
       await p.exec();
       return keys;
@@ -113,7 +106,7 @@ export class Cache extends events.EventEmitter {
   public async getList(keys: string[]): Promise<string[]> {
     if (keys && keys.length > 0) {
       keys = keys.map(key => this.getKey(key));
-      return await this._redis.mget(keys[0], ...keys.slice(1));
+      return await this.redis.mget(keys[0], ...keys.slice(1));
     }
     return [];
   }
@@ -133,7 +126,7 @@ export class Cache extends events.EventEmitter {
    */
   public async removeList(list: string[]): Promise<string[]> {
     if (list && list.length > 0) {
-      const p = this._redis.multi();
+      const p = this.redis.multi();
       const keys: string[] = [];
       for (const item of list) {
         const key = this.getKey(item);
@@ -160,14 +153,14 @@ export class Cache extends events.EventEmitter {
    * @param key
    */
   public getPointerItem(key: string): Promise<string> {
-    return this._redis.eval(GET_BY_POINTER_SCRIPT, 1, this.getKey(key));
+    return this.redis.eval(GET_BY_POINTER_SCRIPT, 1, this.getKey(key));
   }
 
   /**
    * 关闭连接
    */
   public close(): Promise<string> {
-    return this._redis.quit() as any;
+    return this.redis.quit() as any;
   }
 
   /**
@@ -175,6 +168,6 @@ export class Cache extends events.EventEmitter {
    * @param key 原来的 key
    */
   public getKey(key: string): string {
-    return this._prefix + key;
+    return this.prefix + key;
   }
 }
