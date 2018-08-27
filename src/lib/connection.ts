@@ -217,11 +217,11 @@ export class Connection extends events.EventEmitter {
     this.poolCluster.on("enqueue", () => this.emit("enqueue"));
   }
 
-  protected get _poolMaster(): mysql.Pool {
+  protected get poolMaster(): mysql.Pool {
     return this.poolCluster.of("MASTER");
   }
 
-  protected get _poolSlave(): mysql.Pool {
+  protected get poolSlave(): mysql.Pool {
     return this.poolCluster.of("SLAVE*");
   }
 
@@ -277,14 +277,14 @@ export class Connection extends events.EventEmitter {
    * 获取一个 MASTER 连接
    */
   public getMasterConnection(): Promise<WrappedConnection> {
-    return this.getConnectionFromPool(this._poolMaster);
+    return this.getConnectionFromPool(this.poolMaster);
   }
 
   /**
    * 获取一个 SLAVE 连接
    */
   public getSlaveConnection(): Promise<WrappedConnection> {
-    return this.getConnectionFromPool(this._poolSlave);
+    return this.getConnectionFromPool(this.poolSlave);
   }
 
   /**
@@ -303,7 +303,7 @@ export class Connection extends events.EventEmitter {
    * @param sql 要执行的 SQL 查询语句
    */
   public queryMaster(sql: string): Promise<any> {
-    return this.queryFromPool(this._poolMaster, sql);
+    return this.queryFromPool(this.poolMaster, sql);
   }
 
   /**
@@ -311,7 +311,7 @@ export class Connection extends events.EventEmitter {
    * @param sql 要执行的 SQL 查询语句
    */
   public querySlave(sql: string): Promise<any> {
-    return this.queryFromPool(this._poolSlave, sql);
+    return this.queryFromPool(this.poolSlave, sql);
   }
 
   /**
