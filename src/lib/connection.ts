@@ -18,80 +18,89 @@ export interface QueryError extends mysql.MysqlError {
   sql?: string;
 }
 
-export interface WrappedConnection {
+export class WrappedConnection {
+  constructor(protected readonly connection: mysql.PoolConnection) {}
+
   /**
    * 执行查询
    * @param sql SQL 语句
    * @param values 模板变量
    * @param callback 回调函数
    */
-  query(sql: string, values?: any[]): Promise<any>;
+  public query(sql: string, values?: any[]): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.connection.query(sql, values, (err, ret) => {
+        if (err) return reject(err);
+        resolve(ret);
+      });
+    });
+  }
   /**
    * 值转义
    */
-  escape(value: any): string;
+  public escape(value: any): string {
+    return this.connection.escape(value);
+  }
   /**
    * 标志符转义
    */
-  escapeId(value: string): string;
+  public escapeId(value: string): string {
+    return this.connection.escapeId(value);
+  }
   /**
    * 开始事务
    * @param callback 回调函数
    */
-  beginTransaction(): Promise<any>;
+  public beginTransaction(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.connection.beginTransaction(err => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
+  }
   /**
    * 提交事务
    * @param callback 回调函数
    */
-  commit(): Promise<any>;
+  public commit(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.connection.commit(err => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
+  }
   /**
    * 回滚事务
    * @param callback 回调函数
    */
-  rollback(): Promise<any>;
+  public rollback(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.connection.rollback(err => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
+  }
   /**
    * 暂停
    */
-  pause(): void;
+  public pause(): void {
+    return this.connection.pause();
+  }
   /**
    * 释放
    */
-  release(): void;
+  public release(): void {
+    return this.connection.release();
+  }
   /**
    * 继续
    */
-  resume(): void;
-}
-
-/**
- * 原始 connection 增加 Promise 支持
- */
-function wrapConnection(connection: any): WrappedConnection {
-  return new Proxy(connection, {
-    get(target, name) {
-      switch (name) {
-        case "query":
-        case "beginTransaction":
-        case "commit":
-        case "rollback":
-          return (...args: any[]) => {
-            const cb = args[args.length - 1];
-            if (typeof cb === "function") return target[name](...args);
-            return new Promise((resolve, reject) => {
-              target[name](...args, (err: Error, ret: any) => {
-                if (err) {
-                  reject(err);
-                } else {
-                  resolve(ret);
-                }
-              });
-            });
-          };
-        default:
-          return target[name];
-      }
-    },
-  });
+  public resume(): void {
+    return this.connection.resume();
+  }
 }
 
 /**
@@ -354,7 +363,7 @@ export class Connection extends events.EventEmitter {
         if (err) {
           return reject(err);
         }
-        resolve(wrapConnection(connection));
+        resolve(new WrappedConnection(connection));
       });
     });
   }

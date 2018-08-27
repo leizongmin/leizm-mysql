@@ -30,9 +30,9 @@ test("Connection.getConnection() & getMasterConnection() & getSlaveConnection()"
     const conn1 = (await conn.getMasterConnection()) as any;
     const conn2 = (await conn.getMasterConnection()) as any;
     const conn3 = (await conn.getMasterConnection()) as any;
-    expect(conn1._clusterId).to.equal("MASTER");
-    expect(conn2._clusterId).to.equal("MASTER");
-    expect(conn3._clusterId).to.equal("MASTER");
+    expect(conn1.connection._clusterId).to.equal("MASTER");
+    expect(conn2.connection._clusterId).to.equal("MASTER");
+    expect(conn3.connection._clusterId).to.equal("MASTER");
     conn1.release();
     conn2.release();
     conn3.release();
@@ -42,10 +42,10 @@ test("Connection.getConnection() & getMasterConnection() & getSlaveConnection()"
     const conn2 = (await conn.getSlaveConnection()) as any;
     const conn3 = (await conn.getSlaveConnection()) as any;
     const conn4 = (await conn.getSlaveConnection()) as any;
-    expect(conn1._clusterId).to.be.oneOf(["SLAVE0", "SLAVE1"]);
-    expect(conn2._clusterId).to.be.oneOf(["SLAVE0", "SLAVE1"]);
-    expect(conn3._clusterId).to.be.oneOf(["SLAVE0", "SLAVE1"]);
-    expect(conn4._clusterId).to.be.oneOf(["SLAVE0", "SLAVE1"]);
+    expect(conn1.connection._clusterId).to.be.oneOf(["SLAVE0", "SLAVE1"]);
+    expect(conn2.connection._clusterId).to.be.oneOf(["SLAVE0", "SLAVE1"]);
+    expect(conn3.connection._clusterId).to.be.oneOf(["SLAVE0", "SLAVE1"]);
+    expect(conn4.connection._clusterId).to.be.oneOf(["SLAVE0", "SLAVE1"]);
     conn1.release();
     conn2.release();
     conn3.release();
@@ -56,10 +56,10 @@ test("Connection.getConnection() & getMasterConnection() & getSlaveConnection()"
     const conn2 = (await conn.getConnection()) as any;
     const conn3 = (await conn.getConnection()) as any;
     const conn4 = (await conn.getConnection()) as any;
-    expect(conn1._clusterId).to.be.oneOf(["MASTER", "SLAVE0", "SLAVE1"]);
-    expect(conn2._clusterId).to.be.oneOf(["MASTER", "SLAVE0", "SLAVE1"]);
-    expect(conn3._clusterId).to.be.oneOf(["MASTER", "SLAVE0", "SLAVE1"]);
-    expect(conn4._clusterId).to.be.oneOf(["MASTER", "SLAVE0", "SLAVE1"]);
+    expect(conn1.connection._clusterId).to.be.oneOf(["MASTER", "SLAVE0", "SLAVE1"]);
+    expect(conn2.connection._clusterId).to.be.oneOf(["MASTER", "SLAVE0", "SLAVE1"]);
+    expect(conn3.connection._clusterId).to.be.oneOf(["MASTER", "SLAVE0", "SLAVE1"]);
+    expect(conn4.connection._clusterId).to.be.oneOf(["MASTER", "SLAVE0", "SLAVE1"]);
     conn1.release();
     conn2.release();
     conn3.release();
@@ -231,6 +231,32 @@ test("Connection.getConnection() cocurrent", async function() {
     for (let i = 0; i < 100; i++) {
       expect(ret[i]).to.deep.equal([{ [i]: i }]);
     }
+  }
+  await conn.close();
+});
+
+test("Connection.getConnection() close by server side", async function() {
+  const connConfig = utils.getConnectionConfig();
+  connConfig.connectionLimit = 1;
+  const conn = new mysql.Connection({
+    connections: [connConfig],
+  });
+  {
+    const c = await conn.getConnection();
+    await c.query("SET wait_timeout=2");
+    await c.query("SET interactive_timeout=2");
+    const list = await c.query("SELECT * FROM `blog_contents`");
+    // console.log(list.length);
+    expect(list.length).to.greaterThan(0);
+    c.release();
+  }
+  await utils.sleep(4000);
+  {
+    const c = await conn.getConnection();
+    const list = await c.query("SELECT * FROM `blog_contents`");
+    // console.log(list.length);
+    expect(list.length).to.greaterThan(0);
+    c.release();
   }
   await conn.close();
 });
