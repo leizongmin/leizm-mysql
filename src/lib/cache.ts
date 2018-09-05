@@ -21,15 +21,15 @@ export interface CacheOptions {
    * {host, port, password, db }
    * 参考 https://github.com/luin/ioredis/blob/master/API.md#new_Redis
    */
-  redis: Redis.RedisOptions;
+  redis?: Redis.RedisOptions;
   /**
    * 缓存时间，单位：秒
    */
-  ttl: number;
+  ttl?: number;
   /**
    * Redis Key 前缀
    */
-  prefix: string;
+  prefix?: string;
   /**
    * 关闭缓存
    */
@@ -74,7 +74,7 @@ export class Cache extends events.EventEmitter {
       });
 
       assert.ok(options.ttl, `missing ttl parameter`);
-      assert.ok(options.ttl > 0, `parameter ttl must > 0`);
+      assert.ok(options.ttl! > 0, `parameter ttl must > 0`);
       this.ttl = Number(options.ttl);
 
       this.prefix = options.prefix || "";
