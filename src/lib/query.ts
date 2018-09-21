@@ -72,9 +72,43 @@ export type AdvancedUpdate = Record<
 >;
 
 export class QueryBuilder<Q = DataRow, R = any> {
-  protected readonly _tableName: string;
-  protected readonly _tableNameEscaped: string;
-  protected readonly _execCallback: QueryBuilderExecFunction | null;
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * 更新
+   */
+  public static update<Q = DataRow, R = any>(): QueryBuilder<Q, R> {
+    return new QueryBuilder().update();
+  }
+
+  /**
+   * 查询
+   * @param fields
+   */
+  public static select<Q = DataRow, R = any>(...fields: string[]): QueryBuilder<Q, R> {
+    return new QueryBuilder().select(...fields);
+  }
+
+  /**
+   * 插入
+   * @param data 数据
+   */
+  public static insert<Q = DataRow, R = any>(data: Array<Partial<Q>> | Partial<Q>): QueryBuilder<Q, R> {
+    return new QueryBuilder().insert(data);
+  }
+
+  /**
+   * 删除
+   */
+  public static delete<Q = DataRow, R = any>(): QueryBuilder<Q, R> {
+    return new QueryBuilder().delete();
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  protected _tableName?: string;
+  protected _tableNameEscaped?: string;
+  protected readonly _execCallback?: QueryBuilderExecFunction | null;
   protected readonly _data: {
     fields: string;
     conditions: string[];
@@ -92,29 +126,30 @@ export class QueryBuilder<Q = DataRow, R = any> {
     skipRows: number;
     limitRows: number;
     limit: string;
+    tableAlias: Record<string, string>;
+    currentJoinTableName: string;
+    joinTables: Array<{ table: string; fields: string[]; type: "LEFT JOIN" | "JOIN" | "RIGHT JOIN"; on: string }>;
   };
   public readonly _schema?: Schema;
 
   /**
    * 创建 QueryBuilder
    */
-  constructor(options: QueryBuilderOptions) {
-    assert.ok(options, `missing options`);
-    assert.ok(options.table, `must provide table name`);
-    assert.ok(typeof options.table === "string", `table name must be a string`);
-
-    this._tableName = options.table;
-    this._tableNameEscaped = utils.sqlEscapeId(options.table);
-
-    if (options.exec) {
-      assert.ok(typeof options.exec === "function", `exec callback must be a function`);
-      this._execCallback = options.exec;
-    } else {
-      this._execCallback = null;
-    }
-
-    if (options.schema) {
-      this._schema = options.schema;
+  constructor(options?: QueryBuilderOptions) {
+    if (options) {
+      if (options.table) {
+        assert.ok(typeof options.table === "string", `table name must be a string`);
+        this.table(options.table);
+      }
+      if (options.exec) {
+        assert.ok(typeof options.exec === "function", `exec callback must be a function`);
+        this._execCallback = options.exec;
+      } else {
+        this._execCallback = null;
+      }
+      if (options.schema) {
+        this._schema = options.schema;
+      }
     }
 
     this._data = {
@@ -134,6 +169,9 @@ export class QueryBuilder<Q = DataRow, R = any> {
       skipRows: 0,
       limitRows: 0,
       limit: "",
+      tableAlias: {},
+      currentJoinTableName: "",
+      joinTables: [],
     };
   }
 
@@ -166,6 +204,89 @@ export class QueryBuilder<Q = DataRow, R = any> {
     }
     return utils.sqlFormatObject(tpl, values);
   }
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * 设置表名
+   * @param tableName 表名
+   */
+  public into(tableName: string): this {
+    return this.table(tableName);
+  }
+
+  /**
+   * 设置表名
+   * @param tableName 表名
+   */
+  public from(tableName: string): this {
+    return this.table(tableName);
+  }
+
+  /**
+   * 设置表名
+   * @param tableName 表名
+   */
+  public table(tableName: string): this {
+    assert.ok(!this._tableName, `cannot change table name after it's set to "${this._tableName}"`);
+    this._tableName = tableName;
+    this._tableNameEscaped = utils.sqlEscapeId(tableName);
+    return this;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * 设置表名对应的别名
+   * @param tableName 表名
+   * @param aliasName 别名
+   */
+  protected setTableAlias(tableName: string, aliasName: string) {
+    assert.ok(!(tableName in this._data.tableAlias), `alias name "${name}" already registered`);
+    assert.ok(!(aliasName in this._data.tableAlias), `alias name "${name}" already registered`);
+    this._data.tableAlias[aliasName] = tableName;
+    this._data.tableAlias[tableName] = aliasName;
+  }
+
+  /**
+   * 设置表别名，准备连表查询
+   * @param name 别名
+   */
+  public as(name: string): this {
+    assert.ok(typeof name === "string", `first parameter must be a string`);
+    const tableName = this._data.currentJoinTableName || this._tableName!;
+    this.setTableAlias(tableName, name);
+    return this;
+  }
+
+  /**
+   * LEFT JOIN 连表
+   * @param tableName 表名
+   */
+  public leftJoin(tableName: string, fields: string[] = []): this {
+    assert.ok(typeof tableName === "string", `first parameter must be a string`);
+    this._data.currentJoinTableName = tableName;
+    if (fields.length < 1) {
+      fields = ["*"];
+    }
+    this._data.joinTables.push({ table: tableName, fields, type: "LEFT JOIN", on: "" });
+    return this;
+  }
+
+  /**
+   * 连表条件
+   * @param condition 条件字符串
+   * @param values 模板参数
+   */
+  public on(condition: string, values: DataRow | any[] = []): this {
+    const last = this._data.joinTables[this._data.joinTables.length - 1];
+    assert.ok(last, `missing leftJoin()`);
+    assert.ok(!last.on, `join condition already registered, before condition is "${last.on}"`);
+    last.on = this.format(condition, values);
+    return this;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
 
   /**
    * 查询条件
@@ -246,6 +367,7 @@ export class QueryBuilder<Q = DataRow, R = any> {
   public select(...fields: string[]): this {
     assert.ok(this._data.type === "", `cannot change query type after it was set to "${this._data.type}"`);
     this._data.type = "SELECT";
+    if (fields.length < 1) return this;
     return this.fields(...fields);
   }
 
@@ -553,14 +675,50 @@ export class QueryBuilder<Q = DataRow, R = any> {
    */
   public build(): string {
     const d = this._data;
-    const t = this._tableNameEscaped;
+    const tn = this._tableName!;
+    const t = this._tableNameEscaped!;
     d.conditions = d.conditions.map(v => v.trim()).filter(v => v);
     const where = d.conditions.length > 0 ? `WHERE ${d.conditions.join(" AND ")}` : "";
     const limit = d.limit;
     let sql: string;
+
+    assert.ok(tn && t, "missing table name");
+
     switch (d.type) {
       case "SELECT": {
-        const tail = utils.joinMultiString(where, d.groupBy, d.orderBy, d.limit);
+        const join: string[] = [];
+        if (d.joinTables.length > 0) {
+          // 设置 FROM table AS a 并且将 SELECT x 改为 SELECT a.x
+          if (d.tableAlias[tn]) {
+            const a = utils.sqlEscapeId(d.tableAlias[tn]);
+            join.push(`AS ${a}`);
+            d.fields = d.fields
+              .split(/\s*,\s*/g)
+              .map(n => `${a}.${n}`)
+              .join(", ");
+          }
+          // 创建连表
+          for (let i = 0; i < d.joinTables.length; i++) {
+            const item = d.joinTables[i];
+            const t = utils.sqlEscapeId(item.table);
+            let str = `${item.type} ${t}`;
+            let a = "";
+            if (d.tableAlias[item.table]) {
+              a = utils.sqlEscapeId(d.tableAlias[item.table]);
+              str += ` AS ${a}`;
+            } else {
+              a = t;
+            }
+            if (item.on) {
+              str += ` ON ${item.on}`;
+            }
+            if (item.fields) {
+              d.fields += ", " + item.fields.map(n => `${a}.${n === "*" ? "*" : utils.sqlEscapeId(n)}`).join(", ");
+            }
+            join.push(str);
+          }
+        }
+        const tail = utils.joinMultiString(...join, where, d.groupBy, d.orderBy, d.limit);
         sql = `SELECT ${d.fields} FROM ${t} ${tail}`;
         break;
       }
