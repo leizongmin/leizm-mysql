@@ -696,6 +696,11 @@ export class QueryBuilder<Q = DataRow, R = any> {
               .split(/\s*,\s*/g)
               .map(n => `${a}.${n}`)
               .join(", ");
+          } else {
+            d.fields = d.fields
+              .split(/\s*,\s*/g)
+              .map(n => `${t}.${n}`)
+              .join(", ");
           }
           // 创建连表
           for (let i = 0; i < d.joinTables.length; i++) {

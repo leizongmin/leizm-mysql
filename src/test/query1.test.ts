@@ -73,4 +73,34 @@ test("leftJoin", function() {
       "SELECT `A`.*, `B`.* FROM `hello` AS `A` LEFT JOIN `world` AS `B` ON A.id=B.id WHERE 1 AND 2 LIMIT 2,3",
     );
   }
+  {
+    const sql = Q.select("x", "y")
+      .from("hello")
+      .as("A")
+      .leftJoin("world", ["z"])
+      .as("B")
+      .on("A.id=B.id")
+      .where("1")
+      .and("2")
+      .skip(2)
+      .limit(3)
+      .build();
+    expect(sql).to.equal(
+      "SELECT `A`.`x`, `A`.`y`, `B`.`z` FROM `hello` AS `A` LEFT JOIN `world` AS `B` ON A.id=B.id WHERE 1 AND 2 LIMIT 2,3",
+    );
+  }
+  {
+    const sql = Q.select("x", "y")
+      .from("hello")
+      .leftJoin("world", ["z"])
+      .on("hello.id=world.id")
+      .where("1")
+      .and("2")
+      .skip(2)
+      .limit(3)
+      .build();
+    expect(sql).to.equal(
+      "SELECT `hello`.`x`, `hello`.`y`, `world`.`z` FROM `hello` LEFT JOIN `world` ON hello.id=world.id WHERE 1 AND 2 LIMIT 2,3",
+    );
+  }
 });
