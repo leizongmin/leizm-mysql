@@ -249,6 +249,22 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
+   * 添加 JOIN 查询
+   * @param tableName
+   * @param type
+   * @param fields
+   */
+  protected addJoinTable(tableName: string, type: "JOIN" | "LEFT JOIN" | "RIGHT JOIN", fields: string[]): this {
+    assert.ok(typeof tableName === "string", `first parameter must be a string`);
+    this._data.currentJoinTableName = tableName;
+    if (fields.length < 1) {
+      fields = ["*"];
+    }
+    this._data.joinTables.push({ table: tableName, fields, type, on: "" });
+    return this;
+  }
+
+  /**
    * 设置表别名，准备连表查询
    * @param name 别名
    */
@@ -260,17 +276,27 @@ export class QueryBuilder<Q = DataRow, R = any> {
   }
 
   /**
+   * JOIN 连表
+   * @param tableName 表名
+   */
+  public join(tableName: string, fields: string[] = []): this {
+    return this.addJoinTable(tableName, "JOIN", fields);
+  }
+
+  /**
    * LEFT JOIN 连表
    * @param tableName 表名
    */
   public leftJoin(tableName: string, fields: string[] = []): this {
-    assert.ok(typeof tableName === "string", `first parameter must be a string`);
-    this._data.currentJoinTableName = tableName;
-    if (fields.length < 1) {
-      fields = ["*"];
-    }
-    this._data.joinTables.push({ table: tableName, fields, type: "LEFT JOIN", on: "" });
-    return this;
+    return this.addJoinTable(tableName, "LEFT JOIN", fields);
+  }
+
+  /**
+   * RIGHT JOIN 连表
+   * @param tableName 表名
+   */
+  public rightJoin(tableName: string, fields: string[] = []): this {
+    return this.addJoinTable(tableName, "RIGHT JOIN", fields);
   }
 
   /**
