@@ -51,6 +51,9 @@ const manager = new Manager({
     db: 0,
     password: '',
   },
+  // 如果要禁用 Redis 缓存，设置 disableCache=true
+  // 当禁用 Redis 缓存，则不需要提供 redis, prefix, ttl 等配置项
+  disableCache: false,
   // 缓存 key 前缀
   prefix: 'TEST:',
   // 缓存世界，秒
