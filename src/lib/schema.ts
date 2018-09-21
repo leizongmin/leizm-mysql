@@ -89,6 +89,13 @@ export interface SchemaFields {
   [key: string]: boolean | "json" | "date" | "bool" | SchemaField;
 }
 
+export const FieldType = {
+  Any: true,
+  JSON: "json" as "json",
+  Date: "date" as "date",
+  Boolean: "bool" as "bool",
+};
+
 export interface SchemaField {
   /**
    * 格式化输入的函数

@@ -10,8 +10,8 @@ import * as utils from "./utils";
 
 const schema = new mysql.Schema({
   fields: {
-    name: true,
-    info: "json",
+    name: mysql.FieldType.Any,
+    info: mysql.FieldType.JSON,
     data: {
       input(v: any) {
         return Buffer.from(v).toString("base64");
@@ -20,8 +20,8 @@ const schema = new mysql.Schema({
         return Buffer.from(v, "base64").toString();
       },
     },
-    is_disabled: "bool",
-    created_at: "date",
+    is_disabled: mysql.FieldType.Boolean,
+    created_at: mysql.FieldType.Date,
   },
 });
 
